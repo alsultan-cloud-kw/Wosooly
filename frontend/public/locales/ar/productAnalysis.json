@@ -1,0 +1,28 @@
+{
+    "productSalesAnalysis": "تحليل مبيعات المنتج",
+    "top5SellingProducts": "أعلى 5 منتجات مبيعًا",
+    "from": "من",
+    "to": "إلى",
+    "product_sales_by_date": "مبيعات المنتجات (حسب النطاق الزمني)",
+    "start_date": "تاريخ البدء",
+    "end_date": "تاريخ الانتهاء",
+    "sales_per_product": "المبيعات لكل منتج",
+    "grand_total_kd": "الإجمالي: د.ك ",
+    "all_products": "جميع المنتجات",
+    "product_table": "جدول المنتجات",
+    "id": "المعرف",
+    "name": "الاسم",
+    "short_description": "الوصف القصير",
+    "regular_price": "السعر العادي",
+    "sales_price": "سعر البيع",
+    "total_sales": "إجمالي المبيعات",
+    "category": "الفئة",
+    "stock_status": "حالة المخزون",
+    "weight": "الوزن",
+    "date_created": "تاريخ الإنشاء",
+    "date_modified": "تاريخ التعديل",
+    "price": "السعر",
+    "total_quantity": "إجمالي الكمية",
+    "total_amount": "إجمالي المبلغ"
+    
+}

@@ -1,0 +1,91 @@
+.sidebar {
+    min-width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--main-bg) 0%, var(--second-bg) 100%);
+    box-shadow: var(--box-shadow);
+}
+
+.sidebar__logo {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar__logo > img {
+    height: 50px;
+}
+
+.sidebar__item {
+    padding: 0 20px;
+}
+
+.sidebar__item-inner {
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    border-radius: var(--border-radius);
+    transition: background-color 0.25s var(--transition-cubic), color 0.25s var(--transition-cubic), transform 0.2s ease;
+}
+
+.sidebar__item-inner > i {
+    margin-right: 10px;
+    font-size: 1.5rem;
+}
+
+.sidebar__item-inner > span {
+    text-transform: capitalize;
+}
+
+.sidebar__item-inner:hover {
+    color: var(--main-color);
+    background-color: var(--second-bg);
+    transform: translateX(2px);
+}
+
+.sidebar__item-inner.active {
+    border-radius: var(--border-radius);
+    background-image: linear-gradient(
+        to right,
+        var(--main-color),
+        var(--second-color)
+    );
+    color: var(--txt-white);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transform: translateX(2px);
+}
+
+/* Scrollable menu area between logo and footer */
+.sidebar__menu {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 10px 0 10px 0;
+}
+
+/* Custom scrollbar (WebKit) */
+.sidebar__menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar__menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar__menu::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+}
+
+/* Footer area anchored to bottom */
+.sidebar__footer {
+    padding: 6px 0 20px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}

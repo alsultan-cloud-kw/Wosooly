@@ -1,0 +1,32 @@
+[
+    {
+        "key": "dashboard",
+        "route": "/dashboard",
+        "icon": "bx bx-grid-alt"
+    },
+    {
+        "key": "productsAnalytics",
+        "route": "/ProductAnalysis",
+        "icon": "bx bxs-buildings"
+    },
+    {
+        "key": "customersAnalytics",
+        "route": "/CustomerAnalysis",
+        "icon": "bx bxs-user-account"
+    },
+    {
+        "key": "ordersAnalytics",
+        "route": "/orderAnalysis",
+        "icon": "bx bx-clipboard"
+    },
+    {
+        "key": "Messaging",
+        "route": "/messaging",
+        "icon": "bx bxs-chat"
+    },
+    {
+        "key": "logout",
+        "route": "/",
+        "icon": "bx bx-log-out"
+    }
+]

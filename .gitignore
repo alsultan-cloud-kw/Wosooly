@@ -1,0 +1,20 @@
+# === Backend ===
+# Environment files
+backend/.env
+backend/.env.*
+# Python virtual environment folder
+backend/env/
+
+# Python cache
+__pycache__
+backend/__pycache__/
+backend/**/*.pyc
+
+# === Frontend ===
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+
+# === OS / Editor files ===
+.DS_Store
+Thumbs.db

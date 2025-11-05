@@ -1,0 +1,85 @@
+{   
+
+    "customer_analysis": "تحليل العملاء",
+    "filter_customers": "تصفية العملاء",
+    "clear_filters": "مسح عوامل التصفية",
+    "orders": "الطلبات",
+    "spent": "الإنفاق",
+    "classification_by_orders": "تصنيف العملاء بناءً على عدد الطلبات",
+    "classification_by_spending": "تصنيف العملاء بناءً على حجم الإنفاق",
+    "low_churn_table": "جدول العملاء ذوي مخاطر الانسحاب المنخفضة",
+    "top_5_customers_by_spending": "أعلى 5 عملاء من حيث الإنفاق",
+    "search_by_name_or_phone": "البحث بالاسم أو رقم الهاتف",
+    "any": "أي",
+    "user": "المستخدم",
+    "total_orders": "إجمالي الطلبات",
+    "total_spending": "إجمالي الإنفاق",
+    "phone": "الهاتف",
+    "customer_name": "اسم العميل",
+    "churn_risk": "مخاطر الانسحاب",
+    "customers": "العملاء",
+
+    "customer_classification": {
+    "Loyal": {
+      "label": "العملاء المخلصون",
+      "criteria": "الطلبات > 16"
+    },
+    "Frequent": {
+      "label": "العملاء المتكرّرون",
+      "criteria": "6 - 15 طلب"
+    },
+    "Occasional": {
+      "label": "العملاء العرضيون",
+      "criteria": "2 - 5 طلبات"
+    },
+    "New": {
+      "label": "عملاء جدد",
+      "criteria": "طلب واحد في 2025 أو لاحقًا"
+    },
+    "Dead": {
+      "label": "العملاء المتوقفون",
+      "criteria": "طلب واحد قبل 2025"
+    },
+    "NoOrders": {
+      "label": "لا توجد طلبات",
+      "criteria": "0 طلبات"
+    }
+  },
+
+  "total_spent": "إجمالي الإنفاق",
+
+  "customer_spending_classification": {
+    "VIP": {
+      "label": "عملاء كبار الشخصيات",
+      "criteria": "إجمالي الإنفاق ≥ 1000"
+    },
+    "HighSpender": {
+      "label": "المنفقون الكبار",
+      "criteria": "200 ≤ إجمالي الإنفاق < 1000"
+    },
+    "MediumSpender": {
+      "label": "المنفقون المتوسطون",
+      "criteria": "50 ≤ إجمالي الإنفاق < 200"
+    },
+    "LowSpender": {
+      "label": "المنفقون القليلون",
+      "criteria": "إجمالي الإنفاق < 50"
+    }
+  },
+
+  "title": "العملاء ذوو مخاطر الانسحاب المنخفضة",
+  "subtitle": "عملاء لديهم مخاطر منخفضة للانسحاب (طلبات حديثة)",
+  "loading": "جاري تحميل العملاء...",
+  "error": "فشل في جلب بيانات العملاء",
+  "empty": "لا يوجد عملاء ذوو مخاطر انسحاب منخفضة.",
+ 
+  "customerId": "معرّف العميل",
+  "customerName": "اسم العميل",
+  "orderCount": "عدد الطلبات",
+  "totalSpent": "إجمالي الإنفاق",
+  "lastOrderDate": "تاريخ آخر طلب",
+  "classification": "التصنيف",
+  "spendingClassification": "تصنيف الإنفاق",
+  "churnRisk": "مخاطر الانسحاب"
+    
+}

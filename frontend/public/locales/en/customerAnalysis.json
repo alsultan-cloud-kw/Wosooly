@@ -1,0 +1,88 @@
+{
+
+    "customer_analysis": "Customer Analysis",
+    "filter_customers": "Filter Customers",
+    "clear_filters": "Clear filters",
+    "orders": "Orders",
+    "spent": "Spent",
+    "classification_by_orders": "Classification of Customers Based on Order Numbers",
+    "classification_by_spending": "Classification of Customers Based on Amount Spending",
+    "low_churn_table": "Table of Customers with low Churn Risk",
+    "top_5_customers_by_spending": "Top 5 Customers by Spending",
+    "search_by_name_or_phone": "Search by name or phone number",
+    "any": "Any",
+    "user": "User",
+    "total_orders": "Total Orders",
+    "total_spending": "Total Spending",
+    "phone": "Phone",
+    "customer_name": "Customer Name",
+    "churn_risk": "Churn Risk",
+    "customers": "Customers",
+
+    "customer_classification": {
+    "Loyal": {
+      "label": "Loyal Customers",
+      "criteria": "Orders > 16"
+    },
+    "Frequent": {
+      "label": "Frequent Customers",
+      "criteria": "6 - 15 Orders"
+    },
+    "Occasional": {
+      "label": "Occasional Customers",
+      "criteria": "2 - 5 Orders"
+    },
+    "New": {
+      "label": "New Customers",
+      "criteria": "1 Order in 2025 or later"
+    },
+    "Dead": {
+      "label": "Dead Customers",
+      "criteria": "1 Order before 2025"
+    },
+    "NoOrders": {
+      "label": "No Orders",
+      "criteria": "0 Orders"
+    }
+  },
+
+  "total_spent": "Total Spent",
+
+  "customer_spending_classification": {
+    "VIP": {
+      "label": "VIP Customers",
+      "criteria": "Total Spent ≥ 1000"
+    },
+    "HighSpender": {
+      "label": "High Spenders",
+      "criteria": "200 ≤ Total Spent < 1000"
+    },
+    "MediumSpender": {
+      "label": "Medium Spenders",
+      "criteria": "50 ≤ Total Spent < 200"
+    },
+    "LowSpender": {
+      "label": "Low Spenders",
+      "criteria": "Total Spent < 50"
+    }
+  },
+
+  "title": "Low Churn Risk Customers",
+  "subtitle": "Customers with low risk of churn (recent orders)",
+  "loading": "Loading customers...",
+  "error": "Failed to fetch customers",
+  "empty": "No low churn risk customers available.",
+
+  "tableHead": {
+      "customerId": "Customer ID",
+      "customerName": "Customer Name",
+      "phone": "Phone",
+      "orderCount": "Order Count",
+      "totalSpent": "Total Spent",
+      "lastOrderDate": "Last Order Date",
+      "classification": "Classification",
+      "spendingClassification": "Spending Classification",
+      "churnRisk": "Churn Risk"
+    }
+
+}
