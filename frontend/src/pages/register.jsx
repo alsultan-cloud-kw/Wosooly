@@ -231,8 +231,7 @@ export default function RegisterPage() {
                 {showAdvanced && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <p className="text-sm text-muted-foreground mb-4">
-                      Add your WooCommerce store details now or later from your
-                      dashboard
+                      Add your WooCommerce store details
                     </p>
 
                     <div className="space-y-2">

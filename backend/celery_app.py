@@ -2,6 +2,7 @@ import os
 import redis
 import time
 from dotenv import load_dotenv
+load_dotenv()
 from celery import Celery, shared_task, chain
 from celery.schedules import crontab
 # from tasks.fetch_products import fetch_and_save_products
@@ -14,24 +15,27 @@ from models import Client
 from tasks.fetch_orders import fetch_orders_task
 from tasks.fetch_products import fetch_products_task
 
-load_dotenv()
+
 
 # Get Redis URL from environment, or construct it with fallback defaults
 REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    raise RuntimeError("REDIS_URL not set in environment")
 
-# Wait for Redis to be ready
-for _ in range(10):
-    try:
-        r = redis.Redis.from_url(REDIS_URL)
-        r.ping()
-        print("✅ Redis ready")
-        break
-    except redis.exceptions.ConnectionError:
-        print("⏳ Waiting for Redis...")
-        time.sleep(2)
-else:
-    print("❌ Could not connect to Redis")
-    raise RuntimeError("Redis not available")
+# Wait for Redis to be ready (Docker-friendly)
+def wait_for_redis(max_retries=10, delay=2):
+    for attempt in range(max_retries):
+        try:
+            r = redis.Redis.from_url(REDIS_URL)
+            r.ping()
+            print("✅ Redis ready")
+            return
+        except redis.exceptions.ConnectionError:
+            print(f"⏳ Waiting for Redis... ({attempt+1}/{max_retries})")
+            time.sleep(delay)
+    raise RuntimeError("❌ Could not connect to Redis after retries")
+
+wait_for_redis()
 
 celery = Celery(
     "crm_tasks",
@@ -39,6 +43,14 @@ celery = Celery(
     backend=REDIS_URL,
     # Tasks are defined below using @celery.task decorators
 )
+
+# optional: more robust broker retries for Kombu/Celery internals
+celery.conf.broker_transport_options = {
+    "max_retries": 5,
+    "interval_start": 0,
+    "interval_step": 1,
+    "interval_max": 5,
+}
 
 celery.conf.update(
     task_serializer="json",
@@ -60,8 +72,8 @@ def onboard_new_client_task(client_id):
 
     # Chain ensures fetch_orders runs *after* fetch_products completes
     workflow = chain(
-        fetch_products_task.s(client_id=client_id),
-        fetch_orders_task.s(client_id=client_id, full_fetch=True)
+        fetch_products_task.si(client_id=client_id),
+        fetch_orders_task.si(client_id=client_id, full_fetch=True)
     )
     workflow.apply_async()
     print(f"✅ Onboarding workflow queued for client_id={client_id}")

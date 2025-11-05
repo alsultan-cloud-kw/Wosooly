@@ -8,8 +8,9 @@ from typing import Optional
 from schemas import LoginRequest, RegisterRequest
 from tasks.fetch_orders import fetch_orders_task
 from datetime import datetime
-from celery_app import onboard_new_client_task
 from celery.result import AsyncResult
+from celery.exceptions import OperationalError
+import time
 
 router = APIRouter()
 
@@ -64,16 +65,31 @@ def register_client(
         data={"sub": new_client.email, "user_id": new_client.id}
     )
 
-    # --- Trigger onboarding workflow ---
-    try:
-        task = onboard_new_client_task.apply_async(kwargs={'client_id': new_client.id})
-        task_id = task.id
-        print(f"🚀 Triggered onboarding for client {new_client.email} (task_id={task_id})")
-    except Exception as e:
-        # Log but don't fail registration - periodic tasks will handle later
-        print(f"⚠️ Could not enqueue onboarding for {new_client.email}: {e}")
-        print("⚠️ Periodic product/order sync will handle it later.")
-        task_id = None
+    # Lazy import of the task to avoid early import-time side effects
+    from celery_app import onboard_new_client_task
+
+    # Retry enqueueing so transient broker/worker startup delays don't fail registration
+    task_id = None
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            task = onboard_new_client_task.apply_async(kwargs={'client_id': new_client.id})
+            task_id = task.id
+            print(f"🚀 Triggered onboarding for client {new_client.email} (task_id={task_id})")
+            break
+        except OperationalError as e:
+            # kombu/celery raises OperationalError on connection refused
+            print(f"⚠️ Celery broker not ready (attempt {attempt}/{max_attempts}): {e}")
+            if attempt < max_attempts:
+                time.sleep(2)
+            else:
+                print("❌ Could not enqueue onboarding after retries; periodic sync will handle it.")
+                task_id = None
+        except Exception as e:
+            # fallback catch-all (keeps registration from failing)
+            print(f"⚠️ Could not enqueue onboarding for {new_client.email}: {e}")
+            task_id = None
+            break
 
     return {
         "message": "Client registered successfully",
