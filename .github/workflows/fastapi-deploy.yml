@@ -1,7 +1,7 @@
 name: FastAPI CD (Deploy to Server)
 
 on:
-  workflow_dispatch:  # allows manual trigger from GitHub UI
+  workflow_dispatch:  # manual trigger from GitHub
   push:
     branches: [ "main" ]
 
@@ -13,33 +13,27 @@ jobs:
         working-directory: ./backend
 
     steps:
-      - name: Clean old workspace
-        # No sudo needed — make sure harif owns the workspace
-        run: rm -rf /home/harif/actions-runner/_work/wc-solutions/wc-solutions/* || true
-
+      # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
 
-      # No need to fix permissions if harif owns the repo
-      # - name: Fix permissions
-      #   run: sudo chown -R $USER .
-
+      # 2️⃣ Copy environment file
       - name: Copy environment file
         run: cp /home/harif/envs/wc-solutions.env .env
 
-      # Stop old containers (avoid port conflicts)
+      # 3️⃣ Stop any old containers (avoid port conflicts)
       - name: Stop old containers
         run: docker compose down || true
 
-      # Build and deploy containers
+      # 4️⃣ Build and deploy containers
       - name: Deploy FastAPI containers
         run: docker compose up -d --build
 
-      # Health check
+      # 5️⃣ Optional health check
       - name: Check API health
         run: |
           sleep 5
           curl -f http://localhost:8000/health || echo "⚠️ API not healthy yet"
 
-      # Show running containers
+      # 6️⃣ Show running containers
       - name: Show running containers
         run: docker ps
