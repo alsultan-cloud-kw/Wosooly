@@ -80,8 +80,8 @@ services:
     depends_on:
       - wc_solutions_postgres_db
       - wc_solutions_redis_backend
-    expose:
-      - "8000"  # internal only (not mapped to host)
+    ports:
+      - "8000:8000"  # maps container port 8000 to host port 8000
     networks:
       - wc_network
 
