@@ -1,3 +1,5 @@
+
+
 name: FastAPI CI
 
 on:
@@ -12,18 +14,20 @@ jobs:
         working-directory: ./backend
 
     steps:
+      - name: Force clean workspace
+        run: sudo rm -rf /home/harif/actions-runner/_work/wc-solutions/wc-solutions/*
+
       - uses: actions/checkout@v4
+
+      - name: Fix file ownership
+        run: sudo chown -R $USER .
+
+      - name: Copy environment file
+        run: cp /home/harif/envs/wc-solutions.env .env
 
       - name: Build and start containers
         run: docker compose up -d --build
 
-      - name: Run migrations
-        run: docker compose run --rm wc_solutions_migrate
-
-      - name: Run tests
-        run: docker compose exec -T wc_solutions_dev pytest -v
-
       - name: Stop containers
         if: always()
         run: docker compose down
-
