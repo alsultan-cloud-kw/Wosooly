@@ -19,9 +19,6 @@ jobs:
       - name: Build and start containers
         run: docker compose up -d --build
 
-      - name: Run migrations
-        run: docker compose run --rm wc_solutions_migrate
-
       - name: Stop containers
         if: always()
         run: docker compose down
