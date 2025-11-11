@@ -15,7 +15,7 @@ app = FastAPI()
 
 # CORS configuration
 origins = [
-    "http://167.99.143.86/",
+    "http://46.101.113.169",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
     "http://localhost:5174",
