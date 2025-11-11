@@ -52,6 +52,20 @@ app.include_router(customers.router)
 # app.include_router(forecast_api.router)
 # app.include_router(csv_analysis.router)
 
+@app.get("/health")
+def health_check():
+    try:
+        # Simple Redis check
+        r.ping()
+        redis_status = "ok"
+    except Exception:
+        redis_status = "fail"
+
+    return {
+        "status": "ok",
+        "redis": redis_status
+    }
+
 @app.get("/")
 def read_root():
     r.set("message", "Hello from Redis!")
