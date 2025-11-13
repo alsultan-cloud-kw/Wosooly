@@ -1,11 +1,15 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export function Stats() {
+
+  const {t, i18} = useTranslation("landing_top")
+  
   const stats = [
-    { value: "10K+", label: "Active Stores", company: "WooCommerce Users" },
-    { value: "98%", label: "Accuracy Rate", company: "Data Analysis" },
-    { value: "2.5x", label: "Revenue Growth", company: "Average Increase" },
-    { value: "<2min", label: "Setup Time", company: "Quick Integration" },
+    { value: "10K+", label: t("Active Stores"), company: t("WooCommerce Users") },
+    { value: "98%", label: t("Accuracy Rate"), company: t("Data Analysis") },
+    { value: "2.5x", label: t("Revenue Growth"), company: t("Average Increase") },
+    { value: "<2min", label: t("Setup Time"), company: t("Quick Integration") },
   ];
 
   return (

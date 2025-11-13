@@ -1,0 +1,53 @@
+{
+    "brandName": "WooInsights",
+    "brandTagline": "Start Analyzing Your Store",
+    "brandSubtitle": "Create your account and unlock powerful insights",
+    "title": "Create Account",
+    "description": "Enter your details to get started with WooCommerce analytics",
+
+    "emailLabel": "Email Address *",
+    "emailPlaceholder": "you@company.com",
+
+    "passwordLabel": "Password *",
+    "passwordPlaceholder": "Create a strong password",
+
+    "confirmPasswordLabel": "Confirm Password *",
+    "confirmPasswordPlaceholder": "Confirm password",
+
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+
+    "storeSectionTitle": "WooCommerce Credentials",
+    "storeSectionSubtitle": "Add your WooCommerce store details",
+
+    "storeUrlLabel": "Store URL",
+    "storeUrlPlaceholder": "https://yourstore.com",
+
+    "consumerKeyLabel": "Consumer Key",
+    "consumerKeyPlaceholder": "ck_xxxxxxxxxxxxxxxx",
+
+    "consumerSecretLabel": "Consumer Secret",
+    "consumerSecretPlaceholder": "cs_xxxxxxxxxxxxxxxx",
+
+    "securityNote": "Your credentials are encrypted and stored securely",
+
+    "createAccount": "Create Account",
+
+    "text": "By creating an account, you agree to our",
+    "terms": "Terms of Service",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "text_alrdy": "Already have an account?",
+    "link": "Sign in",
+    "default": "Syncing your store...",
+    "success": "✅ Store synced successfully!",
+    "inProgress": "🔄 Syncing your store data...",
+    "failure": "❌ Sync failed, please try again later.",
+    "delay": "⏳ Sync taking too long, check again later.",
+    "details": "This may take a few minutes...",
+    "passwordMismatch": "Passwords do not match",
+    "registrationFailed": "Registration failed",
+    "noClientData": "Registration failed — no client data returned"
+
+
+}

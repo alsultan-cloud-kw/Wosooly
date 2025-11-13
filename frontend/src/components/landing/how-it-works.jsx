@@ -1,30 +1,16 @@
 import React from "react";
 import { Card } from "../ui/card";
 import { Link2, Database, LineChart } from "lucide-react";
+import { useTranslation, Trans } from "react-i18next";
 
 export function HowItWorks() {
+
+  const {t, i18n} = useTranslation("landing_top")
+
   const steps = [
-    {
-      icon: Link2,
-      step: "01",
-      title: "Connect Your Store",
-      description:
-        "Enter your WooCommerce site URL and API credentials. We use secure, read-only access to protect your data.",
-    },
-    {
-      icon: Database,
-      step: "02",
-      title: "Analyze Your Data",
-      description:
-        "Our AI engine processes your store data, identifying patterns, trends, and opportunities for growth.",
-    },
-    {
-      icon: LineChart,
-      step: "03",
-      title: "Get Actionable Insights",
-      description:
-        "Receive clear, actionable recommendations to optimize your products, pricing, and marketing strategies.",
-    },
+    { icon: Link2, step: "01", title: t("step1Title"), description: t("step1Description") },
+    { icon: Database, step: "02", title: t("step2Title"), description: t("step2Description") },
+    { icon: LineChart, step: "03", title: t("step3Title"), description: t("step3Description") },
   ];
 
   return (
@@ -32,10 +18,12 @@ export function HowItWorks() {
       <div className="container">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
-            Start Analyzing in <span className="text-primary">3 Simple Steps</span>
+            <Trans i18nKey="howItWorksTitle" ns="landing_top">
+              Start Analyzing in <span className="text-primary">3 Simple Steps</span>
+            </Trans>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            No technical knowledge required. Get up and running in minutes.
+          {t("howItWorksSubtitle")}
           </p>
         </div>
 

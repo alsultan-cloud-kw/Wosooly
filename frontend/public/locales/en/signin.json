@@ -1,0 +1,24 @@
+{
+    "brandName": "WooInsights",
+    "welcomeTitle": "Welcome Back",
+    "welcomeSubtitle": "Sign in to access your analytics dashboard",
+
+    "title": "Sign In",
+    "description": "Enter your credentials to continue",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@company.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me for 30 days",
+    "button": "Sign In",
+
+    "emptyFields": "Please enter both email and password",
+    "success": "🎉 Login successful! Redirecting to dashboard...",
+    "failure": "Invalid credentials, please try again.",
+
+    "text": "Don't have an account?",
+    "link": "Create account"
+
+
+}

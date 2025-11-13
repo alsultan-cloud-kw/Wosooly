@@ -5,7 +5,8 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { login } from "../redux/actions/AuthActions"
+import { login } from "../redux/actions/AuthActions";
+import { useTranslation } from "react-i18next";
 
 const ShoppingBag = ({ className }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -42,7 +43,7 @@ export default function LoginPage() {
   });
 
   const auth = useSelector((state) => state.auth); 
-
+  const {t, i18n} = useTranslation("signin")
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -80,28 +81,28 @@ export default function LoginPage() {
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <ShoppingBag className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">WooAnalytics</span>
+            <span className="text-xl font-bold text-foreground">{t("brandName")}</span>
           </Link>
-          <h1 className="text-4xl font-bold text-foreground mb-3 text-balance">Welcome Back</h1>
-          <p className="text-muted-foreground text-lg">Sign in to access your analytics dashboard</p>
+          <h1 className="text-4xl font-bold text-foreground mb-3 text-balance">{t("welcomeTitle")}</h1>
+          <p className="text-muted-foreground text-lg">{t("welcomeSubtitle")}</p>
         </div>
 
         {/* Login Form */}
         <Card className="border-border/50 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-2xl ml-40">Sign In</CardTitle>
-            <CardDescription className="ml-22">Enter your credentials to continue</CardDescription>
+            <CardTitle className="text-2xl ml-40">{t("title")}</CardTitle>
+            <CardDescription className="ml-22">{t("description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">{t("emailLabel")}</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder={t("emailPlaceholder")}
                     required
                     value={formData.email}
                     onChange={handleChange}
@@ -111,9 +112,9 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t("passwordLabel")}</Label>
                     <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                      Forgot password?
+                      {t("forgotPassword")}
                     </Link>
                   </div>
                   <div className="relative">
@@ -121,7 +122,7 @@ export default function LoginPage() {
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder={t("passwordPlaceholder")}
                       required
                       value={formData.password}
                       onChange={handleChange}
@@ -152,7 +153,7 @@ export default function LoginPage() {
 
               {/* Submit Button */}
               <Button type="submit" className="w-full h-12 text-base font-semibold" size="lg">
-                Sign In
+                {t("button")}
               </Button>
 
               {/* Divider */}
@@ -202,9 +203,9 @@ export default function LoginPage() {
 
         {/* Sign Up Link */}
         <p className="text-center mt-6 text-muted-foreground">
-          Don't have an account?{" "}
+          {t("text")}{" "}
           <Link to="/register" className="text-primary font-semibold hover:underline">
-            Create account
+            {t("link")}
           </Link>
         </p>
       </div>

@@ -8,44 +8,49 @@ import {
   Users,
   Package,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Trans } from "react-i18next"
 
 export function Features() {
+
+  const {t, i18n} = useTranslation("landing_top")
+
   const features = [
     {
       icon: BarChart3,
-      title: "Real-Time Analytics",
+      title: t("Real-Time Analytics"),
       description:
-        "Monitor your store performance with live data updates and instant insights into sales, orders, and customer behavior.",
+        t("Monitor your store performance with live data updates and instant insights into sales, orders, and customer behavior."),
     },
     {
       icon: Zap,
-      title: "Instant Setup",
+      title: t("Instant Setup"),
       description:
-        "Connect your WooCommerce store in under 2 minutes. Just enter your credentials and start analyzing immediately.",
+        t("Connect your WooCommerce store in under 2 minutes. Just enter your credentials and start analyzing immediately."),
     },
     {
       icon: Shield,
-      title: "Secure & Private",
+      title: t("Secure & Private"),
       description:
-        "Enterprise-grade security with encrypted connections. Your data is protected with industry-leading standards.",
+        t("Enterprise-grade security with encrypted connections. Your data is protected with industry-leading standards."),
     },
     {
       icon: TrendingUp,
-      title: "Growth Insights",
+      title: t("Growth Insights"),
       description:
-        "Discover opportunities to increase revenue with AI-powered recommendations and trend analysis.",
+        t("Discover opportunities to increase revenue with AI-powered recommendations and trend analysis."),
     },
     {
       icon: Users,
-      title: "Customer Intelligence",
+      title: t("Customer Intelligence"),
       description:
-        "Understand your customers better with detailed segmentation, behavior patterns, and lifetime value analysis.",
+        t("Understand your customers better with detailed segmentation, behavior patterns, and lifetime value analysis."),
     },
     {
       icon: Package,
-      title: "Product Performance",
+      title: t("Product Performance"),
       description:
-        "Track which products drive the most revenue, identify slow movers, and optimize your inventory.",
+        t("Track which products drive the most revenue, identify slow movers, and optimize your inventory."),
     },
   ];
 
@@ -54,13 +59,13 @@ export function Features() {
       <div className="container">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
-            Everything You Need to{" "}
-            <span className="text-primary">Grow Your Store</span>
-          </h2>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
+        <Trans i18nKey="everythingYouNeed" ns="landing_top">
+          Everything You Need to <span className="text-primary">Grow Your Store</span>
+        </Trans>
+        </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Powerful analytics tools designed specifically for WooCommerce store
-            owners who want to make data-driven decisions.
+            {t("Powerful analytics tools designed specifically for WooCommerce store owners who want to make data-driven decisions.")}
           </p>
         </div>
 

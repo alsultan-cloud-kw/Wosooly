@@ -1,7 +1,11 @@
 import React from "react";
 import { BarChart3 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
+
+  const {t, i18n} = useTranslation("landing_top")
+
   return (
     <footer className="border-t border-border bg-muted/30">
       <div className="container py-12 md:py-16 ml-24">
@@ -12,24 +16,23 @@ export function Footer() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                 <BarChart3 className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">WooInsights</span>
+              <span className="text-xl font-bold">{t("name")}</span>
             </a>
             <p className="text-sm text-muted-foreground max-w-md text-pretty leading-relaxed">
-              Powerful analytics for WooCommerce stores. Make data-driven decisions and grow your business with
-              confidence.
+              {t("description")}
             </p>
           </div>
 
           {/* Product Links */}
           <div>
-            <h3 className="font-semibold mb-4">Product</h3>
+            <h3 className="font-semibold mb-4">{t("product")}</h3>
             <ul className="space-y-3 text-sm">
               <li>
                 <a
                   href="#features"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Features
+                  {t("features")}
                 </a>
               </li>
               <li>
@@ -37,7 +40,7 @@ export function Footer() {
                   href="#pricing"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Pricing
+                  {t("pricing")}
                 </a>
               </li>
               <li>
@@ -45,7 +48,7 @@ export function Footer() {
                   href="#"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Documentation
+                  {t("documentation")}
                 </a>
               </li>
             </ul>
@@ -53,14 +56,14 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="font-semibold mb-4">{t("company")}</h3>
             <ul className="space-y-3 text-sm">
               <li>
                 <a
                   href="#"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  About
+                  {t("about")}
                 </a>
               </li>
               <li>
@@ -68,7 +71,7 @@ export function Footer() {
                   href="#"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Blog
+                  {t("blog")}
                 </a>
               </li>
               <li>
@@ -76,7 +79,7 @@ export function Footer() {
                   href="#"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Contact
+                  {t("contact")}
                 </a>
               </li>
             </ul>
@@ -90,10 +93,10 @@ export function Footer() {
           </p>
           <div className="flex gap-6 text-sm">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              Privacy Policy
+              {t("privacy")}
             </a>
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              Terms of Service
+              {t("terms")}
             </a>
           </div>
         </div>

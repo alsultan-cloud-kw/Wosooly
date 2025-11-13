@@ -3,9 +3,11 @@ import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 
 export function CTA() {
   const navigate = useNavigate();
+  const { t } = useTranslation("landing_top");
 
   const handleStartFreeAnalysisClick = () => {
     // Handle the button click event
@@ -19,16 +21,16 @@ export function CTA() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent" />
           <div className="relative p-8 md:p-16 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
-              Ready to Transform Your{" "}
-              <span className="text-primary">WooCommerce Store?</span>
+              <Trans i18nKey="ctaTitle" ns="landing_top">
+                Ready to Transform Your <span className="text-primary">WooCommerce Store?</span>
+              </Trans>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8 text-pretty">
-              Join thousands of store owners who are making smarter decisions
-              with data-driven insights.
+            {t("ctaSubtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={()=>{handleStartFreeAnalysisClick()}} size="lg" className="text-base">
-                Start Free Analysis
+              {t("ctaButton")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               {/* <Button
@@ -40,7 +42,7 @@ export function CTA() {
               </Button> */}
             </div>
             <p className="text-sm text-muted-foreground mt-6">
-              No credit card required 
+            {t("ctaNote")}
               {/* • Free 14-day trial • Cancel anytime */}
             </p>
           </div>

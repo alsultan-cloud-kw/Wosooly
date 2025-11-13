@@ -3,9 +3,12 @@ import { Button } from "../ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { DashboardPreview } from "./dashboard-preview";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export function Hero() {
   const navigate = useNavigate();
+
+  const {t, i18n} = useTranslation("landing_top")
 
   const handleStartFreeAnalysis = () => {
     navigate("/register");
@@ -19,21 +22,20 @@ export function Hero() {
           <div className="flex flex-col gap-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-sm w-fit">
               <Sparkles className="h-4 w-4 text-accent" />
-              <span className="text-muted-foreground">AI-Powered Analytics</span>
+              <span className="text-muted-foreground">{t("AI-Powered Analytics")}</span>
             </div>
 
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-balance">
-              Unlock Your WooCommerce Store's <span className="text-primary">Full Potential</span>
+              {t("Unlock Your WooCommerce Store's")} <span className="text-primary">{t("Full Potential")}</span>
             </h1>
 
             <p className="text-lg text-muted-foreground text-pretty max-w-xl">
-              Connect your WooCommerce store in seconds and get instant, actionable insights. Understand your customers,
-              optimize your products, and grow your revenue with data-driven decisions.
+              {t("Connect your WooCommerce store in seconds and get instant, actionable insights. Understand your customers, optimize your products, and grow your revenue with data-driven decisions.")}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button onClick={() => {handleStartFreeAnalysis()}} size="lg" className="text-base">
-                Start Free Analysis
+                {t("Start Free Analysis")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               {/* <Button size="lg" variant="outline" className="text-base bg-transparent">
@@ -50,7 +52,7 @@ export function Hero() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span>No credit card required</span>
+                <span>{t("No credit card required")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -60,7 +62,7 @@ export function Hero() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span>Setup in 2 minutes</span>
+                <span>{t("Setup in 2 minutes")}</span>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { register } from "../redux/actions/AuthActions";
 import { useNavigate } from "react-router-dom";
 import api from "../../api_config";
+import { useTranslation } from "react-i18next";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +28,8 @@ export default function RegisterPage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const {t, i18n} = useTranslation("register")
 
   // refs to hold interval IDs so we can clear them reliably
   const taskIntervalRef = useRef(null);
@@ -62,7 +65,7 @@ export default function RegisterPage() {
           taskIntervalRef.current = null;
           isTaskPollingRef.current = false;
 
-          setSyncMessage("✅ Store synced successfully!");
+          setSyncMessage(t("success"));
           // small delay so user sees success then navigate
           setTimeout(() => {
             setIsSyncing(false);
@@ -73,13 +76,13 @@ export default function RegisterPage() {
           taskIntervalRef.current = null;
           isTaskPollingRef.current = false;
           setIsSyncing(false);
-          alert("❌ Sync failed, please try again later.");
+          alert(t("failure"));
         } else if (attempts >= maxAttempts) {
           clearInterval(taskIntervalRef.current);
           taskIntervalRef.current = null;
           isTaskPollingRef.current = false;
           setIsSyncing(false);
-          alert("⏳ Sync taking too long, check again later.");
+          alert(t("delay"));
         } else {
           // optionally update message with status
           setSyncMessage("Setting up your store and fetching WooCommerce data...");
@@ -179,22 +182,22 @@ export default function RegisterPage() {
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <ShoppingBag className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">WooAnalytics</span>
+            <span className="text-xl font-bold text-foreground">{t("brandName")}</span>
           </a>
           <h1 className="text-4xl font-bold text-foreground mb-3 text-balance">
-            Start Analyzing Your Store
+            {t("brandTagline")}
           </h1>
           <p className="text-muted-foreground text-lg">
-            Create your account and unlock powerful insights
+            {t("brandSubtitle")}
           </p>
         </div>
 
         {/* Registration Form */}
         <Card className="border-border/50 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-2xl">Create Account</CardTitle>
+            <CardTitle className="text-2xl">{t("title")}</CardTitle>
             <CardDescription>
-              Enter your details to get started with WooCommerce analytics
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -202,12 +205,12 @@ export default function RegisterPage() {
               {/* Basic Information */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
+                  <Label htmlFor="email">{t("emailLabel")}</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder={t("emailPlaceholder")}
                     required
                     value={form.email}
                     onChange={handleChange}
@@ -216,13 +219,13 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password *</Label>
+                  <Label htmlFor="password">{t("passwordLabel")}</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Create a strong password"
+                      placeholder={t("passwordPlaceholder")}
                       required
                       value={form.password}
                       onChange={handleChange}
@@ -239,13 +242,13 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                  <Label htmlFor="confirmPassword">{t("confirmPasswordLabel")}</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm password"
+                      placeholder={t("confirmPasswordPlaceholder")}
                       required
                       value={form.confirmPassword}
                       onChange={handleChange}
@@ -262,12 +265,12 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="client_name">Full Name</Label>
+                  <Label htmlFor="client_name">{t("fullNameLabel")}</Label>
                   <Input
                     id="client_name"
                     name="client_name"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder={t("fullNamePlaceholder")}
                     value={form.client_name}
                     onChange={handleChange}
                     className="h-11"
@@ -279,20 +282,20 @@ export default function RegisterPage() {
               <div className="border-t border-border pt-6">
                 <div className="flex items-center gap-2">
                   <Lock className="w-4 h-4 text-primary" />
-                  <span className="font-semibold text-foreground">WooCommerce Credentials</span>
+                  <span className="font-semibold text-foreground">{t("storeSectionTitle")}</span>
                 </div>
 
                 {showAdvanced && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <p className="text-sm text-muted-foreground mb-4">Add your WooCommerce store details</p>
+                    <p className="text-sm text-muted-foreground mb-4">{t("storeSectionSubtitle")}</p>
 
                     <div className="space-y-2">
-                      <Label htmlFor="store_url">Store URL</Label>
+                      <Label htmlFor="store_url">{t("storeUrlLabel")}</Label>
                       <Input
                         id="store_url"
                         name="store_url"
                         type="url"
-                        placeholder="https://yourstore.com"
+                        placeholder={t("storeUrlPlaceholder")}
                         value={form.store_url}
                         onChange={handleChange}
                         className="h-11"
@@ -300,12 +303,12 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="consumer_key">Consumer Key</Label>
+                      <Label htmlFor="consumer_key">{t("consumerKeyLabel")}</Label>
                       <Input
                         id="consumer_key"
                         name="consumer_key"
                         type="text"
-                        placeholder="ck_xxxxxxxxxxxxxxxx"
+                        placeholder={t("consumerKeyPlaceholder")}
                         value={form.consumer_key}
                         onChange={handleChange}
                         className="h-11 font-mono text-sm"
@@ -313,12 +316,12 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="consumer_secret">Consumer Secret</Label>
+                      <Label htmlFor="consumer_secret">{t("consumerSecretLabel")}</Label>
                       <Input
                         id="consumer_secret"
                         name="consumer_secret"
                         type="password"
-                        placeholder="cs_xxxxxxxxxxxxxxxx"
+                        placeholder={t("consumerSecretPlaceholder")}
                         value={form.consumer_secret}
                         onChange={handleChange}
                         className="h-11 font-mono text-sm"
@@ -328,7 +331,7 @@ export default function RegisterPage() {
                     <div className="bg-muted/50 border border-border rounded-lg p-4">
                       <p className="text-sm text-muted-foreground">
                         <Lock className="w-4 h-4 inline mr-1" />
-                        Your credentials are encrypted and stored securely
+                        {t("securityNote")}
                       </p>
                     </div>
                   </div>
@@ -337,14 +340,14 @@ export default function RegisterPage() {
 
               {/* Submit Button */}
               <Button type="submit" className="w-full h-12 text-base font-semibold" size="lg">
-                Create Account
+                {t("createAccount")}
               </Button>
 
               {/* Terms */}
               <p className="text-sm text-muted-foreground text-center">
-                By creating an account, you agree to our{" "}
-                <a href="/terms" className="text-primary hover:underline">Terms of Service</a> and{" "}
-                <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>
+                {t("text")}{" "}
+                <a href="/terms" className="text-primary hover:underline">{t("terms")}</a> {t("and")}{" "}
+                <a href="/privacy" className="text-primary hover:underline">{t("privacy")}</a>
               </p>
             </form>
           </CardContent>
@@ -352,7 +355,7 @@ export default function RegisterPage() {
 
         {/* Sign In Link */}
         <p className="text-center mt-6 text-muted-foreground">
-          Already have an account? <a href="/login" className="text-primary font-semibold hover:underline">Sign in</a>
+          {t("text_alrdy")} <a href="/login" className="text-primary font-semibold hover:underline">{t("link")}</a>
         </p>
       </div>
 
@@ -360,8 +363,8 @@ export default function RegisterPage() {
       {isSyncing && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4"></div>
-          <h2 className="text-lg font-semibold mb-2">{syncMessage || "Syncing your store..."}</h2>
-          <p className="text-sm text-muted-foreground">This may take a few minutes...</p>
+          <h2 className="text-lg font-semibold mb-2">{syncMessage || t("default") }</h2>
+          <p className="text-sm text-muted-foreground">{t("details")}</p>
         </div>
       )}
     </div>
