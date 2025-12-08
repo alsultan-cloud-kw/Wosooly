@@ -1,47 +1,86 @@
 import React from "react";
-import { Card } from "../ui/card";
-import { Link2, Database, LineChart } from "lucide-react";
-import { useTranslation, Trans } from "react-i18next";
+import { Card, CardContent } from "../ui/card";
+import { Key, Upload, BarChart, Rocket } from "lucide-react";
 
-export function HowItWorks() {
+const steps = [
+  {
+    icon: Key,
+    step: "01",
+    title: "Connect Your Data Source",
+    description:
+      "Choose between WooCommerce API integration or Excel file upload. Provide your credentials or map your column names.",
+    gradient: "gradient-primary",
+  },
+  {
+    icon: Upload,
+    step: "02",
+    title: "Import & Process",
+    description:
+      "Our system securely imports your data and processes it in real-time. All data is encrypted and stored safely.",
+    gradient: "gradient-accent",
+  },
+  {
+    icon: BarChart,
+    step: "03",
+    title: "Analyze & Visualize",
+    description:
+      "Explore comprehensive dashboards with order, customer, and product analytics. Filter, sort, and drill down into your data.",
+    gradient: "gradient-secondary",
+  },
+  {
+    icon: Rocket,
+    step: "04",
+    title: "Make Better Decisions",
+    description:
+      "Use actionable insights to optimize your business. Export reports and share findings with your team.",
+    gradient: "gradient-success",
+  },
+];
 
-  const {t, i18n} = useTranslation("landing_top")
-
-  const steps = [
-    { icon: Link2, step: "01", title: t("step1Title"), description: t("step1Description") },
-    { icon: Database, step: "02", title: t("step2Title"), description: t("step2Description") },
-    { icon: LineChart, step: "03", title: t("step3Title"), description: t("step3Description") },
-  ];
-
+export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 md:py-32 bg-muted/30">
-      <div className="container">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
-            <Trans i18nKey="howItWorksTitle" ns="landing_top">
-              Start Analyzing in <span className="text-primary">3 Simple Steps</span>
-            </Trans>
+    <section id="how-it-works" className="py-20 md:py-28 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-mesh opacity-50" />
+
+      <div className="container relative mx-auto px-4">
+        <div className="mx-auto max-w-2xl text-center mb-16">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl mb-4 text-balance">
+            Get Started in{" "}
+            <span className="bg-gradient-to-r from-accent to-success bg-clip-text text-transparent">
+              Minutes
+            </span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-          {t("howItWorksSubtitle")}
+          <p className="text-lg text-muted-foreground text-pretty leading-relaxed">
+            Simple process to unlock powerful analytics for your business
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <div key={index} className="relative">
+            <div key={index} className="relative group">
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-border" />
+                <div className="hidden lg:block absolute top-12 left-full w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary -translate-x-1/2 translate-y-6 opacity-30" />
               )}
-              <Card className="relative p-8 text-center hover:shadow-lg transition-shadow">
-                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
-                  <step.icon className="h-8 w-8 text-primary" />
-                </div>
-                <div className="absolute top-6 right-6 text-6xl font-bold text-muted/20">
-                  {step.step}
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground text-pretty leading-relaxed">{step.description}</p>
+              <Card className="relative border-2 border-border bg-card hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden">
+                <div
+                  className={`absolute inset-0 ${step.gradient} opacity-0 group-hover:opacity-5 transition-opacity`}
+                />
+                <CardContent className="pt-6 relative">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-full ${step.gradient} text-white font-bold text-lg shadow-lg`}
+                    >
+                      {step.step}
+                    </div>
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-lg ${step.gradient} shadow-md`}
+                    >
+                      <step.icon className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+                </CardContent>
               </Card>
             </div>
           ))}

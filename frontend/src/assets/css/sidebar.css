@@ -1,0 +1,7 @@
+.premium-icon {
+    color: gold;         /* gold color */
+    margin-left: 4px;    /* small spacing from text */
+    font-size: 12px;     /* smaller than default */
+    vertical-align: middle; /* aligns the icon with the text */
+  }
+  

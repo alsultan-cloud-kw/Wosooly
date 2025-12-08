@@ -89,3 +89,48 @@
     padding: 6px 0 20px 0;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
+
+/* Profile Section */
+.sidebar__profile {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    position: relative;
+  }
+  
+  .sidebar__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #fff;
+    object-fit: cover;
+  }
+  
+  /* Dropdown */
+  .sidebar__dropdown {
+    position: absolute;
+    top: 70px;
+    background: #ffffff;
+    width: 160px;
+    padding: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+    right: 0;
+    z-index: 999;
+  }
+  
+  .dropdown-item {
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .dropdown-item:hover {
+    background: #f0f0f0;
+  }
+  
+  .dropdown-item.logout {
+    color: red;
+  }

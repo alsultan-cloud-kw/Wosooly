@@ -8,28 +8,41 @@ import { useDispatch } from "react-redux";
 import { register } from "../redux/actions/AuthActions";
 import { useNavigate } from "react-router-dom";
 import api from "../../api_config";
-import { useTranslation } from "react-i18next";
+import { Trans,useTranslation } from "react-i18next";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showAdvanced] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
     confirmPassword: "",
     client_name: "",
+    company_details: "",
     store_url: "",
     consumer_key: "",
     consumer_secret: "",
+    accepted_terms: false,
   });
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const {t, i18n} = useTranslation("register")
+  const {t, i18n} = useTranslation('register')
+
+  const plan = searchParams.get("plan");   // <-- HERE
+
+  console.log("Selected plan:", plan);
+
 
   // refs to hold interval IDs so we can clear them reliably
   const taskIntervalRef = useRef(null);
@@ -44,131 +57,181 @@ export default function RegisterPage() {
     }));
   };
 
-  const startTaskPolling = (taskId) => {
-    if (!taskId) return;
-    if (isTaskPollingRef.current) return; // already polling
-    isTaskPollingRef.current = true;
+  // const startTaskPolling = (taskId) => {
+  //   if (!taskId) return;
+  //   if (isTaskPollingRef.current) return; // already polling
+  //   isTaskPollingRef.current = true;
 
-    let attempts = 0;
-    const maxAttempts = 60; // 5 minutes at 5s
+  //   let attempts = 0;
+  //   const maxAttempts = 60; // 5 minutes at 5s
 
-    taskIntervalRef.current = setInterval(async () => {
-      try {
-        attempts += 1;
-        const statusRes = await api.get(`/task-status/${taskId}`);
-        const statusData = statusRes?.data;
+  //   taskIntervalRef.current = setInterval(async () => {
+  //     try {
+  //       attempts += 1;
+  //       const statusRes = await api.get(`/task-status/${taskId}`);
+  //       const statusData = statusRes?.data;
 
-        console.log("Task status:", statusData);
+  //       console.log("Task status:", statusData);
 
-        if (statusData?.status === "SUCCESS") {
-          clearInterval(taskIntervalRef.current);
-          taskIntervalRef.current = null;
-          isTaskPollingRef.current = false;
+  //       if (statusData?.status === "SUCCESS") {
+  //         clearInterval(taskIntervalRef.current);
+  //         taskIntervalRef.current = null;
+  //         isTaskPollingRef.current = false;
 
-          setSyncMessage(t("success"));
-          // small delay so user sees success then navigate
-          setTimeout(() => {
-            setIsSyncing(false);
-            navigate("/dashboard");
-          }, 1200);
-        } else if (statusData?.status === "FAILURE") {
-          clearInterval(taskIntervalRef.current);
-          taskIntervalRef.current = null;
-          isTaskPollingRef.current = false;
-          setIsSyncing(false);
-          alert(t("failure"));
-        } else if (attempts >= maxAttempts) {
-          clearInterval(taskIntervalRef.current);
-          taskIntervalRef.current = null;
-          isTaskPollingRef.current = false;
-          setIsSyncing(false);
-          alert(t("delay"));
-        } else {
-          // optionally update message with status
-          setSyncMessage("Setting up your store and fetching WooCommerce data...");
-        }
-      } catch (pollError) {
-        console.error("Polling error:", pollError);
-        clearInterval(taskIntervalRef.current);
-        taskIntervalRef.current = null;
-        isTaskPollingRef.current = false;
-        setIsSyncing(false);
-      }
-    }, 5000);
-  };
+  //         setSyncMessage(t("success"));
+  //         // small delay so user sees success then navigate
+  //         setTimeout(() => {
+  //           setIsSyncing(false);
+  //           navigate("/dashboard");
+  //         }, 1200);
+  //       } else if (statusData?.status === "FAILURE") {
+  //         clearInterval(taskIntervalRef.current);
+  //         taskIntervalRef.current = null;
+  //         isTaskPollingRef.current = false;
+  //         setIsSyncing(false);
+  //         alert(t("failure"));
+  //       } else if (attempts >= maxAttempts) {
+  //         clearInterval(taskIntervalRef.current);
+  //         taskIntervalRef.current = null;
+  //         isTaskPollingRef.current = false;
+  //         setIsSyncing(false);
+  //         alert(t("delay"));
+  //       } else {
+  //         // optionally update message with status
+  //         setSyncMessage("Setting up your store and fetching WooCommerce data...");
+  //       }
+  //     } catch (pollError) {
+  //       console.error("Polling error:", pollError);
+  //       clearInterval(taskIntervalRef.current);
+  //       taskIntervalRef.current = null;
+  //       isTaskPollingRef.current = false;
+  //       setIsSyncing(false);
+  //     }
+  //   }, 5000);
+  // };
 
-  useEffect(() => {
-    let interval;
+  // useEffect(() => {
+  //   let interval;
   
-    const checkSyncStatus = async () => {
-      const email = localStorage.getItem("email");
-      if (!email) return;
+  //   const checkSyncStatus = async () => {
+  //     const email = localStorage.getItem("email");
+  //     if (!email) return;
   
-      try {
-        const { data } = await api.get(`/sync-status/${email}`);
+  //     try {
+  //       const { data } = await api.get(`/sync-status/${email}`);
   
-        if (data?.sync_status === "COMPLETE") {
-          setSyncMessage("✅ Store synced successfully!");
-          setTimeout(() => {
-            setIsSyncing(false);
-            navigate("/dashboard");
-          }, 1000);
-        } else if (data?.sync_status === "IN_PROGRESS" || data?.sync_status === "PENDING") {
-          setIsSyncing(true);
-          setSyncMessage("🔄 Syncing your store data...");
-        } else if (data?.sync_status === "FAILED") {
-          setIsSyncing(false);
-          alert("❌ Sync failed, please try again later.");
-        }
-      } catch (err) {
-        console.error("Failed to check sync status:", err);
-      }
-    };
+  //       if (data?.sync_status === "COMPLETE") {
+  //         setSyncMessage("✅ Store synced successfully!");
+  //         clearInterval(interval); // stop polling
+  //         setTimeout(() => {
+  //           setIsSyncing(false);
+  //           navigate("/dashboard");
+  //         }, 1000);
+  //       } else if (data?.sync_status === "IN_PROGRESS" || data?.sync_status === "PENDING") {
+  //         setIsSyncing(true);
+  //         setSyncMessage("🔄 Syncing your store data...");
+  //       } else if (data?.sync_status === "FAILED") {
+  //         clearInterval(interval);
+  //         setIsSyncing(false);
+  //         alert("❌ Sync failed, please try again later.");
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to check sync status:", err);
+  //     }
+  //   };
   
-    // run immediately and then every 5 seconds
-    checkSyncStatus();
-    interval = setInterval(checkSyncStatus, 5000);
+  //   // run immediately and then every 5 seconds
+  //   checkSyncStatus();
+  //   interval = setInterval(checkSyncStatus, 5000);
   
-    return () => clearInterval(interval);
-  }, [navigate]);
+  //   return () => clearInterval(interval);
+  // }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+     // ✅ Check if Terms & Privacy are accepted
+  if (!form.accepted_terms) {
+    toast.error("Terms Required", {
+      description: "You must accept the Terms and Privacy Policy to continue.",
+      duration: 4000,
+    });
+    return;
+  }
+
     if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Password Mismatch", {
+        description: "The passwords you entered do not match. Please try again.",
+        duration: 4000,
+      });
       return;
     }
 
     try {
+      // Show loading toast
+      const loadingToast = toast.loading("Creating your account...", {
+        description: "Please wait while we set up your account.",
+      });
+
       // Dispatch Redux register action
       const res = await dispatch(
         register(
           form.email,
           form.password,
           form.client_name,
+          form.company_details,
           form.store_url,
           form.consumer_key,
-          form.consumer_secret
+          form.consumer_secret,
+          form.accepted_terms,
+          plan
         )
       );
 
       const data = res?.payload || {};
       if (!data || !data.client_id) {
+        toast.dismiss(loadingToast);
         throw new Error("Registration failed — no client data returned");
       }
 
       // Save email/token for background checks (dashboard or refresh)
       // if (data.access_token) localStorage.setItem("token", data.access_token);
       // if (data.email) localStorage.setItem("email", data.email);
+        // Save subscription info
+      localStorage.setItem("user_plan", data.plan_name);
+      localStorage.setItem("available_features", JSON.stringify(data.available_features));
+
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToast);
+      toast.success("Registration Successful!", {
+        description: "Your account has been created successfully. Redirecting...",
+        duration: 3000,
+      });
 
       // Show syncing overlay
       setIsSyncing(true);
       setSyncMessage("Setting up your store and fetching WooCommerce data...");
-
+      localStorage.setItem("email", form.email); 
+      
+      // Navigate after a short delay to show the success message
+      setTimeout(() => {
+        navigate("/sign-in-data-selection");
+      }, 1000);
+      
+      // ✅ Start polling task if task_id exists
+      // if (data.task_id) {
+      //   startTaskPolling(data.task_id);
+      // } else {
+      //   // fallback to sync-status polling
+      //   console.warn("No task_id received, relying on periodic sync-status check.");
+      // }
     } catch (err) {
       console.error(err);
-      alert(err.message || "Registration failed");
+      const errorMessage = err?.response?.data?.detail || err?.message || "Registration failed. Please try again.";
+      toast.error("Registration Failed", {
+        description: errorMessage,
+        duration: 5000,
+      });
       setIsSyncing(false);
     }
   };
@@ -278,8 +341,21 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="company_details">{t("companyDetailsLabel")}</Label>
+                <Input
+                  id="company_details"
+                  name="company_details"
+                  type="text"
+                  placeholder={t("companyDetailsPlaceholder")}
+                  value={form.company_details}
+                  onChange={handleChange}
+                  className="h-11"
+                />
+              </div>
+
               {/* WooCommerce Credentials Section */}
-              <div className="border-t border-border pt-6">
+              {/* <div className="border-t border-border pt-6">
                 <div className="flex items-center gap-2">
                   <Lock className="w-4 h-4 text-primary" />
                   <span className="font-semibold text-foreground">{t("storeSectionTitle")}</span>
@@ -336,6 +412,46 @@ export default function RegisterPage() {
                     </div>
                   </div>
                 )}
+              </div> */}
+
+              <div className="flex items-start space-x-2">
+                <input
+                  type="checkbox"
+                  id="accepted_terms"
+                  name="accepted_terms"
+                  checked={form.accepted_terms}
+                  onChange={(e) =>
+                    setForm({ ...form, accepted_terms: e.target.checked })
+                  }
+                  required
+                  className="mt-1"
+                />
+
+                <label htmlFor="accepted_terms" className="text-sm">
+                <Trans
+                  i18nKey="accepted_terms_label" ns="register"
+                  components={{
+                    terms: (
+                      <button
+                        type="button"
+                        className="text-primary underline"
+                        onClick={() => setShowTermsModal(true)}
+                      >
+                    {t("terms_of_service")}
+                    </button>
+                    ),
+                    privacy: (
+                      <button
+                      type="button"
+                      className="text-primary underline"
+                      onClick={() => setShowPrivacyModal(true)}
+                    >
+                      {t("privacy_policy")}
+                    </button>
+                    )
+                  }}
+                  />
+                </label>
               </div>
 
               {/* Submit Button */}
@@ -344,11 +460,11 @@ export default function RegisterPage() {
               </Button>
 
               {/* Terms */}
-              <p className="text-sm text-muted-foreground text-center">
+              {/* <p className="text-sm text-muted-foreground text-center">
                 {t("text")}{" "}
                 <a href="/terms" className="text-primary hover:underline">{t("terms")}</a> {t("and")}{" "}
                 <a href="/privacy" className="text-primary hover:underline">{t("privacy")}</a>
-              </p>
+              </p> */}
             </form>
           </CardContent>
         </Card>
@@ -360,13 +476,31 @@ export default function RegisterPage() {
       </div>
 
       {/* ✅ Syncing Overlay */}
-      {isSyncing && (
+      {/* {isSyncing && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4"></div>
           <h2 className="text-lg font-semibold mb-2">{syncMessage || t("default") }</h2>
           <p className="text-sm text-muted-foreground">{t("details")}</p>
         </div>
-      )}
+      )} */}
+
+      <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("termsOfServiceTitle")}</DialogTitle>
+          </DialogHeader>
+          <p>{t("termsOfServiceContent")}</p>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPrivacyModal} onOpenChange={setShowPrivacyModal}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("privacyPolicyTitle")}</DialogTitle>
+          </DialogHeader>
+          <p>{t("privacyPolicyContent")}</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

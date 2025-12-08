@@ -56,9 +56,20 @@ export default function LoginPage() {
     }
 
     try {
-      await dispatch(login(formData.email, formData.password));
+      const res = await dispatch(login(formData.email, formData.password));
+      const data = res?.payload || {};
+
+      if (!data || !data.access_token){
+        throw new Error("Login failed - no user data returned")
+      }
+
+      // Save subscription info
+    localStorage.setItem("user_plan", data.plan_name);
+    localStorage.setItem("available_features", JSON.stringify(data.available_features || []));
+
+
       alert("🎉 Login successful! Redirecting to dashboard...")
-      navigate("/dashboard");
+      navigate("/sign-in-data-selection");
     } catch (err) {
       console.error("Login failed:", err);
       alert("Invalid credentials, please try again.");
@@ -77,7 +88,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6 group">
+          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <ShoppingBag className="w-6 h-6 text-primary-foreground" />
             </div>

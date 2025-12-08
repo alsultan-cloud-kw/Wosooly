@@ -1,0 +1,38 @@
+{  
+        "brand": "Wosooly",
+        "signIn": "Sign In",
+        "badge": "Simple, Transparent Pricing",
+        "title": "Choose the Perfect Plan for Your Business",
+        "subtitle": "Start free and upgrade as your business grows. All plans include core analytics features.",
+        "name1": "Free",
+        "description1": "Perfect for getting started",
+        "name2": "Standard",
+        "description2": "For growing businesses",
+        "name3": "Professional",
+        "description3": "For established businesses",
+        "name4":"Enterprise",
+        "description4":"For well established large scale businesses",
+        "mostPopular": "Most Popular",
+        "featuresIncluded": "Features included:",
+        "buttonFree": "Get Started Free",
+        "buttonPaid": "Start",
+        "uptime": "Uptime Guarantee",
+        "support": "Customer Support",
+        "activeUsers": "Active Users",
+        "title1": "Frequently Asked Questions",
+        "q1": "Can I change plans at any time?",
+        "a1": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate the charges accordingly.",
+
+        "q2": "Is there a free trial for paid plans?",
+        "a2": "Yes, all paid plans come with a 14-day free trial. No credit card required to start your trial.",
+
+        "q3": "What payment methods do you accept?",
+        "a3": "We accept all major credit cards (Visa, MasterCard, American Express) and support payment via K-Net for local transactions.",
+
+        "q4": "Is my WooCommerce data secure?",
+        "a4": "Absolutely. We use enterprise-grade encryption for all data transmission and storage. Your credentials are never stored in plain text, and we comply with international data protection standards.",
+        "line1": "Ready to transform your WooCommerce analytics?",
+        "button": "Get Started Today",
+        "subtext": "No credit card required • Cancel anytime",
+        "rights": "All rights reserved."
+    }

@@ -1,5 +1,5 @@
 {
-    "brandName": "WooInsights",
+    "brandName": "Wosooly",
     "brandTagline": "Start Analyzing Your Store",
     "brandSubtitle": "Create your account and unlock powerful insights",
     "title": "Create Account",
@@ -14,9 +14,12 @@
     "confirmPasswordLabel": "Confirm Password *",
     "confirmPasswordPlaceholder": "Confirm password",
 
-    "fullNameLabel": "Full Name",
+    "fullNameLabel": "Company Name",
     "fullNamePlaceholder": "John Doe",
 
+    "companyDetailsLabel": "Company Details",
+    "companyDetailsPlaceholder": "e.g., Selling electronics, clothing, or handmade crafts",
+    
     "storeSectionTitle": "WooCommerce Credentials",
     "storeSectionSubtitle": "Add your WooCommerce store details",
 
@@ -47,7 +50,13 @@
     "details": "This may take a few minutes...",
     "passwordMismatch": "Passwords do not match",
     "registrationFailed": "Registration failed",
-    "noClientData": "Registration failed — no client data returned"
-
+    "noClientData": "Registration failed — no client data returned",
+    "termsOfServiceTitle": "Terms of Service",
+    "termsOfServiceContent": "Welcome to Abdul Rahman Sultan and Sons! These Terms of Service ('Terms') govern your use of our website and services. By accessing or using our services, you agree to comply with these Terms.\n\n1. Use of Services: You must use our services responsibly and comply with all applicable laws and regulations.\n2. Account Registration: You are responsible for maintaining the confidentiality of your account credentials.\n3. Privacy: Your data will be handled according to our Privacy Policy.\n4. Termination: We reserve the right to suspend or terminate accounts that violate these Terms.\n5. Changes: We may update these Terms from time to time. Continued use of the services implies acceptance of the updated Terms.\n\nPlease read these Terms carefully. By clicking 'Accept' or using our services, you agree to be bound by them.",
+    "privacyPolicyTitle": "Privacy Policy",
+    "privacyPolicyContent": "Welcome to Abdul Rahman Sultan and Sons! Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your personal data when you use our website and services.\n\n1. Data Collection: We collect information you provide during registration and while using our services.\n2. Data Usage: We use your data to provide and improve our services.\n3. Data Sharing: We do not share your personal information with third parties except as required by law.\n4. Data Security: We implement reasonable measures to protect your data.\n5. Updates: We may update this Privacy Policy from time to time. Continued use of our services indicates your acceptance of the updated policy.",
+    "accepted_terms_label": "I agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>",
+    "terms_of_service": "Terms of Service",
+    "privacy_policy": "Privacy Policy"
 
 }

@@ -258,6 +258,7 @@ def fetch_orders_task(self, client_id: int = None, full_fetch: bool = False):
             return
 
         consumer_key = client.consumer_key
+        
         consumer_secret = client.consumer_secret
         if not consumer_key or not consumer_secret:
             print(f"⚠️ Decrypted credentials missing for {client.email}. Skipping task.")

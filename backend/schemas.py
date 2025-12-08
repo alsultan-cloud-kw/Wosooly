@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional,List
+from pydantic import BaseModel, Field
+from typing import Optional,List, Dict
 from datetime import datetime
 
 class LoginRequest(BaseModel):
@@ -10,9 +10,12 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
     client_name: Optional[str] = None
+    company_details: Optional[str] =None
     store_url: Optional[str] = None
     consumer_key: Optional[str] = None
     consumer_secret: Optional[str] = None
+    accepted_terms: bool = Field(..., description="User must accept terms and privacy policy")
+    plan: Optional[str] = None
 
 class ProductSchema(BaseModel):
     id: int
@@ -59,7 +62,6 @@ class CustomerClassificationResponse(BaseModel):
     churn_risk: Optional[str]
     segment: Optional[str]
 
-
 class ProductItem(BaseModel):
     product_id: Optional[int]
     product_name: Optional[str]
@@ -102,3 +104,58 @@ class CustomerDetailsResponse(BaseModel):
     orders: List[OrderDetail]
     top_products: List[ProductSummary]
     all_products_summary: List[ProductSummary]
+
+class WhatsAppCredentialsInput(BaseModel):
+    phoneNumberId: Optional[str]
+    wabaId: Optional[str]
+    accessToken: Optional[str]
+
+class WhatsAppTemplateBase(BaseModel):
+    template_name: str
+    category: str | None = None
+    language: str
+    status: str
+    body: str | None = None
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class SendMessageRequest(BaseModel):
+    customers: List[int]
+    templates: List[str]
+    variables: Optional[Dict[int, List[str]]] = None
+
+class WooCommerceCredentialsRequest(BaseModel):
+    store_url: str
+    consumer_key: str
+    consumer_secret: str
+
+# Column Mapping Schemas
+class ColumnMappingRequest(BaseModel):
+    file_id: Optional[int] = None  # Optional: None for template/default mappings
+    analysis_type: str  # "order", "customer", "product"
+    mapping: Dict[str, str]  # {"model_field": "excel_column_name"}
+
+class ColumnMappingResponse(BaseModel):
+    id: int
+    file_id: Optional[int]
+    analysis_type: str
+    mapping: Dict[str, str]
+    created_at: datetime
+    updated_at: datetime
+    
+    model_config = {
+        "from_attributes": True
+    }
+
+class ModelFieldDefinition(BaseModel):
+    field_name: str
+    field_type: str
+    required: bool
+    description: str
+
+class ModelFieldsResponse(BaseModel):
+    customer: List[ModelFieldDefinition]
+    order: List[ModelFieldDefinition]
+    product: List[ModelFieldDefinition] 

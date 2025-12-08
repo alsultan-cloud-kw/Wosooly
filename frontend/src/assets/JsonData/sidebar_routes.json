@@ -20,13 +20,24 @@
         "icon": "bx bx-clipboard"
     },
     {
-        "key": "Messaging",
-        "route": "/messaging",
-        "icon": "bx bxs-chat"
+        "key": "Chat",
+        "route": "/chat",
+        "icon": "bx bxs-chat",
+        "premium": true,
+        "featureKey": "nl2sql"
     },
     {
-        "key": "logout",
-        "route": "/",
-        "icon": "bx bx-log-out"
+        "key": "Messaging",
+        "route": "/whatsapp",
+        "icon": "bx bxl-whatsapp",
+        "premium": true,
+        "featureKey": "advanced_analytics"
+    },
+    {
+        "key": "Competitor Analysis",
+        "route": "/competitorAnalysis",
+        "icon": "bx bx-analyse",
+        "premium": true,
+        "featureKey": "custom_reports"
     }
 ]

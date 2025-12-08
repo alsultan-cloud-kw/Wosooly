@@ -33,19 +33,19 @@ def get_customer_product_orders(customer_id: int, product_external_id: int, db: 
     response_data = function_get_customer_product_orders(db=db, customer_id=customer_id, product_external_id=product_external_id)
     return response_data
 
-# @router.get("/customer-classification", response_model=List[CustomerClassificationResponse])
-# def get_customer_classification(db: Session = Depends(get_db)):
+@router.get("/customer-classification", response_model=List[CustomerClassificationResponse])
+def get_customer_classification(db: Session = Depends(get_db)):
 
-#     response_data = function_get_customer_classification(db=db)
+    response_data = function_get_customer_classification(db=db)
 
-#     return response_data
+    return response_data
 
-# @router.get("/spending-customer-classification", response_model=List[CustomerClassificationResponse])
-# def get_spending_customer_classification(db: Session = Depends(get_db)):
+@router.get("/spending-customer-classification", response_model=List[CustomerClassificationResponse])
+def get_spending_customer_classification(db: Session = Depends(get_db)):
 
-#     response_data = function_get_spending_customer_classification_data(db=db)
+    response_data = function_get_spending_customer_classification_data(db=db)
 
-#     return response_data
+    return response_data
     
 @router.get("/full-customer-classification", response_model=List[CustomerClassificationResponse])
 def get_full_customer_classification(db: Session = Depends(get_db), current_client = Depends(get_current_client)):

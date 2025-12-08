@@ -2,15 +2,17 @@ from fastapi import APIRouter,FastAPI, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from database import get_db
-from models import Client, Base
+from models import Client, Base, Subscription, SubscriptionPlan
+from utils.subscription import get_available_features
 from utils.auth import get_current_client, hash_password, create_access_token, verify_password
 from typing import Optional
-from schemas import LoginRequest, RegisterRequest
+from schemas import LoginRequest, RegisterRequest, WooCommerceCredentialsRequest
 from tasks.fetch_orders import fetch_orders_task
 from datetime import datetime
 from celery.result import AsyncResult
 from celery.exceptions import OperationalError
 import time
+from datetime import timedelta
 
 router = APIRouter()
 
@@ -22,6 +24,13 @@ def register_client(
     """
     Register a new client and trigger initial full order sync.
     """
+    # --- Check if Terms & Privacy are accepted ---
+    if not request.accepted_terms:
+        raise HTTPException(
+            status_code=400,
+            detail="You must accept the Terms of Service and Privacy Policy."
+        )
+    
     # --- Extract fields from request body ---
     email = request.email
     password = request.password
@@ -35,13 +44,13 @@ def register_client(
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # --- Validate WooCommerce credentials are provided ---
-    if not store_url or not consumer_key or not consumer_secret:
-        raise HTTPException(
-            status_code=400, 
-            detail="WooCommerce credentials (store_url, consumer_key, consumer_secret) are required"
-        )
-
+    if request.store_url or request.consumer_key or request.consumer_secret:
+        if not (request.store_url and request.consumer_key and request.consumer_secret):
+            raise HTTPException(
+                status_code=400, 
+                detail="WooCommerce credentials must include store_url, consumer_key, and consumer_secret"
+            )
+            
     # --- Create new client ---
     new_client = Client(
         email=email,
@@ -49,7 +58,10 @@ def register_client(
         client_name=client_name,
         store_url=store_url,
         is_logged_in=True,
-        last_login_time=datetime.utcnow()
+        last_login_time=datetime.utcnow(),
+        accepted_terms=request.accepted_terms,
+        terms_accepted_at=datetime.utcnow(),
+        terms_version="1.0",
     )
 
     # --- Encrypt WooCommerce credentials (handled by model setters) ---
@@ -59,6 +71,37 @@ def register_client(
     db.add(new_client)
     db.commit()
     db.refresh(new_client)
+
+    # ------------------------------------------------------------------
+    # 🚀 CREATE SUBSCRIPTION FOR THE CLIENT
+    # ------------------------------------------------------------------
+    # selected_plan = request.plan or "Free"
+    # # Fetch the default subscription plan (e.g., "Standard")
+    # plan = db.query(SubscriptionPlan).filter(
+    #     SubscriptionPlan.name == selected_plan
+    # ).first()
+
+    # if not plan:
+    #     raise HTTPException(
+    #         status_code=500,
+    #         detail="Default subscription plan not found. Admin must create it first."
+    #     )
+
+    # # Calculate trial end date
+    # trial_end_date = datetime.utcnow() + timedelta(days=plan.trial_period_days)
+
+    # # Create subscription
+    # subscription = Subscription(
+    #     client_id=new_client.id,
+    #     plan_id=plan.id,
+    #     status="trial",
+    #     trial_end=trial_end_date,
+    #     current_period_end=trial_end_date,  # renewal after trial
+    # )
+
+    # db.add(subscription)
+    # db.commit()
+    # db.refresh(subscription)
 
     # --- Create JWT token ---
     access_token = create_access_token(
@@ -95,6 +138,10 @@ def register_client(
         "message": "Client registered successfully",
         "client_id": new_client.id,
         "email": new_client.email,
+        # "subscription_status": subscription.status,
+        # "plan_name": plan.name,
+        "available_features": get_available_features(new_client, db),
+        # "trial_end": subscription.trial_end.isoformat(),
         "access_token": access_token,
         "token_type": "bearer",
         "task_id": task_id,
@@ -139,6 +186,15 @@ def login_client(
     user.last_login_time = datetime.utcnow()
     db.commit()
 
+    # --- Fetch subscription info ---
+    subscription = db.query(Subscription).filter(Subscription.client_id == user.id).first()
+    plan_name = subscription.plan.name if subscription and subscription.plan else "Free"
+    trial_end = subscription.trial_end.isoformat() if subscription else None
+
+    # Optional: you can define available features per plan here
+    available_features = get_available_features(user, db)  # implement this based on plan
+
+
     # --- Create JWT token ---
     access_token = create_access_token(
         data={"sub": user.email, "user_id": user.id}
@@ -163,6 +219,9 @@ def login_client(
         "user_id": user.id,
         "email": user.email,
         "client_name": user.client_name,
+        "plan_name": plan_name,
+        "trial_end": trial_end,
+        "available_features": available_features,
     }
 
 @router.post("/logout")
@@ -179,4 +238,141 @@ def logout_client(
     return {
         "message": "Logged out successfully",
         "email": current_user.email
+    }
+
+@router.post("/cancel_subscription")
+def cancel_subscription(
+    current_user: Client = Depends(get_current_client),
+    db: Session = Depends(get_db),
+):
+    """
+    Cancel the user's subscription.
+    - If in trial: cancel immediately.
+    - If active: stop renewal but allow access until period end.
+    """
+    subscription = current_user.subscription
+
+    if not subscription:
+        raise HTTPException(status_code=400, detail="No subscription found.")
+
+    # Already canceled
+    if subscription.status == "canceled":
+        return {"message": "Subscription is already canceled."}
+
+    now = datetime.utcnow()
+
+    # --- If user is still in trial ---
+    if subscription.status == "trial":
+        subscription.status = "canceled"
+        subscription.current_period_end = subscription.trial_end  # trial end
+        subscription.updated_at = now
+        db.commit()
+        db.refresh(subscription)
+
+        return {
+            "message": "Trial subscription canceled successfully.",
+            "status": subscription.status,
+            "trial_end": subscription.trial_end
+        }
+
+    # --- If user is on a paid active plan ---
+    if subscription.status == "active":
+        subscription.status = "canceled"
+        # Keep access until renewal date
+        subscription.updated_at = now
+        db.commit()
+        db.refresh(subscription)
+
+        return {
+            "message": "Subscription canceled. You will retain access until the end of your billing period.",
+            "status": subscription.status,
+            "current_period_end": subscription.current_period_end
+        }
+
+    # Other statuses
+    return {
+        "message": f"Subscription in '{subscription.status}' status cannot be canceled.",
+        "status": subscription.status
+    }
+
+@router.get("/subscription-info")
+def get_subscription_info(
+    current_user: Client = Depends(get_current_client),
+    db: Session = Depends(get_db),
+):
+    """
+    Get comprehensive subscription information for the current user,
+    including available features.
+    """
+    from utils.subscription import get_subscription_info
+    
+    return get_subscription_info(current_user, db)
+
+@router.get("/available-features")
+def get_available_features_of_client(
+    current_user: Client = Depends(get_current_client),
+    db: Session = Depends(get_db),
+):
+    """
+    Get a list of all features available to the current user based on their subscription.
+    """
+    
+    
+    return {
+        "features": get_available_features(current_user, db)
+    }
+
+@router.post("/woocommerce-credentials")
+def update_woocommerce_credentials(
+    credentials: WooCommerceCredentialsRequest,
+    current_user: Client = Depends(get_current_client),
+    db: Session = Depends(get_db),
+):
+    """
+    Update WooCommerce credentials for the current authenticated user.
+    Credentials are automatically encrypted before storage.
+    """
+    # Validate that all required fields are provided
+    if not credentials.store_url or not credentials.consumer_key or not credentials.consumer_secret:
+        raise HTTPException(
+            status_code=400,
+            detail="All fields (store_url, consumer_key, consumer_secret) are required"
+        )
+    
+    # Validate URL format
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(credentials.store_url)
+        if not parsed.scheme or not parsed.netloc:
+            raise ValueError("Invalid URL format")
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid store URL format. Please provide a valid URL (e.g., https://yourstore.com)"
+        )
+    
+    # Update credentials (encryption is handled by model setters)
+    current_user.store_url = credentials.store_url
+    current_user.consumer_key = credentials.consumer_key
+    current_user.consumer_secret = credentials.consumer_secret
+    
+    # Update sync status to PENDING to trigger a new sync
+    current_user.sync_status = "PENDING"
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    # Optionally trigger a sync task
+    try:
+        from tasks.fetch_orders import fetch_orders_task
+        fetch_orders_task.delay(client_id=current_user.id, full_fetch=True)
+        print(f"✅ Triggered full sync for client {current_user.id} after credential update")
+    except Exception as e:
+        # Log but don't fail the request - periodic task will handle it
+        print(f"⚠️ Could not enqueue fetch_orders_task: {e}")
+    
+    return {
+        "message": "WooCommerce credentials updated successfully",
+        "store_url": current_user.store_url,
+        "sync_status": current_user.sync_status
     }

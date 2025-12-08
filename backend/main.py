@@ -5,12 +5,9 @@ from routers import auth
 import redis
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-from routers import orders
-from routers import products
-from routers import customers
+from routers import orders, products, customers, nl2sql, whatsapp, sync, upload, dashboard_excel, excel_products, excel_customers, excel_orders, woocommerce
 
 load_dotenv()
-
 app = FastAPI()
 
 # CORS configuration
@@ -47,10 +44,19 @@ app.include_router(auth.router)
 app.include_router(orders.router)
 app.include_router(products.router)
 app.include_router(customers.router)
+app.include_router(nl2sql.router)
+app.include_router(whatsapp.router)
+app.include_router(sync.router)
+app.include_router(upload.router)
+app.include_router(woocommerce.router)
+app.include_router(dashboard_excel.router)
+app.include_router(excel_products.router)
+app.include_router(excel_customers.router)
+app.include_router(excel_orders.router)
+
 # app.include_router(ai_chat.router)
 # app.include_router(whatsapp_messaging.router)
 # app.include_router(forecast_api.router)
-
 
 @app.get("/health")
 def health_check():

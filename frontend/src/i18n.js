@@ -16,7 +16,9 @@ import ordersAnalysisAR from '../public/locales/ar/ordersAnalysis.json';
 import registerEN from '../public/locales/en/register.json';
 import registerAR from '../public/locales/ar/register.json';
 import signinEN from '../public/locales/en/signin.json';
-import signinAR from '../public/locales/ar/signin.json'
+import signinAR from '../public/locales/ar/signin.json';
+import subscriptionEN from '../public/locales/en/subscription.json';
+import subscriptionAR from '../public/locales/ar/subscription.json'
 
 i18next
   .use(initReactI18next) // Passing i18n instance to react-i18next
@@ -30,7 +32,8 @@ i18next
         customerAnalysis: customerAnalysisEN,
         ordersAnalysis: ordersAnalysisEN,
         register: registerEN,
-        signin: signinEN
+        signin: signinEN,
+        subscription: subscriptionEN
         
       },
 
@@ -42,17 +45,18 @@ i18next
         customerAnalysis: customerAnalysisAR,
         ordersAnalysis: ordersAnalysisAR,
         register: registerAR,
-        signin: signinAR
+        signin: signinAR,
+        subscription: subscriptionAR
 
       },
 
     },
-    lng: 'en', // Default language
+    lng: localStorage.getItem('language') || 'en',
     fallbackLng: 'en', // Fallback language
     interpolation: {
       escapeValue: false, // React already does escaping
     },
-    ns: ['landing_top','landing', 'side_bar', 'productAnalysis', 'customerAnalysis', 'ordersAnalysis', 'register', 'signin'], // List of namespaces
+    ns: ['landing_top','landing', 'side_bar', 'productAnalysis', 'customerAnalysis', 'ordersAnalysis', 'register', 'signin', 'subscription'], // List of namespaces
     defaultNS: 'landing', // Default namespace to use
   });
 

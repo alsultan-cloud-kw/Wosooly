@@ -1,37 +1,38 @@
-/* Tailwind & Animation Layer Imports */
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
 
-/* Ensure dark mode works via the .dark class */
 @custom-variant dark (&:is(.dark *));
 
-/* === Base Theme Variables (Light Mode) === */
+/* Tailwind CSS Variables - Scoped to avoid conflicts with dashboard variables */
 :root {
   --background: oklch(0.99 0 0);
-  --foreground: oklch(0.15 0 0);
+  --foreground: oklch(0.15 0.01 270);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
+  --card-foreground: oklch(0.15 0.01 270);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.35 0.15 265);
+  --popover-foreground: oklch(0.15 0.01 270);
+  --primary: oklch(0.5 0.22 260);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.15 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.55 0 0);
-  --accent: oklch(0.55 0.2 265);
+  --secondary: oklch(0.6 0.2 320);
+  --secondary-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.96 0.005 270);
+  --muted-foreground: oklch(0.5 0.01 270);
+  --accent: oklch(0.55 0.24 200);
   --accent-foreground: oklch(0.99 0 0);
+  --success: oklch(0.6 0.2 145);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.7 0.2 70);
+  --warning-foreground: oklch(0.15 0.01 270);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.9 0 0);
-  --ring: oklch(0.35 0.15 265);
-  --chart-1: oklch(0.55 0.2 265);
-  --chart-2: oklch(0.65 0.18 240);
-  --chart-3: oklch(0.45 0.15 280);
-  --chart-4: oklch(0.7 0.15 220);
-  --chart-5: oklch(0.6 0.18 250);
+  --border: oklch(0.92 0.005 270);
+  --input: oklch(0.92 0.005 270);
+  --ring: oklch(0.5 0.22 260);
+  --chart-1: oklch(0.55 0.24 200);
+  --chart-2: oklch(0.6 0.2 320);
+  --chart-3: oklch(0.6 0.2 145);
+  --chart-4: oklch(0.7 0.2 70);
+  --chart-5: oklch(0.65 0.22 340);
   --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -41,65 +42,37 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  
-  /* Dashboard Theme Variables (from index.css) */
-  --main-bg: #ffffff;
-  --second-bg: #fafafb;
-  --txt-color: #455560;
-  --txt-white: #fff;
-  --main-color: #349eff;
-  --second-color: #62b4ff;
-  --box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-  --main-bg-light: #ffffff;
-  --second-bg-light: #fafafb;
-  --txt-color-light: #455560;
-  --box-shadow-light: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-  --main-bg-dark: #2d2d2d;
-  --second-bg-dark: #202020;
-  --txt-color-dark: #bbbbbb;
-  --box-shadow-dark: rgba(0, 0, 0, 0.2) 0px 5px 10px;
-  --main-color-blue: #349eff;
-  --second-color-blue: #62b4ff;
-  --main-color-red: #fb0b12;
-  --second-color-red: #ff4a6b;
-  --main-color-cyan: #10d4d2;
-  --second-color-cyan: #2ae9e6;
-  --main-color-green: #019707;
-  --second-color-green: #4caf50;
-  --main-color-orange: #d68102;
-  --second-color-orange: #fca11a;
-  --sidebar-width: 300px;
-  --border-radius: 15px;
-  --topnav-height: 110px;
-  --transition-cubic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* === Dark Mode Theme === */
 .dark {
-  --background: oklch(0.1 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.65 0.2 265);
-  --primary-foreground: oklch(0.1 0 0);
-  --secondary: oklch(0.2 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.55 0.2 265);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.2 0 0);
-  --input: oklch(0.2 0 0);
-  --ring: oklch(0.65 0.2 265);
-  --chart-1: oklch(0.65 0.2 265);
-  --chart-2: oklch(0.7 0.18 240);
-  --chart-3: oklch(0.55 0.15 280);
-  --chart-4: oklch(0.75 0.15 220);
-  --chart-5: oklch(0.68 0.18 250);
+  --background: oklch(0.1 0.01 270);
+  --foreground: oklch(0.95 0.005 270);
+  --card: oklch(0.13 0.01 270);
+  --card-foreground: oklch(0.95 0.005 270);
+  --popover: oklch(0.13 0.01 270);
+  --popover-foreground: oklch(0.95 0.005 270);
+  --primary: oklch(0.65 0.24 260);
+  --primary-foreground: oklch(0.1 0.01 270);
+  --secondary: oklch(0.7 0.22 320);
+  --secondary-foreground: oklch(0.1 0.01 270);
+  --muted: oklch(0.18 0.01 270);
+  --muted-foreground: oklch(0.65 0.01 270);
+  --accent: oklch(0.65 0.26 200);
+  --accent-foreground: oklch(0.1 0.01 270);
+  --success: oklch(0.7 0.22 145);
+  --success-foreground: oklch(0.1 0.01 270);
+  --warning: oklch(0.75 0.22 70);
+  --warning-foreground: oklch(0.1 0.01 270);
+  --destructive: oklch(0.6 0.25 27);
+  --destructive-foreground: oklch(0.95 0.005 270);
+  --border: oklch(0.22 0.01 270);
+  --input: oklch(0.22 0.01 270);
+  --ring: oklch(0.65 0.24 260);
+  --chart-1: oklch(0.65 0.26 200);
+  --chart-2: oklch(0.7 0.22 320);
+  --chart-3: oklch(0.7 0.22 145);
+  --chart-4: oklch(0.75 0.22 70);
+  --chart-5: oklch(0.72 0.24 340);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -110,8 +83,10 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-/* === Tailwind Theme Mapping === */
 @theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -126,6 +101,10 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -150,156 +129,39 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* === Dashboard Theme Styles === */
-/* .dashboard-theme { */
-  /* Dashboard theme variables are now in :root above */
-/* } */
-
-/* .dashboard-theme * {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-} */
-
-/* .dashboard-theme body {
-  font-family: "Roboto", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.7px;
-} */
-
-/* .dashboard-theme a {
-  text-decoration: none;
-  color: unset;
-} */
-
-/* .dashboard-theme a:hover {
-  color: var(--main-color);
-} */
-
-/* .dashboard-theme button {
-  cursor: pointer;
-  border: 0;
-  outline: 0;
-  color: var(--txt-color);
-} */
-
-/* .dashboard-theme ul {
-  list-style-type: none;
-} */
-
-/* .dashboard-theme input {
-  border: 2px solid transparent;
-  outline: 0;
-} */
-
-/* .dashboard-theme input:focus {
-  border: 2px solid var(--main-color);
-} */
-
-/* .dashboard-theme .page-header {
-  margin-bottom: 40px;
-  text-transform: capitalize;
-} */
-
-/* .dashboard-theme .card {
-  padding: 30px;
-  margin-bottom: 30px;
-  background-color: var(--main-bg);
-  box-shadow: var(--box-shadow);
-  border-radius: var(--border-radius);
-} */
-
-/* .dashboard-theme .full-height {
-  height: 100%;
-} */
-
-/* .dashboard-theme .card.full-height {
-  height: calc(100% - 30px);
-} */
-
-/* .dashboard-theme .card__header {
-  text-transform: capitalize;
-} */
-
-/* .dashboard-theme .card > div ~ div {
-  margin-top: 30px;
-} */
-
-/* .dashboard-theme .card__footer {
-  text-align: center;
-  text-transform: capitalize;
-} */
-
-/* .dashboard-theme .light-background {
-  background-color: var(--main-bg-light);
-  color: #000;
-} */
-
-/* .dashboard-theme .dark-background {
-  background-color: var(--main-bg-dark);
-  color: #fff;
-} */
-
-/* .dashboard-theme .blue-color {
-  background-color: var(--main-color-blue);
-  color: #fff;
-} */
-
-/* .dashboard-theme .red-color {
-  background-color: var(--main-color-red);
-  color: #fff;
-} */
-
-/* .dashboard-theme .cyan-color {
-  background-color: var(--main-color-cyan);
-  color: #fff;
-} */
-
-/* .dashboard-theme .green-color {
-  background-color: var(--main-color-green);
-  color: #fff;
-} */
-
-/* .dashboard-theme .orange-color {
-  background-color: var(--main-color-orange);
-  color: #fff;
-} */
-
-/* .dashboard-theme .legacy {
-  padding: 20px;
-} */
-
-/* .dashboard-theme .row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-} */
-
-/* .dashboard-theme .col-4 {
-  flex: 0 0 33.333%;
-} */
-
-/* .dashboard-theme .col-6 {
-  flex: 0 0 50%;
-} */
-
-/* .dashboard-theme .col-8 {
-  flex: 0 0 66.666%;
-} */
-
-/* === Base Layer (Safe with legacy index.css) === */
 @layer base {
-  /* Apply Tailwind's defaults only once */
+  /* Apply Tailwind base styles globally - dashboard styles will override where needed */
   * {
     @apply border-border outline-ring/50;
   }
-
-  /* Basic Tailwind body styles for the landing page only */
+  
+  /* Apply background and text colors - dashboard layout will override */
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, oklch(0.5 0.22 260) 0%, oklch(0.55 0.24 200) 100%);
   }
 
-  /* Avoid styling <a>, <button>, etc. globally — handled by components */
+  .gradient-secondary {
+    background: linear-gradient(135deg, oklch(0.6 0.2 320) 0%, oklch(0.65 0.22 340) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, oklch(0.55 0.24 200) 0%, oklch(0.6 0.2 145) 100%);
+  }
+
+  .gradient-success {
+    background: linear-gradient(135deg, oklch(0.6 0.2 145) 0%, oklch(0.7 0.2 70) 100%);
+  }
+
+  .bg-gradient-mesh {
+    background: radial-gradient(at 0% 0%, oklch(0.5 0.22 260 / 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, oklch(0.55 0.24 200 / 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, oklch(0.6 0.2 320 / 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, oklch(0.6 0.2 145 / 0.15) 0px, transparent 50%);
+  }
 }

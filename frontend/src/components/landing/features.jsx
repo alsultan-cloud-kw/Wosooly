@@ -1,88 +1,100 @@
 import React from "react";
-import { Card } from "../ui/card";
 import {
-  BarChart3,
-  Zap,
-  Shield,
+  ShoppingCart,
+  FileSpreadsheet,
   TrendingUp,
   Users,
   Package,
+  Lock,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { Trans } from "react-i18next"
 
-export function Features() {
+import {Card, CardContent, CardDescription, CardHeader, CardTitle}  from "../ui/card";
 
-  const {t, i18n} = useTranslation("landing_top")
+const features = [
+  {
+    icon: ShoppingCart,
+    title: "WooCommerce Integration",
+    description:
+      "Securely connect your WooCommerce store using API keys. Analyze orders, customers, and products in real-time.",
+    gradient: "gradient-primary",
+  },
+  {
+    icon: FileSpreadsheet,
+    title: "Excel Sheet Analysis",
+    description:
+      "Upload your sales Excel files and map column names. Get instant insights from your existing data.",
+    gradient: "gradient-secondary",
+  },
+  {
+    icon: TrendingUp,
+    title: "Order Analytics",
+    description:
+      "Track revenue trends, order patterns, and sales performance with comprehensive order analysis.",
+    gradient: "gradient-accent",
+  },
+  {
+    icon: Users,
+    title: "Customer Insights",
+    description:
+      "Understand customer behavior, lifetime value, and purchasing patterns to boost retention.",
+    gradient: "gradient-success",
+  },
+  {
+    icon: Package,
+    title: "Product Performance",
+    description:
+      "Identify top-selling products, inventory trends, and optimize your product catalog.",
+    gradient: "bg-gradient-to-br from-warning to-warning",
+  },
+  {
+    icon: Lock,
+    title: "Secure & Private",
+    description:
+      "Your data is encrypted and never shared. We follow industry-best security practices.",
+    gradient: "bg-gradient-to-br from-chart-5 to-chart-5",
+  },
+];
 
-  const features = [
-    {
-      icon: BarChart3,
-      title: t("Real-Time Analytics"),
-      description:
-        t("Monitor your store performance with live data updates and instant insights into sales, orders, and customer behavior."),
-    },
-    {
-      icon: Zap,
-      title: t("Instant Setup"),
-      description:
-        t("Connect your WooCommerce store in under 2 minutes. Just enter your credentials and start analyzing immediately."),
-    },
-    {
-      icon: Shield,
-      title: t("Secure & Private"),
-      description:
-        t("Enterprise-grade security with encrypted connections. Your data is protected with industry-leading standards."),
-    },
-    {
-      icon: TrendingUp,
-      title: t("Growth Insights"),
-      description:
-        t("Discover opportunities to increase revenue with AI-powered recommendations and trend analysis."),
-    },
-    {
-      icon: Users,
-      title: t("Customer Intelligence"),
-      description:
-        t("Understand your customers better with detailed segmentation, behavior patterns, and lifetime value analysis."),
-    },
-    {
-      icon: Package,
-      title: t("Product Performance"),
-      description:
-        t("Track which products drive the most revenue, identify slow movers, and optimize your inventory."),
-    },
-  ];
-
+export default function Features() {
   return (
-    <section id="features" className="py-20 md:py-32">
-      <div className="container">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-balance">
-        <Trans i18nKey="everythingYouNeed" ns="landing_top">
-          Everything You Need to <span className="text-primary">Grow Your Store</span>
-        </Trans>
-        </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            {t("Powerful analytics tools designed specifically for WooCommerce store owners who want to make data-driven decisions.")}
+    <section id="features" className="py-20 md:py-28 bg-muted/30">
+      <div className="container mx-auto px-4">
+        <div className="mx-auto max-w-2xl text-center mb-16">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl mb-4 text-balance">
+            Everything You Need to{" "}
+            <span className="bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent">
+              Analyze Your Data
+            </span>
+          </h2>
+          <p className="text-lg text-muted-foreground text-pretty leading-relaxed">
+            Powerful features designed to help you understand your business
+            better
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Card
               key={index}
-              className="p-6 hover:shadow-lg transition-shadow rounded-2xl"
+              className="border-border bg-card hover:shadow-2xl hover:scale-105 transition-all duration-300 group overflow-hidden relative"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
-                <feature.icon className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground text-pretty leading-relaxed">
-                {feature.description}
-              </p>
+              <div
+                className={`absolute inset-0 ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity`}
+              />
+              <CardHeader className="relative">
+                <div
+                  className={`inline-flex h-14 w-14 items-center justify-center rounded-xl ${feature.gradient} mb-4 shadow-lg`}
+                >
+                  <feature.icon className="h-7 w-7 text-white" />
+                </div>
+                <CardTitle className="text-xl">{feature.title}</CardTitle>
+              </CardHeader>
+
+              <CardContent className="relative">
+                <CardDescription className="text-base leading-relaxed">
+                  {feature.description}
+                </CardDescription>
+              </CardContent>
             </Card>
           ))}
         </div>
