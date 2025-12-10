@@ -43,7 +43,6 @@ export default function RegisterPage() {
 
   console.log("Selected plan:", plan);
 
-
   // refs to hold interval IDs so we can clear them reliably
   const taskIntervalRef = useRef(null);
   const syncIntervalRef = useRef(null);

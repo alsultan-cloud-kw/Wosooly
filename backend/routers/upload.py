@@ -5,7 +5,8 @@ from sqlalchemy import desc
 from database import get_db
 from models import Client, UploadedFile, FileColumn, FileRow, ColumnMapping
 from utils.auth import get_current_client
-from schemas import ColumnMappingRequest, ColumnMappingResponse, ModelFieldsResponse, ModelFieldDefinition
+from schemas import ColumnMappingRequest, ColumnMappingResponse, ModelFieldsResponse, ModelFieldDefinition, AIMappingResponse, AIMappingSuggestion
+from utils.ai_column_mapper import AIColumnMapper
 import cloudinary
 import cloudinary.uploader
 import pandas as pd
@@ -299,6 +300,9 @@ async def upload_file(
 
         db.commit()
 
+        # Optionally trigger auto-mapping (can be done asynchronously or on-demand)
+        # For now, we'll let the frontend call the auto-map endpoint separately
+        
         return {
             "message": "File uploaded successfully",
             "file_id": uploaded.id,
@@ -313,7 +317,7 @@ async def upload_file(
         logger.error("Upload error:", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
-@router.get("/uploaded-files")
+@router.get(f"/uploaded-files")
 def get_uploaded_files(
     current_user: Client = Depends(get_current_client),
     db: Session = Depends(get_db)
@@ -340,6 +344,79 @@ def get_uploaded_files(
         ]
     }
 
+@router.post("/auto-map-columns/{file_id}", response_model=AIMappingResponse)
+def auto_map_columns(
+    file_id: int,
+    current_client: Client = Depends(get_current_client),
+    db: Session = Depends(get_db)
+):
+    """
+    Automatically map Excel columns to canonical fields using AI.
+    Returns suggested mappings with confidence scores for customer, order, and product analysis types.
+    """
+    # Validate file_id
+    if not file_id or file_id <= 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid file_id: {file_id}. File ID must be a positive integer."
+        )
+    
+    # Verify file belongs to client
+    file = (
+        db.query(UploadedFile)
+        .filter(
+            UploadedFile.id == file_id,
+            UploadedFile.client_id == current_client.id
+        )
+        .first()
+    )
+    
+    if not file:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"File with ID {file_id} not found or does not belong to your account."
+        )
+    
+    try:
+        # Initialize AI mapper
+        mapper = AIColumnMapper()
+        
+        # Get auto-mappings for all analysis types
+        ai_mappings = mapper.auto_map_file(
+            db=db,
+            file_id=file_id,
+            analysis_types=["customer", "order", "product"]
+        )
+        
+        # Format for response
+        response_data = {
+            "customer": [],
+            "order": [],
+            "product": [],
+            "file_id": file_id
+        }
+        
+        for analysis_type in ["customer", "order", "product"]:
+            if analysis_type in ai_mappings:
+                for canonical_field, mapping_data in ai_mappings[analysis_type].items():
+                    if mapping_data.get("excel_column"):
+                        response_data[analysis_type].append(
+                            AIMappingSuggestion(
+                                canonical_field=canonical_field,
+                                excel_column=mapping_data["excel_column"],
+                                confidence=mapping_data.get("confidence", 0.5),
+                                suggested_by="ai"
+                            )
+                        )
+        
+        return AIMappingResponse(**response_data)
+    except Exception as e:
+        logger.error(f"Error in AI column mapping for file_id {file_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating AI mappings: {str(e)}"
+        )
+
 @router.get("/uploaded-files/{file_id}")
 def get_file_details(
     file_id: int,
@@ -349,13 +426,26 @@ def get_file_details(
     """
     Get detailed information about a specific uploaded file including columns.
     """
+    # First check if file exists at all
+    file_exists = db.query(UploadedFile).filter(UploadedFile.id == file_id).first()
+    
+    if not file_exists:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"File with ID {file_id} does not exist."
+        )
+    
+    # Then check if it belongs to the current user
     file = db.query(UploadedFile).filter(
         UploadedFile.id == file_id,
         UploadedFile.client_id == current_user.id
     ).first()
     
     if not file:
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(
+            status_code=403, 
+            detail=f"File with ID {file_id} exists but does not belong to your account."
+        )
     
     columns = db.query(FileColumn).filter(FileColumn.file_id == file_id).all()
     rows = db.query(FileRow).filter(FileRow.file_id == file_id).limit(10).all()
@@ -584,30 +674,6 @@ def get_model_fields():
     
 #     return mappings
 
-@router.get("/column-mapping/{file_id}", response_model=List[ColumnMappingResponse])
-def get_column_mappings(
-    file_id: int,
-    current_user: Client = Depends(get_current_client),
-    db: Session = Depends(get_db)
-):
-    """
-    Get all column mappings for a specific file.
-    """
-    # Verify file belongs to current user
-    file = db.query(UploadedFile).filter(
-        UploadedFile.id == file_id,
-        UploadedFile.client_id == current_user.id
-    ).first()
-    
-    if not file:
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    mappings = db.query(ColumnMapping).filter(
-        ColumnMapping.file_id == file_id
-    ).all()
-    
-    return mappings
-
 @router.get("/column-mapping/default", response_model=List[ColumnMappingResponse])
 def get_default_column_mappings(
     current_user: Client = Depends(get_current_client),
@@ -636,8 +702,9 @@ def get_default_column_mappings(
         .first()
     )
 
+    # If no files exist, return empty list instead of error (for template mode)
     if not latest_file:
-        raise HTTPException(400, "No uploaded files found for this user to attach mapping.")
+        return []
 
     file_id = latest_file.id
 
@@ -678,6 +745,31 @@ def get_default_column_mappings(
         db.commit()
 
     # Return the default mappings
+    return mappings
+
+@router.get("/column-mapping/{file_id}", response_model=List[ColumnMappingResponse])
+def get_column_mappings(
+    file_id: int,
+    current_user: Client = Depends(get_current_client),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all column mappings for a specific file.
+    Note: This route must come AFTER /column-mapping/default to avoid route conflicts.
+    """
+    # Verify file belongs to current user
+    file = db.query(UploadedFile).filter(
+        UploadedFile.id == file_id,
+        UploadedFile.client_id == current_user.id
+    ).first()
+    
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    mappings = db.query(ColumnMapping).filter(
+        ColumnMapping.file_id == file_id
+    ).all()
+    
     return mappings
 
 @router.post("/column-mapping", response_model=ColumnMappingResponse)

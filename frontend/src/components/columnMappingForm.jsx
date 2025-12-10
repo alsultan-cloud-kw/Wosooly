@@ -1,22 +1,26 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Button } from "./ui/button"
-import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react"
+import { Plus, Trash2, Sparkles, Loader2, Wand2, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 import api from "../../api_config"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
 
 export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, selectedAnalyses = [], onMappingSubmit }) {
   
-  const [rows, setRows] = useState([{ id: 1, columnName: "", analysisField: "" }])
+  const [rows, setRows] = useState([{ id: 1, columnName: "", analysisField: "", suggestedBy: "manual" }])
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [allModelFields, setAllModelFields] = useState([])
   const [availableColumns, setAvailableColumns] = useState([])
+  const [aiSuggestions, setAiSuggestions] = useState(null)
+  const [loadingAI, setLoadingAI] = useState(false)
+  const [showAISuggestions, setShowAISuggestions] = useState(true)
+  const aiSuggestionsLoadedRef = useRef(false) // Prevent multiple loads
 
   const navigate = useNavigate()
   // Fetch model fields and file columns on mount
@@ -24,6 +28,10 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
     const fetchData = async () => {
       try {
         setFetching(true)
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log("ColumnMappingForm - fileId:", fileId, "isTemplateMode:", isTemplateMode)
+        }
         
         // Always fetch model fields
         const fieldsResponse = await api.get("/model-fields")
@@ -68,7 +76,8 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
               fileInfo.columns.slice(0, 5).map((col, idx) => ({
                 id: idx + 1,
                 columnName: col.name,
-                analysisField: ""
+                analysisField: "",
+                suggestedBy: "manual"
               }))
             )
           }
@@ -93,17 +102,33 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
                 allMappedRows.push({
                   id: allMappedRows.length + 1,
                   columnName: excelColumn,
-                  analysisField: modelField
+                  analysisField: modelField,
+                  suggestedBy: "manual"
                 })
               })
             })
             if (allMappedRows.length > 0) {
               setRows(allMappedRows)
             }
+          } else if (fileId && !isTemplateMode && !aiSuggestionsLoadedRef.current) {
+            // No existing mappings - try AI auto-mapping (only if not already loaded)
+            if (process.env.NODE_ENV === 'development') {
+              console.log("No existing mappings found, triggering AI auto-mapping for fileId:", fileId)
+            }
+            // Only call if fileId is a valid number
+            if (typeof fileId === 'number' && fileId > 0) {
+              loadAISuggestions(fileId)
+            }
           }
         } catch (mappingErr) {
-          // No existing mappings, that's okay
-          console.log("No existing mappings found")
+          // No existing mappings, that's okay - this is expected for new files
+          // Only trigger AI if we have a valid fileId and haven't loaded yet
+          if (fileId && !isTemplateMode && typeof fileId === 'number' && fileId > 0 && !aiSuggestionsLoadedRef.current) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log("Triggering AI auto-mapping for fileId:", fileId)
+            }
+            loadAISuggestions(fileId)
+          }
         }
         
       } catch (err) {
@@ -119,17 +144,309 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
 
     fetchData()
   }, [fileId, fileInfo, isTemplateMode])
+  
+  // Reset AI suggestions loaded flag when fileId changes
+  useEffect(() => {
+    aiSuggestionsLoadedRef.current = false
+    setAiSuggestions(null) // Clear suggestions when fileId changes
+  }, [fileId])
+
+  const loadAISuggestions = async (fileId) => {
+    // Validate fileId before proceeding
+    if (!fileId || isTemplateMode) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Skipping AI suggestions - fileId:", fileId, "isTemplateMode:", isTemplateMode)
+      }
+      if (!fileId) {
+        toast.warning("No File Selected", {
+          description: "Please upload a file first to use AI mapping suggestions.",
+        })
+      }
+      return
+    }
+    
+    // Ensure fileId is a valid number
+    const numericFileId = typeof fileId === 'string' ? parseInt(fileId, 10) : fileId
+    if (isNaN(numericFileId) || numericFileId <= 0) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Invalid fileId for AI suggestions:", fileId)
+      }
+      toast.error("Invalid File ID", {
+        description: "The file ID is invalid. Please upload a file first.",
+      })
+      return
+    }
+    
+    // Prevent multiple simultaneous loads for the same file
+    if (loadingAI || (aiSuggestionsLoadedRef.current && aiSuggestions)) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("AI suggestions already loaded or loading, skipping...")
+      }
+      return
+    }
+    
+    try {
+      setLoadingAI(true)
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Loading AI suggestions for fileId:", numericFileId)
+      }
+      const response = await api.post(`/auto-map-columns/${numericFileId}`)
+      if (process.env.NODE_ENV === 'development') {
+        console.log("AI suggestions response:", response.data)
+      }
+      setAiSuggestions(response.data)
+      aiSuggestionsLoadedRef.current = true
+      
+      // Auto-populate rows with AI suggestions (high confidence only)
+      if (response.data) {
+        // Use functional update to get current rows state
+        setRows(prevRows => {
+          const suggestedRows = []
+          const existingMappings = new Set() // Track existing mappings to avoid duplicates
+          let rowId = prevRows.length > 0 ? Math.max(...prevRows.map(r => r.id)) + 1 : 1
+          
+          // Helper function to create unique key for a mapping
+          const getMappingKey = (columnName, analysisField) => `${columnName}::${analysisField}`
+          
+          // Check existing rows to avoid duplicates
+          prevRows.forEach(row => {
+            if (row.columnName && row.analysisField) {
+              existingMappings.add(getMappingKey(row.columnName, row.analysisField))
+            }
+          })
+          
+          // Process all suggestions and deduplicate
+          const allSuggestions = [
+            ...(response.data.customer || []),
+            ...(response.data.order || []),
+            ...(response.data.product || [])
+          ]
+          
+          // Deduplicate by column+field combination, keeping highest confidence
+          const uniqueSuggestions = new Map()
+          allSuggestions.forEach(suggestion => {
+            if (suggestion.confidence >= 0.7 && suggestion.excel_column && suggestion.canonical_field) {
+              const key = getMappingKey(suggestion.excel_column, suggestion.canonical_field)
+              
+              // Skip if already exists in current rows
+              if (existingMappings.has(key)) {
+                return
+              }
+              
+              // Keep the suggestion with highest confidence if duplicate
+              const existing = uniqueSuggestions.get(key)
+              if (!existing || suggestion.confidence > existing.confidence) {
+                uniqueSuggestions.set(key, suggestion)
+              }
+            }
+          })
+          
+          // Convert to rows
+          uniqueSuggestions.forEach(suggestion => {
+            suggestedRows.push({
+              id: rowId++,
+              columnName: suggestion.excel_column,
+              analysisField: suggestion.canonical_field,
+              suggestedBy: "ai",
+              confidence: suggestion.confidence
+            })
+          })
+          
+          if (suggestedRows.length > 0) {
+            toast.success("AI Suggestions Loaded", {
+              description: `Found ${suggestedRows.length} unique high-confidence column mappings. Review and adjust as needed.`,
+              duration: 5000,
+            })
+            return [...prevRows, ...suggestedRows]
+          } else {
+            toast.info("AI Analysis Complete", {
+              description: "AI analyzed your file but found no new high-confidence mappings. You can still use the suggestions below.",
+              duration: 4000,
+            })
+            return prevRows
+          }
+        })
+      }
+    } catch (err) {
+      aiSuggestionsLoadedRef.current = false // Reset on error so user can retry
+      console.error("Error loading AI suggestions:", err)
+      const errorMsg = err?.response?.data?.detail || err?.response?.data?.message || err?.message || "Failed to load AI suggestions"
+      const statusCode = err?.response?.status
+      
+      if (statusCode === 422) {
+        toast.error("Invalid Request", {
+          description: "The file ID format is invalid. Please ensure you're accessing a valid file.",
+          duration: 5000,
+        })
+      } else if (statusCode === 404) {
+        toast.error("File Not Found", {
+          description: "The file was not found. Please upload a file first.",
+          duration: 5000,
+        })
+      } else if (statusCode === 400) {
+        toast.error("Bad Request", {
+          description: errorMsg,
+          duration: 5000,
+        })
+      } else {
+        toast.error("AI Mapping Error", {
+          description: errorMsg,
+          duration: 5000,
+        })
+      }
+    } finally {
+      setLoadingAI(false)
+    }
+  }
+  
+  // Deduplicate rows - use useMemo to compute unique rows for display
+  const uniqueRows = useMemo(() => {
+    const seen = new Map()
+    const unique = []
+    
+    rows.forEach(row => {
+      // Keep empty rows (no columnName or analysisField)
+      if (!row.columnName || !row.analysisField) {
+        unique.push(row)
+        return
+      }
+      
+      const key = `${row.columnName}::${row.analysisField}`
+      const existing = seen.get(key)
+      
+      // If duplicate, keep the one with higher confidence (if AI) or first one
+      if (existing) {
+        // If current row is AI with higher confidence, replace
+        if (row.suggestedBy === "ai" && row.confidence && 
+            (!existing.confidence || row.confidence > existing.confidence)) {
+          const index = unique.findIndex(r => r.id === existing.id)
+          if (index !== -1) {
+            unique[index] = row
+            seen.set(key, row)
+          }
+        }
+        // Otherwise, skip duplicate
+      } else {
+        unique.push(row)
+        seen.set(key, row)
+      }
+    })
+    
+    return unique
+  }, [rows])
+  
+  // Clean up duplicates in rows state when detected
+  useEffect(() => {
+    if (uniqueRows.length < rows.length) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Removing ${rows.length - uniqueRows.length} duplicate row(s)`)
+      }
+      // Update state with deduplicated rows
+      setRows(uniqueRows)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows.length]) // Only check when row count changes
+
+  const handleAcceptAllAI = () => {
+    if (!aiSuggestions) return
+    
+    const allSuggestedRows = []
+    const existingMappings = new Set()
+    // Use uniqueRows to get accurate count and avoid duplicates
+    let rowId = uniqueRows.length > 0 ? Math.max(...uniqueRows.map(r => r.id)) + 1 : 1
+    
+    // Helper function to create unique key for a mapping
+    const getMappingKey = (columnName, analysisField) => `${columnName}::${analysisField}`
+    
+    // Track existing rows from uniqueRows (deduplicated)
+    uniqueRows.forEach(row => {
+      if (row.columnName && row.analysisField) {
+        existingMappings.add(getMappingKey(row.columnName, row.analysisField))
+      }
+    })
+    
+    // Combine all AI suggestions
+    const allSuggestions = [
+      ...(aiSuggestions.customer || []),
+      ...(aiSuggestions.order || []),
+      ...(aiSuggestions.product || [])
+    ]
+    
+    // Deduplicate by column+field combination, keeping highest confidence
+    const uniqueSuggestions = new Map()
+    allSuggestions.forEach(suggestion => {
+      if (suggestion.excel_column && suggestion.canonical_field) {
+        const key = getMappingKey(suggestion.excel_column, suggestion.canonical_field)
+        
+        // Skip if already exists
+        if (existingMappings.has(key)) {
+          return
+        }
+        
+        // Keep the suggestion with highest confidence if duplicate
+        const existing = uniqueSuggestions.get(key)
+        if (!existing || suggestion.confidence > existing.confidence) {
+          uniqueSuggestions.set(key, suggestion)
+        }
+      }
+    })
+    
+    // Convert to rows
+    uniqueSuggestions.forEach(suggestion => {
+      allSuggestedRows.push({
+        id: rowId++,
+        columnName: suggestion.excel_column,
+        analysisField: suggestion.canonical_field,
+        suggestedBy: "ai",
+        confidence: suggestion.confidence
+      })
+    })
+    
+    if (allSuggestedRows.length > 0) {
+      setRows(prevRows => {
+        // Deduplicate against existing rows
+        const existingKeys = new Set()
+        prevRows.forEach(row => {
+          if (row.columnName && row.analysisField) {
+            existingKeys.add(`${row.columnName}::${row.analysisField}`)
+          }
+        })
+        
+        const newUniqueRows = allSuggestedRows.filter(newRow => {
+          if (!newRow.columnName || !newRow.analysisField) return true
+          const key = `${newRow.columnName}::${newRow.analysisField}`
+          return !existingKeys.has(key)
+        })
+        
+        if (newUniqueRows.length === 0) {
+          toast.info("No New Suggestions", {
+            description: "All AI suggestions are already in your mapping list.",
+          })
+          return prevRows
+        }
+        
+        return [...prevRows, ...newUniqueRows]
+      })
+      toast.success("AI Suggestions Applied", {
+        description: `Added ${allSuggestedRows.length} unique AI-suggested mappings.`,
+      })
+    } else {
+      toast.info("No New Suggestions", {
+        description: "All AI suggestions are already in your mapping list.",
+      })
+    }
+  }
 
   const handleAddRow = () => {
-    setRows([...rows, { id: Date.now(), columnName: "", analysisField: "" }])
+    setRows([...rows, { id: Date.now(), columnName: "", analysisField: "", suggestedBy: "manual" }])
   }
 
   const handleRemoveRow = (id) => {
-    setRows(rows.filter((r) => r.id !== id))
+    setRows(prevRows => prevRows.filter((r) => r.id !== id))
   }
 
   const handleChange = (id, field, value) => {
-    setRows(rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
+    setRows(prevRows => prevRows.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
   }
 
   const handleSubmit = async (e) => {
@@ -139,11 +456,14 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
     setSuccess("")
 
     try {
-      // Build a single mapping object from all rows
+      // Build a single mapping object from unique rows (deduplicated)
       const mapping = {}
-      rows.forEach((r) => {
+      uniqueRows.forEach((r) => {
         if (r.analysisField && r.columnName) {
-          mapping[r.analysisField] = r.columnName
+          // If duplicate field, keep the first one (or you could prefer AI suggestions)
+          if (!mapping[r.analysisField]) {
+            mapping[r.analysisField] = r.columnName
+          }
         }
       })
 
@@ -159,7 +479,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
       // Determine analysis type based on the fields being mapped
       // Check which category has the most mapped fields
       const fieldCategories = {}
-      rows.forEach((r) => {
+      uniqueRows.forEach((r) => {
         if (r.analysisField) {
           const field = allModelFields.find(f => f.key === r.analysisField)
           if (field) {
@@ -251,23 +571,259 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
         })}
       </div> */}
 
+      {/* AI Suggestions Banner - Always show when fileId exists */}
+      {fileId && !isTemplateMode && (
+        <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 shadow-md">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                  {loadingAI ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  ) : (
+                    <Wand2 className="h-5 w-5 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">AI-Powered Column Mapping</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {loadingAI 
+                      ? "Analyzing your file and generating suggestions..."
+                      : aiSuggestions 
+                        ? `AI found ${(aiSuggestions.customer?.length || 0) + (aiSuggestions.order?.length || 0) + (aiSuggestions.product?.length || 0)} suggested mappings. Review and accept the ones you want.`
+                        : "Click the button to get AI-powered column mapping suggestions automatically"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {!aiSuggestions && !loadingAI && (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const numericFileId = typeof fileId === 'string' ? parseInt(fileId, 10) : fileId
+                      if (process.env.NODE_ENV === 'development') {
+                        console.log("Manual AI trigger - fileId:", fileId, "numeric:", numericFileId)
+                      }
+                      if (numericFileId && !isNaN(numericFileId) && numericFileId > 0) {
+                        loadAISuggestions(numericFileId)
+                      } else {
+                        toast.error("Invalid File ID", {
+                          description: "Please ensure you have a valid file selected.",
+                        })
+                      }
+                    }}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={loadingAI || !fileId}
+                  >
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Get AI Suggestions
+                  </Button>
+                )}
+                {aiSuggestions && (
+                  <Button
+                    type="button"
+                    onClick={handleAcceptAllAI}
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Accept All High Confidence
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* AI Suggestions Details */}
+      {aiSuggestions && showAISuggestions && (
+        <Card className="border-2 border-primary/30 bg-muted/30">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Wand2 className="h-5 w-5 text-primary" />
+                AI Suggestions
+              </CardTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAISuggestions(!showAISuggestions)}
+              >
+                {showAISuggestions ? "Hide" : "Show"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              { type: "customer", label: "Customer Fields", suggestions: aiSuggestions.customer },
+              { type: "order", label: "Order Fields", suggestions: aiSuggestions.order },
+              { type: "product", label: "Product Fields", suggestions: aiSuggestions.product }
+            ].map(({ type, label, suggestions }) => {
+              if (!suggestions || suggestions.length === 0) return null
+              
+              // Deduplicate suggestions within each category
+              const uniqueSuggestions = new Map()
+              suggestions.forEach(suggestion => {
+                if (suggestion.excel_column && suggestion.canonical_field) {
+                  const key = `${suggestion.excel_column}::${suggestion.canonical_field}`
+                  const existing = uniqueSuggestions.get(key)
+                  if (!existing || suggestion.confidence > existing.confidence) {
+                    uniqueSuggestions.set(key, suggestion)
+                  }
+                }
+              })
+              
+              const deduplicatedSuggestions = Array.from(uniqueSuggestions.values())
+              
+              if (deduplicatedSuggestions.length === 0) return null
+              
+              return (
+                <div key={type} className="rounded-lg border border-border bg-card p-3">
+                  <h4 className="mb-2 text-sm font-semibold text-foreground">{label}</h4>
+                  <div className="space-y-2">
+                    {deduplicatedSuggestions.map((suggestion, idx) => {
+                      const confidenceColor = 
+                        suggestion.confidence >= 0.8 ? "text-green-600" :
+                        suggestion.confidence >= 0.6 ? "text-yellow-600" :
+                        "text-orange-600"
+                      
+                      const isApplied = uniqueRows.some(r => 
+                        r.analysisField === suggestion.canonical_field && 
+                        r.columnName === suggestion.excel_column
+                      )
+                      
+                      return (
+                        <div
+                          key={`${type}-${suggestion.excel_column}-${suggestion.canonical_field}-${idx}`}
+                          className={`flex items-center justify-between rounded border p-2 ${
+                            isApplied ? "bg-green-50 border-green-200" : "bg-background"
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground">
+                                {suggestion.excel_column}
+                              </span>
+                              <span className="text-xs text-muted-foreground">→</span>
+                              <span className="text-sm text-foreground">
+                                {suggestion.canonical_field}
+                              </span>
+                              {isApplied && (
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              )}
+                            </div>
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className={`text-xs font-medium ${confidenceColor}`}>
+                                {Math.round(suggestion.confidence * 100)}% confidence
+                              </span>
+                            </div>
+                          </div>
+                          {!isApplied && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                // Check if this exact mapping already exists
+                                const exists = rows.some(r => 
+                                  r.analysisField === suggestion.canonical_field && 
+                                  r.columnName === suggestion.excel_column
+                                )
+                                
+                                if (exists) {
+                                  toast.info("Mapping Already Exists", {
+                                    description: "This mapping is already in your list.",
+                                  })
+                                  return
+                                }
+                                
+                                const newRow = {
+                                  id: Date.now() + idx,
+                                  columnName: suggestion.excel_column,
+                                  analysisField: suggestion.canonical_field,
+                                  suggestedBy: "ai",
+                                  confidence: suggestion.confidence
+                                }
+                                setRows(prevRows => {
+                                  // Check for duplicates before adding
+                                  const exists = prevRows.some(r => 
+                                    r.columnName === newRow.columnName && 
+                                    r.analysisField === newRow.analysisField
+                                  )
+                                  if (exists) {
+                                    toast.info("Mapping Already Exists", {
+                                      description: "This mapping is already in your list.",
+                                    })
+                                    return prevRows
+                                  }
+                                  return [...prevRows, newRow]
+                                })
+                                toast.success("Mapping Added", {
+                                  description: `${suggestion.excel_column} → ${suggestion.canonical_field}`,
+                                })
+                              }}
+                            >
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              Add
+                            </Button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-2 shadow-lg">
         <CardHeader className="border-b bg-muted/30 pb-4">
           <CardTitle className="text-2xl font-bold text-foreground">Configure Column Mappings</CardTitle>
           <CardDescription className="text-base text-muted-foreground">
             Select your Excel column and map it to the corresponding database model field
+            {(() => {
+              // Count unique AI-suggested mappings from uniqueRows
+              const aiRows = uniqueRows.filter(r => r.suggestedBy === "ai")
+              return aiRows.length > 0 ? (
+                <span className="ml-2 text-primary">
+                  • {aiRows.length} AI-suggested mappings
+                </span>
+              ) : null
+            })()}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4 p-6">
-          {rows.map((row, idx) => (
+          {uniqueRows.map((row, idx) => (
             <div
               key={row.id}
-              className="group flex flex-col gap-4 rounded-xl border-2 border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md md:flex-row md:items-end"
+              className={`group relative flex flex-col gap-4 rounded-xl border-2 p-5 transition-all hover:shadow-md md:flex-row md:items-end ${
+                row.suggestedBy === "ai" 
+                  ? "border-primary/40 bg-primary/5" 
+                  : "border-border bg-card hover:border-primary/30"
+              }`}
             >
+              {row.suggestedBy === "ai" && (
+                <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-primary/20 px-2 py-1">
+                  <Wand2 className="h-3 w-3 text-primary" />
+                  <span className="text-xs font-medium text-primary">AI</span>
+                  {row.confidence && (
+                    <span className="text-xs text-primary/70">
+                      {Math.round(row.confidence * 100)}%
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="flex-1">
                 <Label htmlFor={`columnName-${row.id}`} className="text-sm font-semibold text-foreground">
                   Excel Column Name {idx + 1}
+                  {row.suggestedBy === "ai" && (
+                    <span className="ml-2 text-xs text-primary">(AI Suggested)</span>
+                  )}
                 </Label>
                 {isTemplateMode || availableColumns.length === 0 ? (
                   <Input
@@ -333,7 +889,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
               </div>
 
               <div className="flex gap-2 md:pb-0.5">
-                {rows.length > 1 && (
+                {uniqueRows.length > 1 && (
                   <Button
                     type="button"
                     variant="outline"

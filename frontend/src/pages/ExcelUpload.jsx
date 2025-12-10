@@ -91,6 +91,10 @@ export default function ExcelUpload() {
 
       if (response.data && response.data.file_id) {
         setUploadedFileId(response.data.file_id)
+        // Automatically navigate to column mapping with the uploaded file ID
+        setTimeout(() => {
+          navigate(`/column-mapping/${response.data.file_id}`)
+        }, 1500) // Wait 1.5 seconds to show success message
         setUploadStatus("success")
         setUploadProgress(100)
         

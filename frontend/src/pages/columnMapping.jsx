@@ -17,24 +17,77 @@ export default function ColumnMappingPage() {
 
   useEffect(() => {
     const fetchFileInfo = async () => {
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log("ColumnMappingPage - fileId from params:", fileId, "type:", typeof fileId);
+      }
+      
       if (!fileId) {
-        // No fileId means template/default mapping mode
+        // No fileId means template/default mapping mode - this is expected behavior
+        if (process.env.NODE_ENV === 'development') {
+          console.log("No fileId in URL - entering template mode (expected for template mappings)");
+        }
         setIsTemplateMode(true);
         setLoading(false);
         return;
       }
 
+      // Ensure fileId is a number
+      const numericFileId = typeof fileId === 'string' ? parseInt(fileId, 10) : fileId;
+      
+      if (isNaN(numericFileId) || numericFileId <= 0) {
+        console.error("Invalid fileId:", fileId);
+        setIsTemplateMode(true);
+        setLoading(false);
+        toast.error("Invalid File ID", {
+          description: "The file ID in the URL is invalid. Please upload a file first.",
+        });
+        return;
+      }
+
       try {
-        const response = await api.get(`/uploaded-files/${fileId}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Fetching file info for fileId:", numericFileId);
+        }
+        const response = await api.get(`/uploaded-files/${numericFileId}`);
         setFileInfo(response.data);
         setIsTemplateMode(false);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("File info loaded successfully");
+        }
       } catch (err) {
-        console.error("Error fetching file info:", err);
-        // If file not found, allow template mode as fallback
+        const statusCode = err?.response?.status;
+        const errorDetail = err?.response?.data?.detail || err?.message;
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Error fetching file info:", err);
+          console.error("Status:", statusCode, "Detail:", errorDetail);
+        }
+        
+        // If file not found or access denied, allow template mode as fallback
         setIsTemplateMode(true);
-        toast.warning("File not found", {
-          description: "Creating template mapping instead. You can apply this when you upload a file.",
-        });
+        
+        if (statusCode === 403) {
+          toast.error("Access Denied", {
+            description: errorDetail || "This file belongs to another account. Please upload your own file.",
+            action: {
+              label: "Upload File",
+              onClick: () => navigate("/upload-excel")
+            }
+          });
+        } else if (statusCode === 404) {
+          toast.warning("File Not Found", {
+            description: errorDetail || `File with ID ${numericFileId} does not exist. Please upload a file first.`,
+            action: {
+              label: "Upload File",
+              onClick: () => navigate("/upload-excel")
+            }
+          });
+        } else {
+          toast.warning("Error Loading File", {
+            description: errorDetail || "Could not load file information. Creating template mapping instead.",
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -92,7 +145,7 @@ export default function ColumnMappingPage() {
           </div>
 
           <ColumnMappingForm 
-            fileId={fileId ? parseInt(fileId) : null} 
+            fileId={fileId && !isNaN(parseInt(fileId)) && fileInfo ? parseInt(fileId, 10) : null} 
             fileInfo={fileInfo}
             isTemplateMode={isTemplateMode}
             onMappingSubmit={handleMappingSubmit} 

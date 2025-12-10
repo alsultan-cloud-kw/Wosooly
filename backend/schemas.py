@@ -155,7 +155,23 @@ class ModelFieldDefinition(BaseModel):
     required: bool
     description: str
 
+class AIMappingSuggestion(BaseModel):
+    canonical_field: str
+    excel_column: Optional[str]
+    confidence: float
+    suggested_by: str = "ai"
+
+class AIMappingResponse(BaseModel):
+    customer: List[AIMappingSuggestion]
+    order: List[AIMappingSuggestion]
+    product: List[AIMappingSuggestion]
+    file_id: int
+
 class ModelFieldsResponse(BaseModel):
     customer: List[ModelFieldDefinition]
     order: List[ModelFieldDefinition]
     product: List[ModelFieldDefinition] 
+
+class AskRequest(BaseModel):
+    file_id: int
+    question: str

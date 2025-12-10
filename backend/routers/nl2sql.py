@@ -4,13 +4,17 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import models
 from nl2sql import NL2SQL
 import numpy as np
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Client
 from utils.subscription import require_feature
-
+from utils.auth import get_current_client
+# from agents.pandas_agent import analyze_excel_from_cloudinary
+from schemas import AskRequest
+from models import UploadedFile
 # Load environment variables
 env_path = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -75,3 +79,4 @@ def get_sql_result(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
