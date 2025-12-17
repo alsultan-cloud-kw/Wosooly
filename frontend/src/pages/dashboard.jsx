@@ -325,15 +325,47 @@ function ExcelDashboardContent() {
   const [salesComparison, setSalesComparison] = useState(null);
   const [topCustHeaders, setTopCustHeaders] = useState([]);
   const [topCustRows, setTopCustRows] = useState([]);
+  const [activeFileId, setActiveFileId] = useState(localStorage.getItem("active_excel_file_id"));
 
   const { t, i18n } = useTranslation("landing");
   const themeReducer = useSelector((state) => state.theme?.mode || "light");
 
+  // Watch for localStorage changes (active_excel_file_id)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newActiveFileId = localStorage.getItem("active_excel_file_id");
+      setActiveFileId(newActiveFileId);
+    };
+
+    // Listen for custom event from UserDashboard
+    const handleDataSourceChanged = (event) => {
+      const { fileId } = event.detail;
+      setActiveFileId(fileId ? fileId.toString() : null);
+    };
+
+    // Check for changes periodically
+    const interval = setInterval(handleStorageChange, 500);
+    
+    // Listen for custom event
+    window.addEventListener("dataSourceChanged", handleDataSourceChanged);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("dataSourceChanged", handleDataSourceChanged);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   useEffect(() => {
     (async () => {
       try {
+        const fileId = activeFileId ? parseInt(activeFileId, 10) : null;
+        const params = { limit: 5 };
+        if (fileId) params.file_id = fileId;
+        
         const { data } = await api.get("/dashboard_excel/latest-rows", {
-          params: { limit: 5 },
+          params,
         });
 
         const rows = Array.isArray(data.rows) ? data.rows : [];
@@ -357,13 +389,17 @@ function ExcelDashboardContent() {
         console.error("Error fetching latest rows:", err);
       }
     })();
-  }, []);
+  }, [activeFileId]);
 
   useEffect(() => {
     (async () => {
       try {
+        const fileId = activeFileId ? parseInt(activeFileId, 10) : null;
+        const params = { limit: 5 };
+        if (fileId) params.file_id = fileId;
+        
         const { data } = await api.get("/dashboard_excel/top-customers", {
-          params: { limit: 5 },
+          params,
         });
 
         const rows = Array.isArray(data.rows) ? data.rows : [];
@@ -384,21 +420,24 @@ function ExcelDashboardContent() {
         console.error("Error fetching top customers:", err);
       }
     })();
-  }, []);
+  }, [activeFileId]);
 
   useEffect(() => {
     const fetchStatusCards = async () => {
       try {
-        const { data: countData } = await api.get("/dashboard_excel/total-orders-count");
+        const fileId = activeFileId ? parseInt(activeFileId, 10) : null;
+        const params = fileId ? { params: { file_id: fileId } } : {};
+        
+        const { data: countData } = await api.get("/dashboard_excel/total-orders-count", params);
         const count = (countData && typeof countData.count === "number")
           ? countData.count
           : 0;
         console.log("Excel total orders:", count);
-        const { data: salesData } = await api.get("/dashboard_excel/total-sales");
+        const { data: salesData } = await api.get("/dashboard_excel/total-sales", params);
         const { total_sales } = salesData;
-        const { data: productsData } = await api.get("/dashboard_excel/total-products");
+        const { data: productsData } = await api.get("/dashboard_excel/total-products", params);
         const { total_products } = productsData;
-        const { data: customersData } = await api.get("/dashboard_excel/total-customers");
+        const { data: customersData } = await api.get("/dashboard_excel/total-customers", params);
         const { total_customers } = customersData;
 
         const cards = [
@@ -431,7 +470,7 @@ function ExcelDashboardContent() {
     };
 
     fetchStatusCards();
-  }, [i18n.language, t]);
+  }, [i18n.language, t, activeFileId]);
 
   useEffect(() => {
     api

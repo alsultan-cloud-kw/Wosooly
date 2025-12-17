@@ -7,6 +7,7 @@ import sidebar_items from '../../assets/JsonData/sidebar_routes.json'
 import { useTranslation } from 'react-i18next';
 import { logout } from '../../redux/actions/AuthActions'
 import SidebarItem from './SidebarItem';
+
 // const SidebarItem = props => {
 //     const { t } = useTranslation("side_bar");
 //     const active = props.active ? 'active' : ''
@@ -85,8 +86,11 @@ const Sidebar = () => {
                         {/* <p className="dropdown-item" onClick={() => navigate("/profile")}>
                             Profile
                         </p> */}
-                        <p className="dropdown-item" onClick={() => navigate("/settings")}>
-                            Settings
+                        <p className="dropdown-item" onClick={() => {
+                            const userType = localStorage.getItem("user_type")
+                            navigate(userType === "admin" ? "/admin-dashboard" : "/user-dashboard")
+                        }}>
+                            Dashboard
                         </p>
                         <p className="dropdown-item logout" onClick={handleLogout}>
                             Logout

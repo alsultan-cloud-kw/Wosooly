@@ -38,13 +38,14 @@ export const login = (email, password) => async dispatch => {
 };
 
 export const register =
-  (email, password, client_name, company_details, store_url, consumer_key, consumer_secret, accepted_terms,plan) =>
+  (email, phone, password, client_name, company_details, store_url, consumer_key, consumer_secret, accepted_terms,plan) =>
   async (dispatch) => {
     try {
       dispatch({ type: "AUTH_REQUEST" });
 
       const { data } = await api.post("/register", {
         email,
+        phone,
         password,
         client_name,
         company_details,
@@ -52,7 +53,6 @@ export const register =
         consumer_key,
         consumer_secret,
         accepted_terms,
-        plan
       });
 
       localStorage.setItem("token", data.access_token);

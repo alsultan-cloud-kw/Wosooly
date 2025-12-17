@@ -21,6 +21,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
   const [loadingAI, setLoadingAI] = useState(false)
   const [showAISuggestions, setShowAISuggestions] = useState(true)
   const aiSuggestionsLoadedRef = useRef(false) // Prevent multiple loads
+  const toastShownRef = useRef(false) // Prevent multiple toast messages
 
   const navigate = useNavigate()
   // Fetch model fields and file columns on mount
@@ -68,19 +69,10 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
         setAllModelFields(allFields)
         
         // If we have file info, set available columns from file
+        let columnNames = []
         if (fileInfo && fileInfo.columns) {
-          setAvailableColumns(fileInfo.columns.map(col => col.name))
-          // Initialize rows with column names
-          if (fileInfo.columns.length > 0) {
-            setRows(
-              fileInfo.columns.slice(0, 5).map((col, idx) => ({
-                id: idx + 1,
-                columnName: col.name,
-                analysisField: "",
-                suggestedBy: "manual"
-              }))
-            )
-          }
+          columnNames = fileInfo.columns.map(col => col.name)
+          setAvailableColumns(columnNames)
         }
         
         // Fetch existing mappings
@@ -108,7 +100,28 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
               })
             })
             if (allMappedRows.length > 0) {
+              // Sort rows by column order if columnNames exists
+              if (columnNames.length > 0) {
+                allMappedRows.sort((a, b) => {
+                  const indexA = columnNames.indexOf(a.columnName)
+                  const indexB = columnNames.indexOf(b.columnName)
+                  // If column not found in order, put it at the end
+                  if (indexA === -1 && indexB === -1) return 0
+                  if (indexA === -1) return 1
+                  if (indexB === -1) return -1
+                  return indexA - indexB
+                })
+              }
               setRows(allMappedRows)
+            } else if (fileInfo && fileInfo.columns && fileInfo.columns.length > 0 && !isTemplateMode) {
+              // No existing mappings but we have file columns - initialize with first few columns
+              const initialRows = fileInfo.columns.slice(0, 5).map((col, idx) => ({
+                id: idx + 1,
+                columnName: col.name,
+                analysisField: "",
+                suggestedBy: "manual"
+              }))
+              setRows(initialRows)
             }
           } else if (fileId && !isTemplateMode && !aiSuggestionsLoadedRef.current) {
             // No existing mappings - try AI auto-mapping (only if not already loaded)
@@ -148,6 +161,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
   // Reset AI suggestions loaded flag when fileId changes
   useEffect(() => {
     aiSuggestionsLoadedRef.current = false
+    toastShownRef.current = false
     setAiSuggestions(null) // Clear suggestions when fileId changes
   }, [fileId])
 
@@ -252,17 +266,50 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
             })
           })
           
+          // Sort suggested rows by column order if availableColumns exists
+          if (availableColumns.length > 0) {
+            suggestedRows.sort((a, b) => {
+              const indexA = availableColumns.indexOf(a.columnName)
+              const indexB = availableColumns.indexOf(b.columnName)
+              if (indexA === -1 && indexB === -1) return 0
+              if (indexA === -1) return 1
+              if (indexB === -1) return -1
+              return indexA - indexB
+            })
+          }
+          
           if (suggestedRows.length > 0) {
-            toast.success("AI Suggestions Loaded", {
-              description: `Found ${suggestedRows.length} unique high-confidence column mappings. Review and adjust as needed.`,
-              duration: 5000,
-            })
-            return [...prevRows, ...suggestedRows]
+            if (!toastShownRef.current) {
+              toast.success("AI Suggestions Loaded", {
+                description: `Found ${suggestedRows.length} unique high-confidence column mappings. Review and adjust as needed.`,
+                duration: 5000,
+              })
+              toastShownRef.current = true
+            }
+            // Combine and sort all rows by column order
+            const combinedRows = [...prevRows, ...suggestedRows]
+            if (availableColumns.length > 0) {
+              combinedRows.sort((a, b) => {
+                if (!a.columnName && !b.columnName) return 0
+                if (!a.columnName) return 1
+                if (!b.columnName) return -1
+                const indexA = availableColumns.indexOf(a.columnName)
+                const indexB = availableColumns.indexOf(b.columnName)
+                if (indexA === -1 && indexB === -1) return 0
+                if (indexA === -1) return 1
+                if (indexB === -1) return -1
+                return indexA - indexB
+              })
+            }
+            return combinedRows
           } else {
-            toast.info("AI Analysis Complete", {
-              description: "AI analyzed your file but found no new high-confidence mappings. You can still use the suggestions below.",
-              duration: 4000,
-            })
+            if (!toastShownRef.current) {
+              toast.info("AI Analysis Complete", {
+                description: "AI analyzed your file but found no new high-confidence mappings. You can still use the suggestions below.",
+                duration: 4000,
+              })
+              toastShownRef.current = true
+            }
             return prevRows
           }
         })
@@ -299,7 +346,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
     }
   }
   
-  // Deduplicate rows - use useMemo to compute unique rows for display
+  // Deduplicate rows and sort by column order - use useMemo to compute unique rows for display
   const uniqueRows = useMemo(() => {
     const seen = new Map()
     const unique = []
@@ -332,8 +379,26 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
       }
     })
     
+    // Sort by column order if availableColumns exists
+    if (availableColumns.length > 0) {
+      unique.sort((a, b) => {
+        // Empty rows go to the end
+        if (!a.columnName && !b.columnName) return 0
+        if (!a.columnName) return 1
+        if (!b.columnName) return -1
+        
+        const indexA = availableColumns.indexOf(a.columnName)
+        const indexB = availableColumns.indexOf(b.columnName)
+        // If column not found in order, put it at the end
+        if (indexA === -1 && indexB === -1) return 0
+        if (indexA === -1) return 1
+        if (indexB === -1) return -1
+        return indexA - indexB
+      })
+    }
+    
     return unique
-  }, [rows])
+  }, [rows, availableColumns])
   
   // Clean up duplicates in rows state when detected
   useEffect(() => {
@@ -509,7 +574,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
       })
       
       setSuccess("Mapping submitted successfully!")
-      navigate("/dashboard")
+      navigate("/user-dashboard")
       onMappingSubmit && onMappingSubmit({ [analysisType]: mapping })
     } catch (err) {
       console.error(err)
@@ -637,7 +702,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
       )}
 
       {/* AI Suggestions Details */}
-      {aiSuggestions && showAISuggestions && (
+      {/* {aiSuggestions && showAISuggestions && (
         <Card className="border-2 border-primary/30 bg-muted/30">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -778,7 +843,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
             })}
           </CardContent>
         </Card>
-      )}
+      )} */}
 
       <Card className="border-2 shadow-lg">
         <CardHeader className="border-b bg-muted/30 pb-4">
@@ -828,7 +893,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
                 {isTemplateMode || availableColumns.length === 0 ? (
                   <Input
                     id={`columnName-${row.id}`}
-                    value={row.columnName}
+                    value={row.columnName || ""}
                     onChange={(e) => handleChange(row.id, "columnName", e.target.value)}
                     placeholder="e.g., order_date, customer_name, product_id"
                     className="mt-1.5 border-2 focus:border-primary"
@@ -838,7 +903,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
                   <select
                     id={`columnName-${row.id}`}
                     className="mt-1.5 w-full rounded-lg border-2 border-input bg-background p-2.5 text-sm text-foreground transition-colors hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    value={row.columnName}
+                    value={row.columnName || ""}
                     onChange={(e) => handleChange(row.id, "columnName", e.target.value)}
                     required
                   >
@@ -859,7 +924,7 @@ export function ColumnMappingForm({ fileId, fileInfo, isTemplateMode = false, se
                 <select
                   id={`analysisField-${row.id}`}
                   className="mt-1.5 w-full rounded-lg border-2 border-input bg-background p-2.5 text-sm text-foreground transition-colors hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  value={row.analysisField}
+                  value={row.analysisField || ""}
                   onChange={(e) => handleChange(row.id, "analysisField", e.target.value)}
                   required
                 >

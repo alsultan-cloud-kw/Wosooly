@@ -40,194 +40,6 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
 
-# def clean_json(obj):
-#     import math
-#     import numpy as np
-#     import pandas as pd
-#     from datetime import datetime
-
-#     # None
-#     if obj is None:
-#         return None
-
-#     # Pandas Timestamp → ISO string
-#     if isinstance(obj, (pd.Timestamp, datetime)):
-#         return obj.isoformat()
-
-#     # Pandas NaT
-#     if obj is pd.NaT:
-#         return None
-
-#     # Python floats
-#     if isinstance(obj, float):
-#         if math.isnan(obj) or math.isinf(obj):  # NAN, INF, -INF
-#             return None
-#         return obj
-
-#     # numpy numbers
-#     if isinstance(obj, np.floating):
-#         if math.isnan(float(obj)) or math.isinf(float(obj)):
-#             return None
-#         return float(obj)
-
-#     if isinstance(obj, np.integer):
-#         return int(obj)
-
-#     # numpy arrays or lists
-#     if isinstance(obj, (np.ndarray, list, tuple)):
-#         return [clean_json(v) for v in obj]
-
-#     # dict
-#     if isinstance(obj, dict):
-#         return {k: clean_json(v) for k, v in obj.items()}
-
-#     return obj
-
-# @router.post("/excel-upload")
-# async def upload_excel_file(
-#     file: UploadFile = File(...),
-#     current_user: Client = Depends(get_current_client),
-#     db: Session = Depends(get_db)
-# ):
-#     """
-#     Upload an Excel file to Cloudinary and store metadata in database.
-#     Returns file information including columns for column mapping.
-#     """
-
-#     # JSON serializable conversion helper
-#     def make_json_serializable(value):
-#         if isinstance(value, (pd.Timestamp, datetime)):
-#             return value.isoformat()
-#         if isinstance(value, (np.integer,)):
-#             return int(value)
-#         if isinstance(value, (np.floating,)):
-#             return float(value)
-#         if isinstance(value, (np.ndarray,)):
-#             return value.tolist()
-#         return value
-
-#     def serialize_row(row: dict):
-#         return {k: make_json_serializable(v) for k, v in row.items()}
-
-#     # Validate file type
-#     if not (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Invalid file type. Please upload an Excel file (.xlsx or .xls)"
-#         )
-    
-#     try:
-#         # Read file content
-#         contents = await file.read()
-        
-#         # Parse Excel file using pandas
-#         try:
-#             if file.filename.endswith('.xlsx'):
-#                 df = pd.read_excel(io.BytesIO(contents), engine='openpyxl')
-#             else:
-#                 df = pd.read_excel(io.BytesIO(contents), engine='xlrd')
-#         except Exception as e:
-#             raise HTTPException(
-#                 status_code=400,
-#                 detail=f"Error reading Excel file: {str(e)}"
-#             )
-        
-#         # File metadata
-#         total_rows = len(df)
-#         total_columns = len(df.columns)
-#         columns = df.columns.tolist()
-        
-#         # Upload to Cloudinary
-#         try:
-#             upload_result = cloudinary.uploader.upload(
-#                 io.BytesIO(contents),
-#                 resource_type="raw",
-#                 folder=f"excel_files/client_{current_user.id}",
-#                 public_id=f"{file.filename}_{datetime.utcnow().timestamp()}",
-#                 format="xlsx" if file.filename.endswith('.xlsx') else "xls"
-#             )
-            
-#             cloudinary_url = upload_result.get('secure_url')
-#             cloudinary_public_id = upload_result.get('public_id')
-            
-#         except Exception as e:
-#             raise HTTPException(
-#                 status_code=500,
-#                 detail=f"Error uploading to Cloudinary: {str(e)}"
-#             )
-        
-#         # Create UploadedFile record
-#         uploaded_file = UploadedFile(
-#             filename=file.filename,
-#             file_type=file.content_type 
-#                 or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-#             total_rows=total_rows,
-#             total_columns=total_columns,
-#             cloudinary_url=cloudinary_url,
-#             cloudinary_public_id=cloudinary_public_id,
-#             client_id=current_user.id,
-#         )
-        
-#         db.add(uploaded_file)
-#         db.flush()  # Get ID
-        
-#         # Create FileColumn records
-#         for col_name in columns:
-#             dtype = str(df[col_name].dtype)
-#             file_column = FileColumn(
-#                 file_id=uploaded_file.id,
-#                 name=str(col_name),
-#                 dtype=dtype
-#             )
-#             db.add(file_column)
-        
-#         # Create sample rows (with JSON-safe conversion)
-#         raw_rows = df.to_dict(orient="records")
-
-#         cleaned_rows = []
-#         for r in raw_rows:
-#             cleaned = clean_json(r)  # 🔥 fully cleaned dict
-#             cleaned_rows.append(cleaned)
-
-#         for row in cleaned_rows:
-#             db.add(FileRow(file_id=uploaded_file.id, data=row))
-                
-#         db.commit()
-#         db.refresh(uploaded_file)
-        
-#         # Column info for response
-#         column_info = db.query(FileColumn).filter(
-#             FileColumn.file_id == uploaded_file.id
-#         ).all()
-        
-#         return {
-#             "message": "File uploaded successfully",
-#             "file_id": uploaded_file.id,
-#             "filename": uploaded_file.filename,
-#             "total_rows": uploaded_file.total_rows,
-#             "total_columns": uploaded_file.total_columns,
-#             "cloudinary_url": uploaded_file.cloudinary_url,
-#             "columns": [
-#                 {
-#                     "id": col.id,
-#                     "name": col.name,
-#                     "dtype": col.dtype
-#                 }
-#                 for col in column_info
-#             ],
-#             "raw_rows": raw_rows,
-#             "uploaded_at": uploaded_file.uploaded_at.isoformat()
-#         }
-        
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         db.rollback()
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"Error processing file: {str(e)}"
-#         )
-
 def clean_json(obj):
     """Recursively replace NaN/Infinity/-Infinity with None for JSON compliance."""
     if isinstance(obj, float):
@@ -317,7 +129,7 @@ async def upload_file(
         logger.error("Upload error:", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
-@router.get(f"/uploaded-files")
+@router.get("/uploaded-files")
 def get_uploaded_files(
     current_user: Client = Depends(get_current_client),
     db: Session = Depends(get_db)
@@ -659,20 +471,7 @@ def get_model_fields():
         ]
     )
 
-# @router.get("/column-mapping/default", response_model=List[ColumnMappingResponse])
-# def get_default_column_mappings(
-#     current_user: Client = Depends(get_current_client),
-#     db: Session = Depends(get_db)
-# ):
-#     """
-#     Get all default/template column mappings for the current user (mappings without file_id).
-#     """
-#     mappings = db.query(ColumnMapping).filter(
-#         ColumnMapping.file_id.is_(None),
-#         ColumnMapping.client_id == current_user.id
-#     ).all()
-    
-#     return mappings
+
 
 @router.get("/column-mapping/default", response_model=List[ColumnMappingResponse])
 def get_default_column_mappings(

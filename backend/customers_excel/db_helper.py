@@ -240,7 +240,7 @@ def get_aggregate_customers_from_orders_from_db(
             if not col:
                 col = next((c for c in df.columns if any(key in c.lower() for key in canonical_list)), None)
             return col
-
+        
         # Step 6: resolve final columns
         col_name = resolve_column(canonical_name, customer_map)
         col_id = resolve_column(canonical_id, customer_map)

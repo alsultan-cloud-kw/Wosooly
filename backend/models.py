@@ -31,6 +31,8 @@ class Client(Base):
     id = Column(Integer, primary_key=True, index=True)
     client_name = Column(String, nullable=True)
     email = Column(String, unique=True, index=True, nullable=True)
+    phone = Column(String, unique=True, index=True, nullable=True)
+    address = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     company_details = Column(String, nullable=True)
     # WooCommerce-related fields (will store encrypted values)

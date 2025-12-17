@@ -4,7 +4,7 @@ import Table from "../../table/Table";
 import api from "../../../../api_config";
 import { useTranslation } from "react-i18next";
 
-const CustomerSpendingClassificationTablesExcel = () => {
+const CustomerSpendingClassificationTablesExcel = ({ fileId = null }) => {
   const [groupedCustomers, setGroupedCustomers] = useState({});
   const [allCustomers, setAllCustomers] = useState([]);
   const [ranges, setRanges] = useState({
@@ -30,11 +30,15 @@ const CustomerSpendingClassificationTablesExcel = () => {
     </tr>
   );
 
+  // Get fileId from props or localStorage
+  const activeFileId = fileId ?? (localStorage.getItem("active_excel_file_id") ? parseInt(localStorage.getItem("active_excel_file_id"), 10) : null);
+
   // Fetch data
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const res = await api.get("/excel_customers/full-customer-classification");
+        const params = activeFileId ? { params: { file_id: activeFileId } } : {};
+        const res = await api.get("/excel_customers/full-customer-classification", params);
         const data = res.data.rows || [];
         const formattedRows = data.map((row) => ({
           customer_name: row.customer_name,
@@ -49,7 +53,7 @@ const CustomerSpendingClassificationTablesExcel = () => {
       }
     };
     fetchCustomers();
-  }, []);
+  }, [activeFileId]);
 
   // Group by spending ranges
   useEffect(() => {

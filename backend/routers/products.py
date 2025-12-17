@@ -42,9 +42,20 @@ def get_product_details(id: int, db: Session = Depends(get_db)):
     return response_data
 
 @router.get("/product-sales-over-time", response_model=List[Dict[str, Any]])
-def get_product_sales_over_time(start_date: str, end_date: str, product_id: int, db: Session = Depends(get_db)):
-
-    response_data = function_get_sales_over_time(db=db, product_id=product_id, start_date=start_date, end_date= end_date)
+def get_product_sales_over_time(
+    start_date: str, 
+    end_date: str, 
+    product_id: int, 
+    db: Session = Depends(get_db),
+    current_client = Depends(get_current_client)
+):
+    response_data = function_get_sales_over_time(
+        db=db, 
+        product_id=product_id, 
+        start_date=start_date, 
+        end_date=end_date,
+        client_id=current_client.id
+    )
     return response_data
 
 # @router.get("/segment-products", response_model = List[dict])

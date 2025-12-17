@@ -40,7 +40,7 @@ const ProductSalesGraph = () => {
             }
           ]
         })
-        console.log("response data", res)
+        console.log("response data", res.data)
         setExternalId(res.data[0].external_id)
       } catch (err) {
         console.error('Error fetching product sales data:', err)

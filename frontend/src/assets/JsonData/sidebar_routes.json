@@ -1,6 +1,6 @@
 [
     {
-        "key": "dashboard",
+        "key": "overview",
         "route": "/dashboard",
         "icon": "bx bx-grid-alt"
     },
@@ -31,13 +31,14 @@
         "route": "/whatsapp",
         "icon": "bx bxl-whatsapp",
         "premium": true,
-        "featureKey": "advanced_analytics"
+        "featureKey": "whatsapp_messaging"
     },
     {
-        "key": "Competitor Analysis",
-        "route": "/competitorAnalysis",
-        "icon": "bx bx-analyse",
+        "key": "Email Marketing",
+        "route": "/email-marketing",
+        "icon": "bx bx-envelope",
         "premium": true,
-        "featureKey": "custom_reports"
+        "featureKey": "email_marketing"
     }
+    
 ]

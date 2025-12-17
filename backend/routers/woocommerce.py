@@ -7,6 +7,27 @@ from models import Client
 
 router = APIRouter()
 
+@router.get("/woocommerce-credentials")
+def get_woocommerce_credentials(
+    current_user: Client = Depends(get_current_client),
+):
+    """
+    Check if WooCommerce credentials are set for the current authenticated user.
+    Returns connection status without exposing sensitive credentials.
+    """
+    is_connected = bool(
+        current_user.store_url and 
+        current_user._consumer_key and 
+        current_user._consumer_secret
+    )
+    
+    return {
+        "is_connected": is_connected,
+        "store_url": current_user.store_url if is_connected else None,
+        "has_consumer_key": bool(current_user._consumer_key),
+        "has_consumer_secret": bool(current_user._consumer_secret),
+    }
+
 @router.post("/woocommerce-credentials")
 def update_woocommerce_credentials(
     credentials: WooCommerceCredentialsRequest,

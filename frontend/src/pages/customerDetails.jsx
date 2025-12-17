@@ -54,16 +54,27 @@ const CustomerDetails = () => {
 
   const productSummaryHead = ['Product', 'Total Quantity'];
   const renderProductSummaryHead = (item, index) => <th key={index}>{item}</th>;
-  const renderProductSummaryBody = (item, index) => (
-    <tr
-      key={index}
-      onClick={() => navigate(`/productOrdergraph?customer_id=${id}&product_external_id=${item.product_id}`)}
-      style={{ cursor: 'pointer' }}
-    >
-      <td>{item.product_name}</td>
-      <td>{item.total_quantity}</td>
-    </tr>
-  );
+  const renderProductSummaryBody = (item, index) => {
+    // Only navigate if product_id is a number (not a string fallback)
+    const isNumericId = typeof item.product_id === 'number';
+    const handleRowClick = () => {
+      if (isNumericId) {
+        navigate(`/productOrdergraph?customer_id=${id}&product_external_id=${item.product_id}`);
+      }
+    };
+    
+    return (
+      <tr
+        key={index}
+        onClick={handleRowClick}
+        style={{ cursor: isNumericId ? 'pointer' : 'default' }}
+        title={!isNumericId ? 'Product ID not available - cannot view details' : 'Click to view product order graph'}
+      >
+        <td>{item.product_name}</td>
+        <td>{item.total_quantity}</td>
+      </tr>
+    );
+  };
 
   const orderTableHead = ['Order ID', 'Date', 'Status', 'Product', 'Qty', 'Price', 'Category'];
   const renderOrderHead = (item, idx) => <th key={idx}>{item}</th>;

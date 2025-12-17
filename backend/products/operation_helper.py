@@ -31,9 +31,9 @@ def function_get_product_details(db, id: int):
     sales_comparison_data = get_product_details_data(db, id)
     return sales_comparison_data
 
-def function_get_sales_over_time(db, start_date, end_date, product_id):
+def function_get_sales_over_time(db, start_date, end_date, product_id, client_id=None):
 
-    sales_over_time_data = get_sales_over_time_data(db, start_date, end_date, product_id)
+    sales_over_time_data = get_sales_over_time_data(db, start_date, end_date, product_id, client_id)
 
     return sales_over_time_data
 

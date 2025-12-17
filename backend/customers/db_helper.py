@@ -4,8 +4,10 @@ from typing import List, Dict
 from sqlalchemy import func, desc, text, and_, case
 from datetime import date, timedelta, datetime
 from sqlalchemy.orm import Session, joinedload
+from utils.location_normalizer import normalize_address
 
 def customers_table_data(db: Session, client_id) -> List[dict]:
+    # First get customer data with orders
     results = (
         db.query(
             Customer.id,
@@ -30,25 +32,60 @@ def customers_table_data(db: Session, client_id) -> List[dict]:
         .all()
     )
 
-    return [
-        {
+    # Get addresses for these customers
+    customer_ids = [row.id for row in results]
+    if not customer_ids:
+        return []
+    
+    addresses = (
+        db.query(Address)
+        .filter(Address.customer_id.in_(customer_ids))
+        .all()
+    )
+    
+    # Create address lookup
+    address_map = {addr.customer_id: addr for addr in addresses}
+
+    customer_list = []
+    for row in results:
+        # Get address for this customer
+        address = address_map.get(row.id)
+        
+        # Extract governorate from all address fields
+        governorate = None
+        try:
+            normalized_addr = normalize_address(
+                address_1=address.address_1 if address else None,
+                address_2=address.address_2 if address else None,
+                city=address.city if address else None,
+                state=address.state if address else None
+            )
+            governorate = normalized_addr.get("governorate")
+        except Exception:
+            # Silently handle errors - governorate will be None
+            pass
+        
+        customer_list.append({
             "id": row.id,
             "user": f"{row.first_name or ''} {row.last_name or ''}".strip() or "Unknown",
             "phone": row.phone or "-",
             "total_orders": int(row.total_orders or 0),
             "total_spending": round(float(row.total_spending or 0), 2),
-        }
-        for row in results
-    ]
+            "governorate": governorate,  # Add governorate (can be None)
+        })
+    
+    return customer_list
 
 def get_customer_order_data_for_analysis(db: Session, id: int) -> dict:
     customer = db.query(Customer).options(
-        joinedload(Customer.address),
         joinedload(Customer.orders).joinedload(Order.items).joinedload(OrderItem.product)
     ).filter(Customer.id == id).first()
 
     if not customer:
         return {}
+
+    # Get the first address for this customer (handle multiple addresses)
+    address = db.query(Address).filter(Address.customer_id == id).first()
 
     # Build customer base info (no repetition)
     customer_info = {
@@ -57,13 +94,13 @@ def get_customer_order_data_for_analysis(db: Session, id: int) -> dict:
         "last_name": customer.last_name,
         "email": customer.email,
         "phone": customer.phone,
-        "company": customer.address.company if customer.address else None,
-        "address_1": customer.address.address_1 if customer.address else None,
-        "address_2": customer.address.address_2 if customer.address else None,
-        "city": customer.address.city if customer.address else None,
-        "state": customer.address.state if customer.address else None,
-        "postcode": customer.address.postcode if customer.address else None,
-        "country": customer.address.country if customer.address else None
+        "company": address.company if address else None,
+        "address_1": address.address_1 if address else None,
+        "address_2": address.address_2 if address else None,
+        "city": address.city if address else None,
+        "state": address.state if address else None,
+        "postcode": address.postcode if address else None,
+        "country": address.country if address else None
     }
 
     # Build orders with nested items
@@ -97,7 +134,7 @@ def get_customer_order_data_for_analysis(db: Session, id: int) -> dict:
             "external_order_id": order.external_id,
             "order_status": order.status,
             "order_total": order.total_amount,
-            "order_date": order.created_at,
+            "order_date": order.created_at.isoformat(),
             "payment_method": order.payment_method,
             "items": items_list
         })

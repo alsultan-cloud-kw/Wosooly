@@ -5,7 +5,7 @@ import Table from '../../table/Table'; // Update path based on your actual file 
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const CustomersTable = ({customers}) => {
+const CustomersTable = ({customers, totalCustomers}) => {
     const [topCustomers, setTopCustomers] = useState([]);
 
     const navigate = useNavigate();
@@ -45,16 +45,36 @@ const CustomersTable = ({customers}) => {
         <div className="col-12">
             <div className="card">
                 <div className="card__header">
-                    <h3>{t("customers")}</h3>
+                    <div className="flex items-center justify-between">
+                        <h3>{t("customers")}</h3>
+                        <div className="flex items-center gap-2">
+                            {totalCustomers !== undefined && totalCustomers !== customers.length && (
+                                <span className="text-xs text-gray-500">
+                                    ({totalCustomers} total)
+                                </span>
+                            )}
+                            <span className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                                {customers.length} {customers.length === 1 ? 'customer' : 'customers'}
+                                {totalCustomers !== undefined && totalCustomers !== customers.length && ' filtered'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div className="card__body">
-                    <Table
-                        limit="10"
-                        headData={topCustomerHead}
-                        renderHead={renderCustomerHead}
-                        bodyData={customers}
-                        renderBody={renderCustomerBody}
-                    />
+                    {customers.length > 0 ? (
+                        <Table
+                            limit="10"
+                            headData={topCustomerHead}
+                            renderHead={renderCustomerHead}
+                            bodyData={customers}
+                            renderBody={renderCustomerBody}
+                        />
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">
+                            <p>No customers match the selected filters.</p>
+                            <p className="text-sm mt-2">Try selecting "All Governorates" or adjusting other filters.</p>
+                        </div>
+                    )}
                 </div>
                 {/* <div className="card__footer">
                     <Link to="/">View All</Link>

@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [form, setForm] = useState({
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
     client_name: "",
@@ -39,9 +40,9 @@ export default function RegisterPage() {
 
   const {t, i18n} = useTranslation('register')
 
-  const plan = searchParams.get("plan");   // <-- HERE
+  // const plan = searchParams.get("plan");   // <-- HERE
 
-  console.log("Selected plan:", plan);
+  // console.log("Selected plan:", plan);
 
   // refs to hold interval IDs so we can clear them reliably
   const taskIntervalRef = useRef(null);
@@ -176,14 +177,14 @@ export default function RegisterPage() {
       const res = await dispatch(
         register(
           form.email,
+          form.phone,
           form.password,
           form.client_name,
           form.company_details,
           form.store_url,
           form.consumer_key,
           form.consumer_secret,
-          form.accepted_terms,
-          plan
+          form.accepted_terms
         )
       );
 
@@ -214,7 +215,7 @@ export default function RegisterPage() {
       
       // Navigate after a short delay to show the success message
       setTimeout(() => {
-        navigate("/sign-in-data-selection");
+        navigate("/user-dashboard");
       }, 1000);
       
       // ✅ Start polling task if task_id exists
@@ -278,6 +279,18 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     className="h-11"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{t("phoneLabel")}</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder={t("phonePlaceholder")}
+                    value={form.phone}
+                    onChange={handleChange}
+                    className="h-11"
+                    />
                 </div>
 
                 <div className="space-y-2">

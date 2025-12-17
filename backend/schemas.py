@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional,List, Dict
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List, Dict, Union
 from datetime import datetime
 
 class LoginRequest(BaseModel):
@@ -8,6 +8,7 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     email: str
+    phone: str
     password: str
     client_name: Optional[str] = None
     company_details: Optional[str] =None
@@ -36,7 +37,7 @@ class ProductSchema(BaseModel):
     }
 
 class TopProduct(BaseModel):
-    product_id: Optional[int]
+    product_id: Optional[Union[int, str]]  # Can be int or string (product_name fallback)
     product_name: Optional[str]
     total_quantity: Optional[int]
 
@@ -95,7 +96,7 @@ class CustomerInfo(BaseModel):
     country: Optional[str]
 
 class ProductSummary(BaseModel):
-    product_id: Optional[int]
+    product_id: Optional[Union[int, str]]  # Can be int or string (product_name fallback)
     product_name: Optional[str]
     total_quantity: Optional[int]
 
@@ -175,3 +176,15 @@ class ModelFieldsResponse(BaseModel):
 class AskRequest(BaseModel):
     file_id: int
     question: str
+
+class AdminRegisterRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+    password: str
+
+class ClientStatusUpdateRequest(BaseModel):
+    is_active: bool
+
+class SelectSubscriptionPlanRequest(BaseModel):
+    plan_name: str
+    billing_cycle: str = "monthly"  # monthly or yearly

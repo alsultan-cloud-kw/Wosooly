@@ -23,18 +23,23 @@ def function_get_customers_details(db, id: int):
     df_completed = df[df["order_status"] == "completed"]
 
     # Top 5 products
+    df_completed["product_key"] = df_completed["product_id"].fillna(
+    df_completed["product_name"]
+    )
+
     top_products = (
-        df_completed.groupby(["product_id", "product_name"], as_index=False)
+        df_completed.groupby(["product_key", "product_name"], as_index=False)
         .agg(total_quantity=("product_quantity", "sum"))
         .sort_values(by="total_quantity", ascending=False)
         .head(5)
+        .rename(columns={"product_key": "product_id"})
         .to_dict(orient="records")
     )
 
-    # All product summary
     all_products_summary = (
-        df_completed.groupby(["product_id", "product_name"], as_index=False)
+        df_completed.groupby(["product_key", "product_name"], as_index=False)
         .agg(total_quantity=("product_quantity", "sum"))
+        .rename(columns={"product_key": "product_id"})
         .sort_values(by="product_name")
         .to_dict(orient="records")
     )

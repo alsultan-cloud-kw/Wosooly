@@ -14,22 +14,58 @@ import api from "../../api_config";
 import { useTranslation } from "react-i18next";
 
 function CustomerAnalysis() {
-  const dataSource = localStorage.getItem("data_source"); // "excel" or "woocommerce"
   const { t } = useTranslation("customerAnalysis");
 
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [dataSource, setDataSource] = useState(localStorage.getItem("data_source"));
+  const [activeFileId, setActiveFileId] = useState(localStorage.getItem("active_excel_file_id"));
 
   const [orderFilter, setOrderFilter] = useState({ min: null, max: null });
   const [spendingFilter, setSpendingFilter] = useState({ min: null, max: null });
+  const [governorateFilter, setGovernorateFilter] = useState(null);
+
+  // Watch for localStorage changes (dataSource and active_excel_file_id)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newDataSource = localStorage.getItem("data_source");
+      const newActiveFileId = localStorage.getItem("active_excel_file_id");
+      setDataSource(newDataSource);
+      setActiveFileId(newActiveFileId);
+    };
+
+    // Listen for custom event from UserDashboard
+    const handleDataSourceChanged = (event) => {
+      const { dataSource: newDataSource, fileId } = event.detail;
+      setDataSource(newDataSource);
+      setActiveFileId(fileId ? fileId.toString() : null);
+    };
+
+    // Check for changes periodically (since storage events don't fire in same window)
+    const interval = setInterval(handleStorageChange, 500);
+    
+    // Listen for custom event
+    window.addEventListener("dataSourceChanged", handleDataSourceChanged);
+    // Also listen for storage events (for cross-tab communication)
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("dataSourceChanged", handleDataSourceChanged);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     async function fetchCustomers() {
       try {
         let rows = [];
         if (dataSource === "excel") {
-          const res = await api.get("/excel_customers/customers-table");
+          const fileId = activeFileId ? parseInt(activeFileId, 10) : null;
+          const params = fileId ? { params: { file_id: fileId } } : {};
+          const res = await api.get("/excel_customers/customers-table", params);
           rows = Array.isArray(res.data.rows) ? res.data.rows : [];
         } else {
           const res = await api.get("/customers-table");
@@ -38,12 +74,13 @@ function CustomerAnalysis() {
   
         setCustomers(rows);
         setFilteredCustomers(rows);
+        setTotalCustomers(rows.length); // Total customers from API
       } catch (err) {
         console.error("Error fetching customers", err);
       }
     }
     fetchCustomers();
-  }, [dataSource]);
+  }, [dataSource, activeFileId]);
 
   // 🔍 Search + Filters
   useEffect(() => {
@@ -70,23 +107,44 @@ function CustomerAnalysis() {
   
       const passesSpendingMin = spendingFilter.min === null || spending >= spendingFilter.min;
       const passesSpendingMax = spendingFilter.max === null || spending <= spendingFilter.max;
+
+      // Governorate filter - handle null/undefined and empty string
+      const customerGovernorate = customer.governorate ? String(customer.governorate).trim() : null;
+      const filterValue = governorateFilter ? String(governorateFilter).trim() : null;
+      
+      // If filter is set, customer must have matching governorate
+      // If filter is empty/null, show all customers
+      // Special case: "__uncategorized__" means show customers with no governorate
+      let passesGovernorate = true;
+      if (filterValue) {
+        if (filterValue === "__uncategorized__") {
+          // Show only customers without a governorate
+          passesGovernorate = !customerGovernorate;
+        } else {
+          // Show only customers with matching governorate
+          passesGovernorate = customerGovernorate && customerGovernorate === filterValue;
+        }
+      }
   
       return (
         passesSearch &&
         passesOrderMin &&
         passesOrderMax &&
         passesSpendingMin &&
-        passesSpendingMax
+        passesSpendingMax &&
+        passesGovernorate
       );
   });
 
     setFilteredCustomers(filtered);
-  }, [searchTerm, customers, orderFilter, spendingFilter]);
+    // totalCustomers is already set from the API fetch, don't update it here
+  }, [searchTerm, customers, orderFilter, spendingFilter, governorateFilter]);
 
   const clearFilters = () => {
     setSearchTerm("");
     setOrderFilter({ min: null, max: null });
     setSpendingFilter({ min: null, max: null });
+    setGovernorateFilter(null);
   };
 
   return (
@@ -99,7 +157,7 @@ function CustomerAnalysis() {
       {dataSource === "excel" ? (
         <>
           {/* TOP CHART */}
-          <TopCustomersChartExcel />
+          <TopCustomersChartExcel fileId={activeFileId ? parseInt(activeFileId, 10) : null} />
 
           {/* SEARCH */}
           <CustomerSearchBar
@@ -112,22 +170,24 @@ function CustomerAnalysis() {
           <CustomerFilters
             orderFilter={orderFilter}
             spendingFilter={spendingFilter}
+            governorateFilter={governorateFilter}
             setOrderFilter={setOrderFilter}
             setSpendingFilter={setSpendingFilter}
+            setGovernorateFilter={setGovernorateFilter}
             clearFilters={clearFilters}
             t={t}
           />
 
           {/* TABLE */}
-          <CustomersTableExcel customers={filteredCustomers} />
+          <CustomersTableExcel customers={filteredCustomers} totalCustomers={totalCustomers} />
 
           {/* CLASSIFICATION BY ORDERS */}
           <SectionHeader title={t("classification_by_orders")} />
-          <CustomerClassificationTablesExcel/>
+          <CustomerClassificationTablesExcel fileId={activeFileId ? parseInt(activeFileId, 10) : null} />
 
           {/* CLASSIFICATION BY SPENDING */}
           <SectionHeader title={t("classification_by_spending")} />
-          <CustomerSpendingClassificationTablesExcel />
+          <CustomerSpendingClassificationTablesExcel fileId={activeFileId ? parseInt(activeFileId, 10) : null} />
         </>
       ) : (
         <>
@@ -145,14 +205,16 @@ function CustomerAnalysis() {
           <CustomerFilters
             orderFilter={orderFilter}
             spendingFilter={spendingFilter}
+            governorateFilter={governorateFilter}
             setOrderFilter={setOrderFilter}
             setSpendingFilter={setSpendingFilter}
+            setGovernorateFilter={setGovernorateFilter}
             clearFilters={clearFilters}
             t={t}
           />
 
           {/* TABLE (Woocommerce) */}
-          <CustomersTable customers={filteredCustomers} />
+          <CustomersTable customers={filteredCustomers} totalCustomers={totalCustomers} />
 
           {/* CLASSIFICATION BY ORDERS */}
           <SectionHeader title={t("classification_by_orders")} />

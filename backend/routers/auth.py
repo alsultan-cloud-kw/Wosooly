@@ -6,7 +6,7 @@ from models import Client, Base, Subscription, SubscriptionPlan
 from utils.subscription import get_available_features
 from utils.auth import get_current_client, hash_password, create_access_token, verify_password
 from typing import Optional
-from schemas import LoginRequest, RegisterRequest, WooCommerceCredentialsRequest
+from schemas import LoginRequest, RegisterRequest, WooCommerceCredentialsRequest, SelectSubscriptionPlanRequest
 from tasks.fetch_orders import fetch_orders_task
 from datetime import datetime
 from celery.result import AsyncResult
@@ -33,6 +33,7 @@ def register_client(
     
     # --- Extract fields from request body ---
     email = request.email
+    phone = request.phone
     password = request.password
     client_name = request.client_name
     store_url = request.store_url
@@ -54,6 +55,7 @@ def register_client(
     # --- Create new client ---
     new_client = Client(
         email=email,
+        phone=phone,
         hashed_password=hash_password(password),
         client_name=client_name,
         store_url=store_url,
@@ -180,6 +182,13 @@ def login_client(
     user = db.query(Client).filter(Client.email == request.email).first()
     if not user or not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # --- Check if account is active ---
+    if not user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="Account is disabled. Please contact support."
+        )
 
     # --- Update login status ---
     user.is_logged_in = True
@@ -320,6 +329,79 @@ def get_available_features_of_client(
     
     return {
         "features": get_available_features(current_user, db)
+    }
+
+@router.post("/select-subscription-plan")
+def select_subscription_plan(
+    request: SelectSubscriptionPlanRequest,
+    current_user: Client = Depends(get_current_client),
+    db: Session = Depends(get_db),
+):
+    """
+    Select or update subscription plan for the current client.
+    Creates a new subscription if none exists, or updates existing one.
+    """
+    # Validate billing cycle
+    if request.billing_cycle not in ["monthly", "yearly"]:
+        raise HTTPException(
+            status_code=400,
+            detail="billing_cycle must be 'monthly' or 'yearly'"
+        )
+    
+    # Find the subscription plan
+    plan = db.query(SubscriptionPlan).filter(
+        SubscriptionPlan.name == request.plan_name,
+        SubscriptionPlan.billing_cycle == request.billing_cycle,
+        SubscriptionPlan.is_active == True
+    ).first()
+    
+    if not plan:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Subscription plan '{request.plan_name}' with billing cycle '{request.billing_cycle}' not found or inactive"
+        )
+    
+    # Check if client already has a subscription
+    existing_subscription = db.query(Subscription).filter(
+        Subscription.client_id == current_user.id
+    ).first()
+    
+    now = datetime.utcnow()
+    trial_end_date = now + timedelta(days=plan.trial_period_days)
+    
+    if existing_subscription:
+        # Update existing subscription
+        existing_subscription.plan_id = plan.id
+        # If subscription is canceled or expired, restart as trial
+        if existing_subscription.status in ["canceled", "expired"]:
+            existing_subscription.status = "trial"
+            existing_subscription.trial_end = trial_end_date
+            existing_subscription.current_period_end = trial_end_date
+        existing_subscription.updated_at = now
+        db.commit()
+        db.refresh(existing_subscription)
+        
+        subscription = existing_subscription
+    else:
+        # Create new subscription
+        subscription = Subscription(
+            client_id=current_user.id,
+            plan_id=plan.id,
+            status="trial",
+            trial_end=trial_end_date,
+            current_period_end=trial_end_date,
+        )
+        db.add(subscription)
+        db.commit()
+        db.refresh(subscription)
+    
+    # Get updated subscription info
+    from utils.subscription import get_subscription_info
+    subscription_info = get_subscription_info(current_user, db)
+    
+    return {
+        "message": f"Subscription plan '{request.plan_name}' selected successfully",
+        "subscription": subscription_info
     }
 
 @router.post("/woocommerce-credentials")

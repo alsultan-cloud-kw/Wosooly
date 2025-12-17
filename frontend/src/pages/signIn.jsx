@@ -69,7 +69,7 @@ export default function LoginPage() {
 
 
       alert("🎉 Login successful! Redirecting to dashboard...")
-      navigate("/sign-in-data-selection");
+      navigate("/user-dashboard");
     } catch (err) {
       console.error("Login failed:", err);
       alert("Invalid credentials, please try again.");

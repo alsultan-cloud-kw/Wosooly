@@ -59,3 +59,35 @@ def get_current_client(
     if not client:
         raise HTTPException(status_code=401, detail="User not found")
     return client
+
+def get_client_for_data_access(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+    selected_client_id: int = None
+) -> Client:
+    """
+    Get the client whose data should be accessed.
+    If the current user is an admin and selected_client_id is provided, return that client.
+    Otherwise, return the current authenticated client.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        current_client_id: int = payload.get("user_id")
+        if current_client_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token: missing user_id")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    current_client = db.query(Client).filter(Client.id == current_client_id).first()
+    if not current_client:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    # If admin and selected_client_id is provided, use that client's data
+    if current_client.user_type == "admin" and selected_client_id is not None:
+        target_client = db.query(Client).filter(Client.id == selected_client_id).first()
+        if not target_client:
+            raise HTTPException(status_code=404, detail="Selected client not found")
+        return target_client
+    
+    # Otherwise, use current client's data
+    return current_client

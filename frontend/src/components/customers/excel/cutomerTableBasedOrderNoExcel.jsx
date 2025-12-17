@@ -4,7 +4,7 @@ import Table from "../../table/Table";
 import api from "../../../../api_config";
 import { useTranslation } from "react-i18next";
 
-const CustomerClassificationTablesExcel = () => {
+const CustomerClassificationTablesExcel = ({ fileId = null }) => {
   const [groupedCustomers, setGroupedCustomers] = useState({});
   const [allCustomers, setAllCustomers] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -21,11 +21,16 @@ const CustomerClassificationTablesExcel = () => {
   const { t } = useTranslation("customerAnalysis");
   const tableHead = ["customer_name", "order_count", "total_spent"];
   const renderHead = (item, index) => <th key={index}>{t(item)}</th>;
+  
+  // Get fileId from props or localStorage
+  const activeFileId = fileId ?? (localStorage.getItem("active_excel_file_id") ? parseInt(localStorage.getItem("active_excel_file_id"), 10) : null);
+
   // Fetch Excel API data
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const res = await api.get("/excel_customers/full-customer-classification");
+        const params = activeFileId ? { params: { file_id: activeFileId } } : {};
+        const res = await api.get("/excel_customers/full-customer-classification", params);
         const result = res.data;
 
         if (result && result.columns && result.rows) {
@@ -52,7 +57,7 @@ const CustomerClassificationTablesExcel = () => {
     };
 
     fetchCustomers();
-  }, []);
+  }, [activeFileId]);
 
   // Classification logic
   useEffect(() => {

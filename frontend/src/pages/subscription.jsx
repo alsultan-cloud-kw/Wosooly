@@ -1,14 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import api from "../../api_config";
 
 export default function PricingPage() {
-
-  const {t, i18n} = useTranslation("subscription")
+  const navigate = useNavigate();
+  const {t, i18n} = useTranslation("subscription");
+  const [loadingPlan, setLoadingPlan] = useState(null);
+  const [billingCycle, setBillingCycle] = useState("monthly"); // "monthly" or "yearly"
 
   const plans = [
     {
+      id: "Free",
       name: t("name1"),
       monthlyPrice: 0,
       yearlyPrice: 0,
@@ -26,6 +31,7 @@ export default function PricingPage() {
       ],
     },
     {
+      id: "Standard",
       name: t("name2"),
       monthlyPrice: 5,
       yearlyPrice: 50,
@@ -44,6 +50,7 @@ export default function PricingPage() {
       ],
     },
     {
+      id: "Professional",
       name: t("name3"),
       monthlyPrice: "25",
       yearlyPrice: "250",
@@ -63,6 +70,7 @@ export default function PricingPage() {
       ],
     },
     {
+      id: "Enterprise",
       name: t("name4"),
       monthlyPrice: "125",
       yearlyPrice:"1250",
@@ -82,6 +90,28 @@ export default function PricingPage() {
       ],
     },
   ];
+
+  const handlePlanSelect = async (plan, billingCycle = "monthly") => {
+    try {
+      setLoadingPlan(plan.id);
+      
+      const response = await api.post("/select-subscription-plan", {
+        plan_name: plan.id,
+        billing_cycle: billingCycle
+      });
+      
+      console.log("Subscription plan selected:", response.data);
+      
+      // Navigate to datasource selector or dashboard after successful selection
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error selecting subscription plan:", error);
+      const errorMessage = error.response?.data?.detail || "Failed to select subscription plan. Please try again.";
+      alert(errorMessage);
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[oklch(0.98_0.01_265)] via-background to-[oklch(0.96_0.02_240)]">
@@ -128,6 +158,34 @@ export default function PricingPage() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
             {t("subtitle")}
           </p>
+          
+          {/* Billing Cycle Toggle */}
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <span className={`text-sm font-medium transition-colors ${billingCycle === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
+              Monthly
+            </span>
+            <button
+              type="button"
+              onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
+              className="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              role="switch"
+              aria-checked={billingCycle === "yearly"}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  billingCycle === "yearly" ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium transition-colors ${billingCycle === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
+              Yearly
+            </span>
+            {billingCycle === "yearly" && (
+              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-semibold">
+                Save up to 20%
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16">
@@ -148,40 +206,41 @@ export default function PricingPage() {
               <CardHeader className="text-center pb-8 pt-8">
                 <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
                 <CardDescription className="text-sm">{plan.description}</CardDescription>
-                  <div className="mt-6 space-y-2">
-                    {/* Monthly Price */}
+                  <div className="mt-6">
+                    {/* Dynamic Price based on billing cycle */}
                     <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-4xl font-bold text-foreground">
-                        {plan.monthlyPrice}
+                      <span className={`text-4xl font-bold ${billingCycle === "yearly" ? "text-primary" : "text-foreground"}`}>
+                        {billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
                       </span>
                       <div className="text-left">
                         <div className="text-sm font-semibold text-muted-foreground">{plan.currency}</div>
-                        <div className="text-sm text-muted-foreground">/month</div>
+                        <div className="text-sm text-muted-foreground">
+                          /{billingCycle === "monthly" ? "month" : "year"}
+                        </div>
                       </div>
                     </div>
-                    {/* Yearly Price */}
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-4xl font-bold text-primary">
-                        {plan.yearlyPrice}
-                      </span>
-                      <div className="text-left">
-                        <div className="text-sm font-semibold text-muted-foreground">{plan.currency}</div>
-                        <div className="text-sm text-muted-foreground">/year</div>
-                      </div>
-                    </div>
+                    {billingCycle === "yearly" && plan.yearlyPrice > 0 && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {plan.currency} {plan.monthlyPrice} per month billed annually
+                      </p>
+                    )}
                   </div>
               </CardHeader>
 
               <CardContent className="space-y-6">
-                <Link to={`/datasource-selector?plan=${plan.name}`} className="block">
-                  <Button
-                    className={`w-full h-12 font-semibold cursor-pointer ${
-                      plan.popular ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    {plan.price === "0" ? t("buttonFree") : t("buttonPaid")}
-                  </Button>
-                </Link>
+                <Button
+                  onClick={() => handlePlanSelect(plan, billingCycle)}
+                  disabled={loadingPlan === plan.id}
+                  className={`w-full h-12 font-semibold cursor-pointer ${
+                    plan.popular ? "" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {loadingPlan === plan.id ? (
+                    "Loading..."
+                  ) : (
+                    (billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice) === 0 ? t("buttonFree") : t("buttonPaid")
+                  )}
+                </Button>
 
                 <div className="pt-6 border-t border-border">
                   <h4 className="text-sm font-semibold text-foreground mb-4">{t("featuresIncluded")}:</h4>

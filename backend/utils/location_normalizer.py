@@ -1,328 +1,243 @@
 """
 Location Normalization Utility for Kuwait
 
-This module provides functions to normalize and match location data
-that may be entered in Arabic, English, or with spelling variations.
+Extracts governorate information from address fields (city, state, address_1, address_2)
+handling Arabic and English text with spelling variations.
 """
 
 import re
-from typing import Optional, Dict, List, Tuple
-from difflib import SequenceMatcher
-import unicodedata
+from typing import Optional, Dict
 
-# ============================================================================
-# 1. KUWAIT LOCATION DATABASE
-# ============================================================================
-
-# Standardized location names (English) with their Arabic equivalents and common variations
+# Kuwait Governorates and their areas
 KUWAIT_LOCATIONS = {
-    # Major Governorates
-    "Kuwait City": {
-        "arabic": ["الكويت", "مدينة الكويت", "الكويت العاصمة"],
-        "variations": ["kuwait", "kuwait city", "al kuwayt", "al-kuwait", "kuwait capital"],
-        "governorate": "Capital"
+    "Capital": {
+        "arabic": ["الكويت", "العاصمة", "الكويت العاصمة"],
+        "variations": ["capital", "kuwait city", "kuwait"],
+        "governorate": "Capital",
+        "areas": ["الدوحة", "السالمية", "الرميثية", "القرين", "دسمان", "الصالحية", "المرقاب", "الشرق", "القبلة", "دسمان", "شرق الصليبخات", "اليرموك", "قرطبة"],
+         
     },
+
     "Hawalli": {
-        "arabic": ["حولي", "الحولي"],
-        "variations": ["hawally", "hawalli", "hawali", "al hawalli"],
-        "governorate": "Hawalli"
+        "arabic": ["حولي", "محافظة حولي"],
+        "variations": ["hawalli", "hawally", "hawali"],
+        "governorate": "Hawalli",
+        "areas": ["السالمية", "الرميثية", "العديلية", "الجابرية", "بيان", "مشرف", "الروضة", "الزهراء", "حطين"],
+        
     },
+
     "Farwaniya": {
-        "arabic": ["الفروانية", "فروانية"],
-        "variations": ["farwaniya", "farwaniyah", "al farwaniya", "farwania"],
-        "governorate": "Farwaniya"
+        "arabic": ["الفروانية", "محافظة الفروانية"],
+        "variations": ["farwaniya", "farwaniyah", "farwania"],
+        "governorate": "Farwaniya",
+        "areas": ["الاندلس", "الرابية", "الخالدية", "جليب الشيوخ", "الرقعي", "الصليبية", "العمرية", "خيطان"]
     },
+
     "Ahmadi": {
-        "arabic": ["الأحمدي", "أحمدي"],
-        "variations": ["ahmadi", "ahmady", "al ahmadi", "ahmedi"],
-        "governorate": "Ahmadi"
+        "arabic": ["الأحمدي", "محافظة الأحمدي"],
+        "variations": ["ahmadi", "ahmady", "ahmedi"],
+        "governorate": "Ahmadi",
+        "areas": ["الفنطاس", "العقيلة", "الظهر", "المنقف", "الفنيطيس", "الوفرة", "الزور", "صباح الأحمد", "فهد الأحمد", "المحبولة"],
+        "variations_areas": ["mahboula", "mahboola", "al-mahboola", "al mahboola"]  # English variations for areas
     },
+
     "Jahra": {
-        "arabic": ["الجهراء", "جهراء"],
-        "variations": ["jahra", "jahrah", "al jahra", "jahraa", "jihra"],
-        "governorate": "Jahra"
+        "arabic": ["الجهراء", "محافظة الجهراء"],
+        "variations": ["jahra", "jahrah", "jihra"],
+        "governorate": "Jahra",
+        "areas": ["السالمي", "الكويت الجديدة", "الصليبية", "النسيم", "الري", "القصر", "الصبية", "كبد", "العبدلي", "المطلاع", "هدية", "تيماء"],
+         
     },
+
     "Mubarak Al-Kabeer": {
-        "arabic": ["مبارك الكبير", "مبارك الكبير"],
+        "arabic": ["مبارك الكبير", "محافظة مبارك الكبير"],
         "variations": ["mubarak al kabeer", "mubarak alkabeer", "mubarak alkabir", "mubarak"],
-        "governorate": "Mubarak Al-Kabeer"
-    },
-    
-    # Popular Areas/Neighborhoods
-    "Salmiya": {
-        "arabic": ["السالمية", "سالمية"],
-        "variations": ["salmiya", "salmiyah", "salmiyya", "al salmiya"],
-        "governorate": "Hawalli"
-    },
-    "Mahboula": {
-        "arabic": ["المهبولة", "مهبولة"],
-        "variations": ["mahboula", "mahbula", "al mahboula", "mahboola"],
-        "governorate": "Ahmadi"
-    },
-    "Fahaheel": {
-        "arabic": ["الفحيحيل", "فحيحيل"],
-        "variations": ["fahaheel", "fahahel", "al fahaheel", "fahahil"],
-        "governorate": "Ahmadi"
-    },
-    "Jabriya": {
-        "arabic": ["الجابرية", "جابرية"],
-        "variations": ["jabriya", "jabriyah", "al jabriya", "jabria"],
-        "governorate": "Hawalli"
-    },
-    "Salwa": {
-        "arabic": ["السالمية", "سالمية"],
-        "variations": ["salwa", "salwah", "al salwa"],
-        "governorate": "Hawalli"
-    },
-    "Mangaf": {
-        "arabic": ["منقف", "المنقف"],
-        "variations": ["mangaf", "mangaaf", "al mangaf", "mangav"],
-        "governorate": "Ahmadi"
-    },
-    "Sabah Al-Salem": {
-        "arabic": ["صباح السالم", "صباح سالم"],
-        "variations": ["sabah al salem", "sabah alsalem", "sabah salem", "sabah al-salem"],
-        "governorate": "Mubarak Al-Kabeer"
-    },
-    "Rumaithiya": {
-        "arabic": ["الرميثية", "رميثية"],
-        "variations": ["rumaithiya", "rumaithiyah", "rumaithia", "al rumaithiya"],
-        "governorate": "Hawalli"
-    },
-    "Surra": {
-        "arabic": ["السرة", "سرة"],
-        "variations": ["surra", "sura", "al surra", "surrah"],
-        "governorate": "Hawalli"
-    },
-    "Bayan": {
-        "arabic": ["بيان", "البيان"],
-        "variations": ["bayan", "al bayan", "biyan"],
-        "governorate": "Hawalli"
-    },
-    "Adan": {
-        "arabic": ["عدان", "العدان"],
-        "variations": ["adan", "al adan", "adhan"],
-        "governorate": "Ahmadi"
-    },
-    "Abu Halifa": {
-        "arabic": ["أبو حليفة", "ابو حليفة"],
-        "variations": ["abu halifa", "abu halifah", "abu halyfa"],
-        "governorate": "Ahmadi"
-    },
-    "Wafra": {
-        "arabic": ["الوفرة", "وفرة"],
-        "variations": ["wafra", "wafrah", "al wafra", "wafra farms"],
-        "governorate": "Ahmadi"
-    },
-    "Kabad": {
-        "arabic": ["كبد", "الكبد"],
-        "variations": ["kabad", "kabed", "al kabad"],
-        "governorate": "Ahmadi"
-    },
-    "Al Qusour": {
-        "arabic": ["القصور", "قصور"],
-        "variations": ["al qusour", "qusour", "al-qosour", "qosour", "al qusur"],
-        "governorate": "Farwaniya"
-    },
+        "governorate": "Mubarak Al-Kabeer",
+        "areas": ["صباح السالم", "العدان", "القرين", "الفنيطيس", "المسيلة", "الوفرة", "القصور"],
+        
+    }
 }
 
-# ============================================================================
-# 2. TEXT NORMALIZATION FUNCTIONS
-# ============================================================================
 
 def normalize_arabic_text(text: str) -> str:
-    """
-    Normalize Arabic text by:
-    - Removing diacritics (tashkeel)
-    - Normalizing Arabic characters (أ, إ, آ -> ا)
-    - Removing extra whitespace
-    """
+    """Normalize Arabic text by removing diacritics and standardizing characters."""
     if not text:
         return ""
     
-    # Remove diacritics (Arabic tashkeel)
+    text = str(text).strip()
+    
+    # Remove diacritics (tashkeel)
     text = re.sub(r'[\u064B-\u065F\u0670]', '', text)
     
     # Normalize Arabic characters
-    # أ, إ, آ -> ا
     text = text.replace('أ', 'ا').replace('إ', 'ا').replace('آ', 'ا')
-    # ي -> ي (normalize different forms)
     text = text.replace('ى', 'ي')
-    # ة -> ه
     text = text.replace('ة', 'ه')
     
-    # Remove extra whitespace
-    text = ' '.join(text.split())
-    
-    return text.strip()
-
-
-def normalize_english_text(text: str) -> str:
-    """
-    Normalize English text by:
-    - Converting to lowercase
-    - Removing special characters (keeping spaces and hyphens)
-    - Normalizing whitespace
-    """
-    if not text:
-        return ""
-    
-    # Convert to lowercase
-    text = text.lower()
-    
-    # Remove special characters except spaces, hyphens, and alphanumeric
-    text = re.sub(r'[^\w\s-]', '', text)
-    
     # Normalize whitespace
-    text = ' '.join(text.split())
-    
-    # Remove leading/trailing hyphens
-    text = text.strip('-').strip()
+    text = re.sub(r'\s+', ' ', text).strip()
     
     return text
 
 
-def detect_language(text: str) -> str:
-    """
-    Detect if text is primarily Arabic or English.
-    Returns 'ar' for Arabic, 'en' for English, 'mixed' for mixed.
-    """
-    if not text:
-        return 'en'
-    
-    # Check for Arabic characters (Unicode range: 0600-06FF)
-    arabic_pattern = re.compile(r'[\u0600-\u06FF]')
-    arabic_chars = len(arabic_pattern.findall(text))
-    total_chars = len(re.findall(r'[a-zA-Z\u0600-\u06FF]', text))
-    
-    if total_chars == 0:
-        return 'en'
-    
-    arabic_ratio = arabic_chars / total_chars if total_chars > 0 else 0
-    
-    if arabic_ratio > 0.5:
-        return 'ar'
-    elif arabic_ratio > 0.1:
-        return 'mixed'
-    else:
-        return 'en'
-
-
-def normalize_location_text(text: str) -> str:
-    """
-    Normalize location text regardless of language.
-    """
+def normalize_english_text(text: str) -> str:
+    """Normalize English text."""
     if not text:
         return ""
     
-    lang = detect_language(text)
+    text = str(text).strip().lower()
+    # Remove special characters except spaces
+    text = re.sub(r'[^\w\s]', '', text)
+    # Normalize whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
     
-    if lang == 'ar' or lang == 'mixed':
-        normalized = normalize_arabic_text(text)
-    else:
-        normalized = normalize_english_text(text)
-    
-    return normalized
+    return text
 
-
-# ============================================================================
-# 3. FUZZY MATCHING FUNCTIONS
-# ============================================================================
 
 def similarity_ratio(str1: str, str2: str) -> float:
-    """
-    Calculate similarity ratio between two strings (0.0 to 1.0).
-    Uses SequenceMatcher for fuzzy matching.
-    """
+    """Calculate similarity ratio between two strings."""
     if not str1 or not str2:
         return 0.0
     
-    # Normalize both strings
-    norm1 = normalize_location_text(str1)
-    norm2 = normalize_location_text(str2)
+    if str1 == str2:
+        return 1.0
     
-    if not norm1 or not norm2:
+    # Simple substring check
+    if str1 in str2 or str2 in str1:
+        return 0.8
+    
+    # Calculate character overlap
+    set1 = set(str1.lower())
+    set2 = set(str2.lower())
+    if not set1 or not set2:
         return 0.0
     
-    return SequenceMatcher(None, norm1, norm2).ratio()
+    intersection = len(set1 & set2)
+    union = len(set1 | set2)
+    
+    return intersection / union if union > 0 else 0.0
 
 
-def find_best_location_match(
-    input_text: str,
-    threshold: float = 0.7,
-    max_results: int = 3
-) -> List[Tuple[str, float, Dict]]:
-    """
-    Find the best matching location(s) for input text.
+def find_best_location_match(input_text: str, threshold: float = 0.6) -> Optional[str]:
+    """Find the best matching location from KUWAIT_LOCATIONS."""
+    if not input_text or not input_text.strip():
+        return None
     
-    Args:
-        input_text: The location text to match (can be Arabic, English, or mixed)
-        threshold: Minimum similarity score (0.0 to 1.0)
-        max_results: Maximum number of results to return
+    input_text = str(input_text).strip()
+    normalized_input = normalize_arabic_text(input_text) if any('\u0600' <= c <= '\u06FF' for c in input_text) else normalize_english_text(input_text)
     
-    Returns:
-        List of tuples: (standardized_name, similarity_score, location_info)
-    """
-    if not input_text:
-        return []
+    # First pass: Check for exact area matches (highest priority)
+    for location_name, location_info in KUWAIT_LOCATIONS.items():
+        # Check Arabic areas
+        for area in location_info.get("areas", []):
+            norm_area = normalize_arabic_text(area)
+            if norm_area == normalized_input:
+                return location_name  # Exact area match - return immediately
+        
+        # Check English area variations
+        for area_var in location_info.get("variations_areas", []):
+            norm_area_var = normalize_english_text(area_var)
+            if norm_area_var == normalized_input:
+                return location_name  # Exact area variation match - return immediately
     
-    normalized_input = normalize_location_text(input_text)
-    matches = []
+    best_match = None
+    best_score = 0.0
     
-    for standard_name, location_info in KUWAIT_LOCATIONS.items():
+    # Second pass: Check all matches and score them
+    for location_name, location_info in KUWAIT_LOCATIONS.items():
         scores = []
         
-        # Check against English variations
-        for variation in location_info.get("variations", []):
-            norm_var = normalize_english_text(variation)
-            score = similarity_ratio(normalized_input, norm_var)
-            scores.append(score)
+        # Check areas first (high priority)
+        for area in location_info.get("areas", []):
+            norm_area = normalize_arabic_text(area)
+            if norm_area == normalized_input:
+                return location_name  # Exact area match
+            if norm_area in normalized_input or normalized_input in norm_area:
+                scores.append(0.95)  # High score for area match
         
-        # Check against Arabic names
+        # Check English variations for areas (like "mahboula", "al-mahboola")
+        for area_var in location_info.get("variations_areas", []):
+            norm_area_var = normalize_english_text(area_var)
+            if norm_area_var == normalized_input:
+                return location_name  # Exact area variation match
+            if norm_area_var in normalized_input or normalized_input in norm_area_var:
+                scores.append(0.95)  # High score for area variation match
+        
+        # Check Arabic names
         for arabic_name in location_info.get("arabic", []):
             norm_ar = normalize_arabic_text(arabic_name)
-            score = similarity_ratio(normalized_input, norm_ar)
-            scores.append(score)
+            if norm_ar == normalized_input:
+                return location_name  # Exact match
+            if norm_ar in normalized_input or normalized_input in norm_ar:
+                scores.append(0.9)  # Substring match
+            scores.append(similarity_ratio(normalized_input, norm_ar))
         
-        # Check against standard name
-        norm_standard = normalize_english_text(standard_name)
-        score = similarity_ratio(normalized_input, norm_standard)
-        scores.append(score)
+        # Check English variations
+        for variation in location_info.get("variations", []):
+            norm_var = normalize_english_text(variation)
+            if norm_var == normalized_input:
+                return location_name  # Exact match
+            if norm_var in normalized_input or normalized_input in norm_var:
+                scores.append(0.9)  # Substring match
+            scores.append(similarity_ratio(normalized_input, norm_var))
         
-        # Get best score for this location
-        best_score = max(scores) if scores else 0.0
-        
-        if best_score >= threshold:
-            matches.append((standard_name, best_score, location_info))
+        # Get max score for this location
+        max_score = max(scores) if scores else 0.0
+        if max_score > best_score and max_score >= threshold:
+            best_score = max_score
+            best_match = location_name
     
-    # Sort by score (descending)
-    matches.sort(key=lambda x: x[1], reverse=True)
-    
-    return matches[:max_results]
+    return best_match
 
 
-def standardize_location(input_text: str, threshold: float = 0.7) -> Optional[str]:
-    """
-    Standardize a location name to the canonical form.
+def extract_location_from_address(address_text: str) -> Optional[str]:
+    """Extract location from address_1 or address_2 text."""
+    if not address_text:
+        return None
     
-    Args:
-        input_text: The location text to standardize
-        threshold: Minimum similarity score to accept a match
+    # Normalize the address text
+    normalized = normalize_arabic_text(address_text)
     
-    Returns:
-        Standardized location name, or None if no good match found
-    """
-    matches = find_best_location_match(input_text, threshold=threshold, max_results=1)
+    # Pattern 1: Look for "محافظة" (governorate) followed by name
+    governorate_match = re.search(r'محافظة\s+([^،,]+)', normalized)
+    if governorate_match:
+        gov_name = governorate_match.group(1).strip()
+        matched = find_best_location_match(gov_name, threshold=0.5)
+        if matched:
+            return matched
     
-    if matches:
-        return matches[0][0]  # Return the standardized name
+    # Pattern 2: Look for "منطقة" (area) followed by name
+    area_match = re.search(r'منطقة\s+([^،,]+)', normalized)
+    if area_match:
+        area_name = area_match.group(1).strip()
+        matched = find_best_location_match(area_name, threshold=0.5)
+        if matched:
+            return matched
+    
+    # Pattern 3: Try to match any known location name in the text
+    # Split by common separators
+    parts = re.split(r'[،,\-]', normalized)
+    for part in parts:
+        part = part.strip()
+        if len(part) > 2:
+            matched = find_best_location_match(part, threshold=0.5)
+            if matched:
+                return matched
+    
+    # Pattern 4: Direct match of the whole address
+    matched = find_best_location_match(normalized, threshold=0.4)
+    if matched:
+        return matched
     
     return None
 
 
-# ============================================================================
-# 4. ADDRESS NORMALIZATION
-# ============================================================================
+def get_governorate_from_location(location_name: Optional[str]) -> Optional[str]:
+    """Get governorate name from a standardized location name."""
+    if not location_name:
+        return None
+    return KUWAIT_LOCATIONS.get(location_name, {}).get("governorate")
+
 
 def normalize_address(
     address_1: Optional[str] = None,
@@ -333,127 +248,94 @@ def normalize_address(
     country: Optional[str] = None
 ) -> Dict[str, Optional[str]]:
     """
-    Normalize all address components.
+    Normalize all address components and extract governorate from all fields.
     
     Returns:
-        Dictionary with normalized address fields:
+        Dictionary with normalized address fields and extracted governorate:
         {
             'address_1': normalized,
             'address_2': normalized,
-            'city': standardized_city_name,
-            'state': standardized_state,
-            'postcode': normalized_postcode,
-            'country': normalized_country,
+            'city': normalized,
+            'state': normalized,
+            'postcode': normalized,
+            'country': normalized,
             'standardized_city': canonical_city_name,
-            'governorate': governorate_name
+            'governorate': governorate_name (one of: Capital, Hawalli, Farwaniya, Ahmadi, Jahra, Mubarak Al-Kabeer)
         }
     """
     result = {
-        'address_1': normalize_location_text(address_1) if address_1 else None,
-        'address_2': normalize_location_text(address_2) if address_2 else None,
-        'city': normalize_location_text(city) if city else None,
-        'state': normalize_location_text(state) if state else None,
+        'address_1': address_1.strip() if address_1 else None,
+        'address_2': address_2.strip() if address_2 else None,
+        'city': city.strip() if city else None,
+        'state': state.strip() if state else None,
         'postcode': postcode.strip() if postcode else None,
-        'country': normalize_english_text(country) if country else None,
+        'country': country.strip() if country else None,
         'standardized_city': None,
         'governorate': None
     }
     
-    # Standardize city
+    # Priority 1: Try to match city first (this will check areas too)
     if result['city']:
-        standardized = standardize_location(result['city'])
-        if standardized:
-            result['standardized_city'] = standardized
-            result['governorate'] = KUWAIT_LOCATIONS.get(standardized, {}).get("governorate")
+        matched = find_best_location_match(result['city'], threshold=0.4)  # Lower threshold to catch more matches
+        if matched:
+            result['standardized_city'] = matched
+            result['governorate'] = get_governorate_from_location(matched)
+            return result
     
-    # Also check state if city wasn't found
-    if not result['standardized_city'] and result['state']:
-        standardized = standardize_location(result['state'])
-        if standardized:
-            result['standardized_city'] = standardized
-            result['governorate'] = KUWAIT_LOCATIONS.get(standardized, {}).get("governorate")
+    # Priority 2: Try state
+    if not result['governorate'] and result['state']:
+        matched = find_best_location_match(result['state'], threshold=0.5)
+        if matched:
+            result['standardized_city'] = matched
+            result['governorate'] = get_governorate_from_location(matched)
+            return result
     
-    # Normalize country (Kuwait variations)
-    if result['country']:
-        country_lower = result['country'].lower()
-        if 'kuwait' in country_lower or country_lower in ['kw', 'kwt', 'kuwait']:
-            result['country'] = 'Kuwait'
+    # Priority 3: Parse address_1 for location
+    if not result['governorate'] and address_1:
+        extracted_location = extract_location_from_address(address_1)
+        if extracted_location:
+            result['standardized_city'] = extracted_location
+            result['governorate'] = get_governorate_from_location(extracted_location)
+            return result
+    
+    # Priority 4: Parse address_2 for location
+    if not result['governorate'] and address_2:
+        extracted_location = extract_location_from_address(address_2)
+        if extracted_location:
+            result['standardized_city'] = extracted_location
+            result['governorate'] = get_governorate_from_location(extracted_location)
+            return result
+    
+    # Priority 5: Try direct match on address_1 (for cases like "Block 7 street 12" with city in another field)
+    if not result['governorate'] and address_1:
+        # Normalize address_1 for matching
+        normalized_addr1 = normalize_arabic_text(address_1) if any('\u0600' <= c <= '\u06FF' for c in address_1) else normalize_english_text(address_1)
+        
+        # Try matching any known location name (governorate names) in address_1
+        for location_name in KUWAIT_LOCATIONS.keys():
+            for arabic_name in KUWAIT_LOCATIONS[location_name].get("arabic", []):
+                norm_ar = normalize_arabic_text(arabic_name)
+                if norm_ar in normalized_addr1 or normalized_addr1 in norm_ar:
+                    result['governorate'] = get_governorate_from_location(location_name)
+                    result['standardized_city'] = location_name
+                    return result
+        
+        # Try matching areas in address_1 (check all areas for all governorates)
+        for location_name in KUWAIT_LOCATIONS.keys():
+            # Check Arabic areas
+            for area in KUWAIT_LOCATIONS[location_name].get("areas", []):
+                norm_area = normalize_arabic_text(area)
+                if norm_area in normalized_addr1 or normalized_addr1 in norm_area:
+                    result['governorate'] = get_governorate_from_location(location_name)
+                    result['standardized_city'] = location_name
+                    return result
+            
+            # Check English area variations
+            for area_var in KUWAIT_LOCATIONS[location_name].get("variations_areas", []):
+                norm_area_var = normalize_english_text(area_var)
+                if norm_area_var in normalized_addr1 or normalized_addr1 in norm_area_var:
+                    result['governorate'] = get_governorate_from_location(location_name)
+                    result['standardized_city'] = location_name
+                    return result
     
     return result
-
-
-# ============================================================================
-# 5. LOCATION MATCHING FOR DATABASE QUERIES
-# ============================================================================
-
-def build_location_filter(
-    normalized_address: Dict[str, Optional[str]],
-    fuzzy: bool = True,
-    threshold: float = 0.7
-) -> Dict[str, any]:
-    """
-    Build a filter dictionary for database queries.
-    
-    Args:
-        normalized_address: Output from normalize_address()
-        fuzzy: If True, include fuzzy matching options
-        threshold: Similarity threshold for fuzzy matching
-    
-    Returns:
-        Dictionary with filter criteria for SQLAlchemy queries
-    """
-    filters = {}
-    
-    # Exact match on standardized city
-    if normalized_address.get('standardized_city'):
-        filters['city_exact'] = normalized_address['standardized_city']
-    
-    # Fuzzy matching options (for use with LIKE or similarity functions)
-    if fuzzy and normalized_address.get('city'):
-        matches = find_best_location_match(
-            normalized_address['city'],
-            threshold=threshold,
-            max_results=5
-        )
-        if matches:
-            filters['city_fuzzy'] = [match[0] for match in matches]
-    
-    # Governorate filter
-    if normalized_address.get('governorate'):
-        filters['governorate'] = normalized_address['governorate']
-    
-    # Country filter
-    if normalized_address.get('country'):
-        filters['country'] = normalized_address['country']
-    
-    return filters
-
-
-# ============================================================================
-# 6. HELPER FUNCTIONS FOR DATABASE INTEGRATION
-# ============================================================================
-
-def get_location_search_terms(location_text: str) -> List[str]:
-    """
-    Get all possible search terms for a location (for database LIKE queries).
-    """
-    normalized = normalize_location_text(location_text)
-    matches = find_best_location_match(normalized, threshold=0.6, max_results=5)
-    
-    search_terms = [normalized]
-    
-    for standard_name, score, location_info in matches:
-        search_terms.append(standard_name)
-        search_terms.extend(location_info.get("variations", []))
-        search_terms.extend(location_info.get("arabic", []))
-    
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_terms = []
-    for term in search_terms:
-        term_lower = term.lower()
-        if term_lower not in seen:
-            seen.add(term_lower)
-            unique_terms.append(term)
-    
-    return unique_terms

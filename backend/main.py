@@ -5,7 +5,7 @@ from routers import auth
 import redis
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-from routers import orders, products, customers, nl2sql, whatsapp, sync, upload, dashboard_excel, excel_products, excel_customers, excel_orders, woocommerce, excel_chat
+from routers import orders, products, customers, nl2sql, whatsapp, sync, upload, dashboard_excel, excel_products, excel_customers, excel_orders, woocommerce, excel_chat, admin
 
 load_dotenv()
 app = FastAPI()
@@ -54,6 +54,7 @@ app.include_router(excel_products.router)
 app.include_router(excel_customers.router)
 app.include_router(excel_orders.router)
 app.include_router(excel_chat.router, prefix="/excel-chat", tags=["excel-chat"])
+app.include_router(admin.router)
 
 # app.include_router(ai_chat.router)
 # app.include_router(whatsapp_messaging.router)

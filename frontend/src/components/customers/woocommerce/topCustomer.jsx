@@ -9,19 +9,33 @@ const TopCustomersChart = () => {
   const { t } = useTranslation("customerAnalysis");
 
   useEffect(() => {
-    api.get("/top-customers").then((res) => {
-      const data = res.data.rows
-      const names = data.map((c) => c.user);
-      const totalSpent = data.map((c) => c.total_spending);
+    api.get("/top-customers")
+      .then((res) => {
+        // Handle both formats: direct array or object with rows property
+        const data = Array.isArray(res.data) ? res.data : (res.data?.rows || []);
+        
+        if (!data || data.length === 0) {
+          setCategories([]);
+          setSeries([{ name: "Total Spent", data: [] }]);
+          return;
+        }
+        
+        const names = data.map((c) => c.user || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unknown');
+        const totalSpent = data.map((c) => c.total_spending || 0);
 
-      setCategories(names);
-      setSeries([
-        {
-          name: "Total Spent",
-          data: totalSpent,
-        },
-      ]);
-    });
+        setCategories(names);
+        setSeries([
+          {
+            name: "Total Spent",
+            data: totalSpent,
+          },
+        ]);
+      })
+      .catch((err) => {
+        console.error("Error fetching top customers:", err);
+        setCategories([]);
+        setSeries([{ name: "Total Spent", data: [] }]);
+      });
   }, []);
 
   const options = {

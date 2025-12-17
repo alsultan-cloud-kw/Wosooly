@@ -3,13 +3,14 @@ import Chart from "react-apexcharts";
 import { useTranslation } from "react-i18next";
 import api from "../../../../api_config"
 
-const TopCustomersChartExcel = () => {
+const TopCustomersChartExcel = ({ fileId = null }) => {
   const [series, setSeries] = useState([]);
   const [categories, setCategories] = useState([]);
   const { t } = useTranslation("customerAnalysis");
 
   useEffect(() => {
-    api.get("/dashboard_excel/top-customers").then((res) => {
+    const params = fileId ? { params: { file_id: fileId } } : {};
+    api.get("/dashboard_excel/top-customers", params).then((res) => {
       const data = res.data.rows
       const names = data.map((c) => c.user);
       const totalSpent = data.map((c) => c.total_spending);
@@ -21,8 +22,12 @@ const TopCustomersChartExcel = () => {
           data: totalSpent,
         },
       ]);
+    }).catch((err) => {
+      console.error("Error fetching top customers:", err);
+      setCategories([]);
+      setSeries([]);
     });
-  }, []);
+  }, [fileId]);
 
   const options = {
     chart: {
