@@ -4,12 +4,74 @@ import axios from 'axios';
 import Table from '../../table/Table'; // Update path based on your actual file structure
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import api from '../../../../api_config';
+// import { MessageCircle } from 'lucide-react';
+import { FaWhatsapp } from "react-icons/fa";
 
 const CustomersTable = ({customers, totalCustomers}) => {
     const [topCustomers, setTopCustomers] = useState([]);
+    const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+    const [checkingSubscription, setCheckingSubscription] = useState(false);
 
     const navigate = useNavigate();
     const { t } = useTranslation("customerAnalysis");
+
+    // Fetch subscription info on mount
+    useEffect(() => {
+        const fetchSubscriptionInfo = async () => {
+            try {
+                const res = await api.get('/subscription-info');
+                setSubscriptionInfo(res.data);
+            } catch (error) {
+                console.error('Failed to fetch subscription info:', error);
+                setSubscriptionInfo(null);
+            }
+        };
+        fetchSubscriptionInfo();
+    }, []);
+
+    // Check if user has WhatsApp messaging feature
+    const hasWhatsAppAccess = () => {
+        if (!subscriptionInfo) return false;
+        const features = subscriptionInfo.available_features || [];
+        return features.includes('whatsapp_messaging');
+    };
+
+    const handleWhatsAppClick = async (e, customerId) => {
+        e.stopPropagation(); // Prevent row click navigation
+        
+        if (checkingSubscription) return;
+
+        try {
+            setCheckingSubscription(true);
+            
+            // If subscription info not loaded, fetch it
+            if (!subscriptionInfo) {
+                const res = await api.get('/subscription-info');
+                setSubscriptionInfo(res.data);
+                
+                const features = res.data?.available_features || [];
+                if (!features.includes('whatsapp_messaging')) {
+                    alert('WhatsApp messaging is not available in your current subscription plan. Please upgrade to Standard, Professional, or Enterprise plan.');
+                    return;
+                }
+            } else {
+                // Check with cached subscription info
+                if (!hasWhatsAppAccess()) {
+                    alert('WhatsApp messaging is not available in your current subscription plan. Please upgrade to Standard, Professional, or Enterprise plan.');
+                    return;
+                }
+            }
+
+            // Navigate to messaging page with customer pre-selected
+            navigate(`/messaging?customerId=${customerId}`);
+        } catch (error) {
+            console.error('Error checking subscription:', error);
+            alert('Failed to check subscription. Please try again.');
+        } finally {
+            setCheckingSubscription(false);
+        }
+    };
 
     const topCustomerHead = ["user", "total_orders", "total_spending", "phone"];
 
@@ -24,7 +86,22 @@ const CustomersTable = ({customers, totalCustomers}) => {
             <td>{item.user}</td>
             <td>{item.total_orders}</td>
             <td>{item.total_spending}</td>
-            <td>{item.phone}</td>
+            <td>
+                <div className="flex items-center gap-2">
+                    <span>{item.phone || 'N/A'}</span>
+                    {item.phone && (
+                        <button
+                            onClick={(e) => handleWhatsAppClick(e, item.id)}
+                            disabled={checkingSubscription}
+                            className="p-1.5 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Send WhatsApp message"
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <FaWhatsapp size={18} color="#128C7E" />
+                        </button>
+                    )}
+                </div>
+            </td>
         </tr>
     );
 

@@ -8,8 +8,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ShieldCheck, Mail, Lock, User, Building2, AlertCircle, CheckCircle2 } from "lucide-react"
 import api from "../../../api_config"
 import { DashboardHeader } from "@/components/admin/dashboard-header"
+import { useTranslation } from "react-i18next"
 
 export default function AdminRegister() {
+  const { t } = useTranslation("adminRegister");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -25,7 +27,7 @@ export default function AdminRegister() {
     setError("")
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
+      setError(t("errors.passwordsDoNotMatch"))
       return
     }
 
@@ -59,7 +61,7 @@ export default function AdminRegister() {
     } catch (err) {
       console.error("Failed to register admin:", err)
       const backendMessage = err.response?.data?.detail
-      setError(backendMessage || "Failed to create admin account. Please try again.")
+      setError(backendMessage || t("errors.failedToCreate"))
     } finally {
       setIsLoading(false)
     }
@@ -78,20 +80,20 @@ export default function AdminRegister() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-tr from-primary to-accent shadow-lg shadow-primary/30">
             <ShieldCheck className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Admin Portal</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Create your admin account and start managing your clients with a{" "}
-            <span className="font-semibold text-primary">colorful, modern dashboard</span>.
+            {t("subtitle")}{" "}
+            <span className="font-semibold text-primary">{t("subtitleHighlight")}</span>.
           </p>
         </div>
 
         <Card className="border border-primary/10 bg-gradient-to-br from-background via-background/95 to-primary/5 shadow-xl shadow-primary/10 backdrop-blur-sm">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Create Admin Account
+              {t("cardTitle")}
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground">
-              A few quick details to personalize your workspace.
+              {t("cardDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -105,14 +107,14 @@ export default function AdminRegister() {
 
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Full Name
+                  {t("form.fullName")}
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/80" />
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder={t("form.fullNamePlaceholder")}
                     value={formData.fullName}
                     onChange={(e) => updateFormData("fullName", e.target.value)}
                     className="pl-10 border-border/60 focus-visible:ring-primary/80"
@@ -123,14 +125,14 @@ export default function AdminRegister() {
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Work Email
+                  {t("form.workEmail")}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-accent" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@company.com"
+                    placeholder={t("form.workEmailPlaceholder")}
                     value={formData.email}
                     onChange={(e) => updateFormData("email", e.target.value)}
                     className="pl-10 border-border/60 focus-visible:ring-accent/80"
@@ -159,14 +161,14 @@ export default function AdminRegister() {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Password
+                  {t("form.password")}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-accent" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t("form.passwordPlaceholder")}
                     value={formData.password}
                     onChange={(e) => updateFormData("password", e.target.value)}
                     className="pl-10 border-border/60 focus-visible:ring-accent/80"
@@ -180,14 +182,14 @@ export default function AdminRegister() {
                   htmlFor="confirmPassword"
                   className="text-xs font-medium text-muted-foreground uppercase tracking-wide"
                 >
-                  Confirm Password
+                  {t("form.confirmPassword")}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t("form.confirmPasswordPlaceholder")}
                     value={formData.confirmPassword}
                     onChange={(e) => updateFormData("confirmPassword", e.target.value)}
                     className="pl-10 border-border/60 focus-visible:ring-primary/80"
@@ -204,7 +206,7 @@ export default function AdminRegister() {
                 className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:from-primary/90 hover:to-accent/90 shadow-md shadow-primary/30 transition-all duration-200"
                 disabled={isLoading}
               >
-                {isLoading ? "Creating Your Space..." : "Create Admin Account"}
+                {isLoading ? t("button.creating") : t("button.createAccount")}
               </Button>
             </form>
           </CardContent>

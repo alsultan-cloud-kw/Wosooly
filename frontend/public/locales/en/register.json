@@ -8,6 +8,9 @@
     "emailLabel": "Email Address *",
     "emailPlaceholder": "you@company.com",
 
+    "phoneLabel": "Phone Number *",
+    "phonePlaceholder": "+1234567890",
+
     "passwordLabel": "Password *",
     "passwordPlaceholder": "Create a strong password",
 

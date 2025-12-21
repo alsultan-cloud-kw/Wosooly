@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
+import { useTranslation } from "react-i18next"
 
 const data = [
   { date: "Jan", clients: 320, files: 450 },
@@ -11,12 +12,13 @@ const data = [
 ]
 
 export function ActivityChart() {
+  const { t } = useTranslation("adminDashboard");
   return (
     <Card className="border border-border">
       <CardHeader>
-        <CardTitle className="text-foreground">Growth Overview</CardTitle>
+        <CardTitle className="text-foreground">{t("activityChart.title")}</CardTitle>
         <CardDescription className="text-muted-foreground">
-          Client and file growth over time
+          {t("activityChart.description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -63,7 +65,7 @@ export function ActivityChart() {
               stroke="rgb(99 102 241)"
               strokeWidth={2}
               fill="url(#clients)"
-              name="Clients"
+              name={t("activityChart.clients")}
             />
             <Area
               type="monotone"
@@ -71,7 +73,7 @@ export function ActivityChart() {
               stroke="rgb(34 197 94)"
               strokeWidth={2}
               fill="url(#files)"
-              name="Files"
+              name={t("activityChart.files")}
             />
           </AreaChart>
         </ResponsiveContainer>

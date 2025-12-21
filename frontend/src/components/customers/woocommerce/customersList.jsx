@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import api from "../../../../api_config";
 // import MessagingCustomerClassificationTables from "../Messaging_customer_classsification";
 
@@ -6,6 +7,8 @@ const CustomerList = ({ onSelectCustomers }) => {
   const [customers, setCustomers] = useState([]);
   const [selected, setSelected] = useState(new Set()); // ✅ shared state
   const [filter, setFilter] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filteredCustomerId, setFilteredCustomerId] = useState(null); // Track if we're showing only one customer
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,16 +21,51 @@ const CustomerList = ({ onSelectCustomers }) => {
       .catch((err) => console.error(err));
   }, []);
 
+  // Auto-select customer from URL params and filter to show only that customer
+  useEffect(() => {
+    const customerId = searchParams.get('customerId');
+    if (customerId && customers.length > 0) {
+      const customerIdNum = parseInt(customerId, 10);
+      const customerExists = customers.some(c => c.id === customerIdNum);
+      
+      if (customerExists) {
+        setSelected(new Set([customerIdNum]));
+        setFilteredCustomerId(customerIdNum); // Filter to show only this customer
+        // Remove the param from URL after selection
+        searchParams.delete('customerId');
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [customers, searchParams, setSearchParams]);
+
+  // Function to clear filter and show all customers
+  const clearFilter = () => {
+    setFilteredCustomerId(null);
+    setFilter("");
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     onSelectCustomers(Array.from(selected)); // send selected ids to parent
-  }, [selected]);
+  }, [selected, onSelectCustomers]);
 
-  // Filtering
-  const filteredCustomers = customers.filter(
-    (c) =>
-      c.user.toLowerCase().includes(filter.toLowerCase()) ||
-      c.phone.includes(filter)
-  );
+  // Filtering - first by selected customer (if filtered), then by search term
+  const filteredCustomers = customers.filter((c) => {
+    // If filteredCustomerId is set, show only that customer
+    if (filteredCustomerId !== null) {
+      if (c.id !== filteredCustomerId) return false;
+    }
+    
+    // Then apply search filter
+    if (filter.trim()) {
+      return (
+        c.user.toLowerCase().includes(filter.toLowerCase()) ||
+        c.phone.includes(filter)
+      );
+    }
+    
+    return true;
+  });
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
@@ -62,9 +100,20 @@ const CustomerList = ({ onSelectCustomers }) => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        Customers List (all customers)
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-semibold text-gray-800">
+          {filteredCustomerId !== null ? "Selected Customer" : "Customers List (all customers)"}
+        </h2>
+        {filteredCustomerId !== null && (
+          <button
+            onClick={clearFilter}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
+            title="Show all customers"
+          >
+            Show All Customers
+          </button>
+        )}
+      </div>
 
       {/* Search Bar */}
       <input
@@ -73,6 +122,7 @@ const CustomerList = ({ onSelectCustomers }) => {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         className="mb-4 p-2 border rounded w-full shadow-sm focus:ring-2 focus:ring-blue-400"
+        disabled={filteredCustomerId !== null} // Disable search when showing only one customer
       />
 
       {/* Select / Unselect All */}

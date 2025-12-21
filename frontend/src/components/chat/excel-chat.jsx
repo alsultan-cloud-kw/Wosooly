@@ -99,6 +99,23 @@ export function ExcelChat() {
     }
   };
 
+  // Ready-made questions for Excel chat
+  const readyQuestions = [
+    "Show me top 10 customers by total orders",
+    "What's the total revenue?",
+    "Which products sold the most last month?",
+    "How many orders do I have?",
+    "Show me customers with highest spending",
+    "What are the best-selling products?",
+    "Show me recent orders",
+    "Calculate average order value",
+  ];
+
+  const handleQuestionClick = (question) => {
+    setInput(question);
+    textareaRef.current?.focus();
+  };
+
   const selectedFile = files.find(f => f.id === selectedFileId);
 
   return (
@@ -307,6 +324,28 @@ export function ExcelChat() {
 
       {/* Input Area */}
       <div className="border-t border-border p-4 bg-card">
+        {/* Ready-made Questions - Always visible when files are loaded */}
+        {files.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs text-muted-foreground mb-2 font-medium">
+              Try asking:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {readyQuestions.map((question, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleQuestionClick(question)}
+                  className="text-xs px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground rounded-full border border-border transition-colors cursor-pointer"
+                  disabled={isLoading || files.length === 0}
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
             ref={textareaRef}

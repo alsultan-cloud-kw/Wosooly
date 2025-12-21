@@ -45,6 +45,20 @@ export default function WooCommerceIntegrationsPage() {
   //   }
   // }
 
+  // below state hooks
+  const handleUseThis = (integration) => {
+    // Save selected client for admin impersonation
+    localStorage.setItem("admin_selected_client_id", integration.client_id.toString());
+    localStorage.setItem("admin_selected_client_name", integration.client_name || integration.email);
+
+    // Optional: you can also force WooCommerce as data source if you use this elsewhere
+    localStorage.setItem("data_source", "woocommerce");
+    localStorage.removeItem("active_excel_file_id");
+
+    // Simple feedback for now
+    alert(`Now viewing WooCommerce data as ${integration.client_name || integration.email}. Go to Customer Analysis / Dashboard to see their data.`);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "Never"
     try {
@@ -118,12 +132,15 @@ export default function WooCommerceIntegrationsPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-4">
+                        {/* Header: icon + name + status */}
                         <div className="flex items-center gap-4">
                           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                             <ShoppingCart className="h-6 w-6 text-primary" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-foreground">{integration.client_name}</h3>
+                            <h3 className="text-lg font-semibold text-foreground">
+                              {integration.client_name}
+                            </h3>
                             <div className="flex items-center gap-2 mt-1">
                               {/* {getSyncStatusBadge(integration.sync_status)} */}
                               <Badge variant={integration.is_active ? "default" : "secondary"}>
@@ -133,6 +150,7 @@ export default function WooCommerceIntegrationsPage() {
                           </div>
                         </div>
 
+                        {/* Details grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Globe className="h-4 w-4" />
@@ -163,12 +181,16 @@ export default function WooCommerceIntegrationsPage() {
                           </div>
                         </div>
 
-                        {/* <div className="flex items-center gap-6 pt-3 border-t border-border">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Orders Synced</p>
-                            <p className="text-xl font-semibold text-foreground">{integration.orders_count}</p>
-                          </div>
-                        </div> */}
+                        {/* Footer: Use this button */}
+                        <div className="flex items-center justify-end pt-3 border-t border-border mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUseThis(integration)}
+                          >
+                            Use this
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

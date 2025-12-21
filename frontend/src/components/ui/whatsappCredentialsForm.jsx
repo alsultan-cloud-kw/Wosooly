@@ -17,8 +17,10 @@ import {
   BookOpen,
   Sparkles
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
+  const { t } = useTranslation("whatsapp");
   const [formData, setFormData] = useState({
     phoneNumberId: "",
     wabaId: "",
@@ -56,10 +58,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
             </div>
             <div className="flex-1">
               <CardTitle className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
-                WhatsApp Business API
+                {t("form.title")}
               </CardTitle>
               <CardDescription className="text-base mt-1">
-                Connect your WhatsApp Business account
+                {t("form.description")}
               </CardDescription>
             </div>
           </div>
@@ -71,7 +73,7 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
                 <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <AlertDescription className="text-green-800 dark:text-green-200 font-medium">
-                  Credentials saved successfully! Redirecting...
+                  {t("form.credentialsSaved")}
                 </AlertDescription>
               </Alert>
             )}
@@ -80,13 +82,13 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               <div className="flex items-center gap-2">
                 <Smartphone className="h-4 w-4 text-green-600" />
                 <Label htmlFor="phoneNumberId" className="text-base font-semibold">
-                  Phone Number ID
+                  {t("form.phoneNumberId")}
                 </Label>
               </div>
               <Input
                 id="phoneNumberId"
                 type="text"
-                placeholder="e.g., 123456789012345"
+                placeholder={t("form.phoneNumberIdPlaceholder")}
                 value={formData.phoneNumberId}
                 onChange={(e) => handleChange("phoneNumberId", e.target.value)}
                 className="h-12 text-base border-2 focus:border-green-500 focus:ring-green-500/20"
@@ -95,9 +97,7 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               />
               <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
                 <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Find this in your <strong>Meta Business Manager</strong> under <strong>WhatsApp → API Setup</strong>
-                </p>
+                <p className="text-sm text-blue-800 dark:text-blue-200" dangerouslySetInnerHTML={{ __html: t("form.phoneNumberIdInfo") }} />
               </div>
             </div>
 
@@ -105,13 +105,13 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-green-600" />
                 <Label htmlFor="wabaId" className="text-base font-semibold">
-                  WhatsApp Business Account ID (WABA ID)
+                  {t("form.wabaId")}
                 </Label>
               </div>
               <Input
                 id="wabaId"
                 type="text"
-                placeholder="e.g., 987654321098765"
+                placeholder={t("form.wabaIdPlaceholder")}
                 value={formData.wabaId}
                 onChange={(e) => handleChange("wabaId", e.target.value)}
                 className="h-12 text-base border-2 focus:border-green-500 focus:ring-green-500/20"
@@ -120,9 +120,7 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               />
               <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
                 <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Your <strong>WhatsApp Business Account ID</strong> from Meta Business Suite
-                </p>
+                <p className="text-sm text-blue-800 dark:text-blue-200" dangerouslySetInnerHTML={{ __html: t("form.wabaIdInfo") }} />
               </div>
             </div>
 
@@ -130,13 +128,13 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               <div className="flex items-center gap-2">
                 <Key className="h-4 w-4 text-green-600" />
                 <Label htmlFor="accessToken" className="text-base font-semibold">
-                  Access Token
+                  {t("form.accessToken")}
                 </Label>
               </div>
               <Input
                 id="accessToken"
                 type="password"
-                placeholder="Enter your permanent access token"
+                placeholder={t("form.accessTokenPlaceholder")}
                 value={formData.accessToken}
                 onChange={(e) => handleChange("accessToken", e.target.value)}
                 className="h-12 text-base font-mono border-2 focus:border-green-500 focus:ring-green-500/20"
@@ -145,9 +143,7 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               />
               <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
                 <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">
-                  Generate a <strong>permanent access token</strong> from your Meta App settings. Make sure it has <strong>whatsapp_business_messaging</strong> permission.
-                </p>
+                <p className="text-sm text-amber-800 dark:text-amber-200" dangerouslySetInnerHTML={{ __html: t("form.accessTokenInfo") }} />
               </div>
             </div>
 
@@ -159,12 +155,12 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
               {isLoading ? (
                 <>
                   <Sparkles className="h-4 w-4 animate-pulse" />
-                  Connecting...
+                  {t("form.connecting")}
                 </>
               ) : (
                 <>
                   <MessageSquare className="h-4 w-4" />
-                  Connect WhatsApp Business
+                  {t("form.connectButton")}
                 </>
               )}
             </Button>
@@ -179,10 +175,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
           <CardHeader>
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-green-600" />
-              <CardTitle className="text-xl font-bold">Quick Start Guide</CardTitle>
+              <CardTitle className="text-xl font-bold">{t("guide.title")}</CardTitle>
             </div>
             <CardDescription>
-              Follow these steps to get your WhatsApp Business API credentials
+              {t("guide.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -192,9 +188,9 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   1
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm mb-1">Create Meta Business Account</p>
+                  <p className="font-semibold text-sm mb-1">{t("guide.step1Title")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Sign up for a Meta Business account if you don't have one
+                    {t("guide.step1Description")}
                   </p>
                 </div>
               </div>
@@ -204,9 +200,9 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   2
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm mb-1">Set Up WhatsApp Business</p>
+                  <p className="font-semibold text-sm mb-1">{t("guide.step2Title")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Add WhatsApp Business to your Meta Business Manager
+                    {t("guide.step2Description")}
                   </p>
                 </div>
               </div>
@@ -216,9 +212,9 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   3
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm mb-1">Create Meta App</p>
+                  <p className="font-semibold text-sm mb-1">{t("guide.step3Title")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Create a new app in Meta for Developers
+                    {t("guide.step3Description")}
                   </p>
                 </div>
               </div>
@@ -228,9 +224,9 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   4
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm mb-1">Get Your Credentials</p>
+                  <p className="font-semibold text-sm mb-1">{t("guide.step4Title")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Find Phone Number ID, WABA ID, and generate Access Token
+                    {t("guide.step4Description")}
                   </p>
                 </div>
               </div>
@@ -243,10 +239,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
           <CardHeader>
             <div className="flex items-center gap-2">
               <ExternalLink className="h-5 w-5 text-green-600" />
-              <CardTitle className="text-xl font-bold">Documentation & Resources</CardTitle>
+              <CardTitle className="text-xl font-bold">{t("documentation.title")}</CardTitle>
             </div>
             <CardDescription>
-              Official guides and resources to help you set up WhatsApp Business API
+              {t("documentation.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -263,10 +259,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   </div>
                   <div>
                     <p className="font-semibold text-sm group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      Getting Started Guide
+                      {t("documentation.gettingStarted")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Official WhatsApp Cloud API documentation
+                      {t("documentation.gettingStartedDesc")}
                     </p>
                   </div>
                 </div>
@@ -287,10 +283,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   </div>
                   <div>
                     <p className="font-semibold text-sm group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      Meta Business Manager
+                      {t("documentation.businessManager")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Manage your WhatsApp Business account
+                      {t("documentation.businessManagerDesc")}
                     </p>
                   </div>
                 </div>
@@ -311,10 +307,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   </div>
                   <div>
                     <p className="font-semibold text-sm group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      API Overview & Authentication
+                      {t("documentation.apiOverview")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Learn about access tokens and API setup
+                      {t("documentation.apiOverviewDesc")}
                     </p>
                   </div>
                 </div>
@@ -335,10 +331,10 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
                   </div>
                   <div>
                     <p className="font-semibold text-sm group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                      Business Profile Setup
+                      {t("documentation.businessProfile")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Configure your WhatsApp Business profile
+                      {t("documentation.businessProfileDesc")}
                     </p>
                   </div>
                 </div>
@@ -354,14 +350,13 @@ export function WhatsAppCredentialsForm({ onSubmit, isLoading = false }) {
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               <CardTitle className="text-lg font-bold text-amber-900 dark:text-amber-100">
-                Security Note
+                {t("security.title")}
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-amber-800 dark:text-amber-200">
-              Your access token is encrypted and stored securely. Never share your credentials with anyone. 
-              For production use, consider using environment variables or a secure vault.
+              {t("security.description")}
             </p>
           </CardContent>
         </Card>

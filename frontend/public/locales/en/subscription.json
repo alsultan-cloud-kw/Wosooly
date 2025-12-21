@@ -10,8 +10,8 @@
         "description2": "For growing businesses",
         "name3": "Professional",
         "description3": "For established businesses",
-        "name4":"Enterprise",
-        "description4":"For well established large scale businesses",
+        "name4": "Enterprise",
+        "description4": "For well established large scale businesses",
         "mostPopular": "Most Popular",
         "featuresIncluded": "Features included:",
         "buttonFree": "Get Started Free",
@@ -22,17 +22,63 @@
         "title1": "Frequently Asked Questions",
         "q1": "Can I change plans at any time?",
         "a1": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate the charges accordingly.",
-
         "q2": "Is there a free trial for paid plans?",
         "a2": "Yes, all paid plans come with a 14-day free trial. No credit card required to start your trial.",
-
         "q3": "What payment methods do you accept?",
         "a3": "We accept all major credit cards (Visa, MasterCard, American Express) and support payment via K-Net for local transactions.",
-
         "q4": "Is my WooCommerce data secure?",
         "a4": "Absolutely. We use enterprise-grade encryption for all data transmission and storage. Your credentials are never stored in plain text, and we comply with international data protection standards.",
         "line1": "Ready to transform your WooCommerce analytics?",
         "button": "Get Started Today",
         "subtext": "No credit card required • Cancel anytime",
-        "rights": "All rights reserved."
+        "rights": "All rights reserved.",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "saveUpTo": "Save up to 20%",
+        "month": "month",
+        "year": "year",
+        "perMonthBilledAnnually": "per month billed annually",
+        "loading": "Loading...",
+        "features": {
+            "free": {
+                "feature1": "AI Analytics: Basic",
+                "feature2": "Marketing Campaigns: 3 per month",
+                "feature3": "Reports: Daily and Weekly",
+                "feature4": "Customer Analysis: Basic",
+                "feature5": "Product Analysis: Basic",
+                "feature6": "Competitor Analysis: Not Available",
+                "feature7": "Relevant News: Not Available",
+                "feature8": "Customer Support: 2 tickets per month"
+            },
+            "standard": {
+                "feature1": "AI Analytics: Advanced",
+                "feature2": "Marketing Campaigns: 500 per month",
+                "feature3": "Reports: Daily, Weekly, and Monthly",
+                "feature4": "Customer Analysis: Customer Segmentation",
+                "feature5": "Product Analysis: Top Products",
+                "feature6": "Competitor Analysis: Basic",
+                "feature7": "Relevant News: Local (Limited)",
+                "feature8": "Customer Support: 5 tickets per month"
+            },
+            "professional": {
+                "feature1": "AI Analytics: Full with Smart Insights",
+                "feature2": "Marketing Campaigns: 1,500 per month",
+                "feature3": "Reports: Customizable",
+                "feature4": "Customer Analysis: VIP and Top Customers",
+                "feature5": "Product Analysis: Full Performance Analysis",
+                "feature6": "Competitor Analysis: Advanced",
+                "feature7": "Relevant News: Local (Advanced)",
+                "feature8": "Customer Support: 25 tickets per month + Chatbot"
+            },
+            "enterprise": {
+                "feature1": "AI Analytics: Unlimited with Strategies",
+                "feature2": "Marketing Campaigns: Unlimited",
+                "feature3": "Reports: Fully Customized",
+                "feature4": "Customer Analysis: Dedicated Account Manager",
+                "feature5": "Product Analysis: Comprehensive with Forecasting",
+                "feature6": "Competitor Analysis: Comprehensive with Strategies",
+                "feature7": "Relevant News: Global and Local",
+                "feature8": "Customer Support: Unlimited 24/7"
+            }
+        }
     }

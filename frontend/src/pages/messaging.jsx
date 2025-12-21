@@ -12,9 +12,11 @@ import {
   FileText,
   Sparkles
 } from "lucide-react";
-import api from "../../api_config"
+import api from "../../api_config";
+import { useTranslation } from "react-i18next";
 
 function Messaging() {
+  const { t } = useTranslation("messaging");
   const [selectedTemplates, setSelectedTemplates] = useState([]);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -52,11 +54,11 @@ function Messaging() {
 
   const sendMessage = async () => {
     if (selectedCustomers.length === 0) {
-      alert("Please select at least one customer first!");
+      alert(t("alerts.selectCustomerFirst"));
       return;
     }
     if (selectedTemplates.length === 0) {
-      alert("Please select at least one template!");
+      alert(t("alerts.selectTemplateFirst"));
       return;
     }
 
@@ -72,11 +74,11 @@ function Messaging() {
 
       const res = await api.post('/send-message', payload);
 
-      alert("Message sent successfully!");
+      alert(t("alerts.messageSentSuccess"));
       console.log(res.data);
     } catch (err) {
       console.error("Failed to send message:", err);
-      alert("Failed to send message. Check console for details.");
+      alert(t("alerts.messageSendFailed"));
     } finally {
       setIsSending(false);
     }
@@ -86,14 +88,14 @@ function Messaging() {
     try {
       setIsSyncing(true);
       const res = await api.post('/sync-templates');
-      alert(res.data.message || "Templates synced successfully!");
+      alert(res.data.message || t("alerts.templatesSyncedSuccess"));
 
       // Optionally, you can refresh the templates list here
       // For example, if TemplatesList supports a refresh prop:
       // fetchTemplates();
     } catch (err) {
       console.error("Failed to sync templates:", err);
-      alert("Failed to sync templates. Check console for details.");
+      alert(t("alerts.templatesSyncFailed"));
     } finally {
       setIsSyncing(false);
     }
@@ -108,11 +110,11 @@ function Messaging() {
             <MessageSquare className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-            Messaging
+            {t("title")}
           </h1>
         </div>
         <p className="text-muted-foreground text-lg">
-          Send WhatsApp messages to your customers using templates
+          {t("subtitle")}
         </p>
       </div>
 
@@ -121,15 +123,15 @@ function Messaging() {
         <div className="border-r border-gray-200 dark:border-gray-700 pr-6">
           <div className="flex items-center gap-2 mb-4">
             <Users className="h-5 w-5 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Customers</h2>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t("customers")}</h2>
             {dataSource === "excel" && (
               <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full font-medium">
-                Excel
+                {t("excel")}
               </span>
             )}
             {dataSource === "woocommerce" && (
               <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full font-medium">
-                WooCommerce
+                {t("woocommerce")}
               </span>
             )}
           </div>
@@ -145,7 +147,7 @@ function Messaging() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-green-600" />
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Templates</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t("templates")}</h2>
             </div>
           </div>
           
@@ -160,12 +162,12 @@ function Messaging() {
               {isSyncing ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" />
-                  Syncing...
+                  {t("syncing")}
                 </>
               ) : (
                 <>
                   <RefreshCw className="h-4 w-4" />
-                  Sync Templates
+                  {t("syncTemplates")}
                 </>
               )}
             </Button>
@@ -182,7 +184,7 @@ function Messaging() {
           {selectedTemplates.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 p-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
               <FileText className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-center">Select templates to view details</p>
+              <p className="text-center">{t("selectTemplatesToView")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -227,7 +229,7 @@ function Messaging() {
                     {t.body}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Last updated: {new Date(t.updated_at).toLocaleString()}
+                    {t("lastUpdated")} {new Date(t.updated_at).toLocaleString()}
                   </p>
                 </div>
               ))}
@@ -241,12 +243,12 @@ function Messaging() {
                 {isSending ? (
                   <>
                     <Sparkles className="h-4 w-4 animate-pulse" />
-                    Sending...
+                    {t("sending")}
                   </>
                 ) : (
                   <>
                     <Send className="h-4 w-4" />
-                    Send Message to {selectedCustomers.length} {selectedCustomers.length === 1 ? 'Customer' : 'Customers'}
+                    {t("sendMessage")} {selectedCustomers.length} {selectedCustomers.length === 1 ? t("customer") : t("customers")}
                   </>
                 )}
               </Button>

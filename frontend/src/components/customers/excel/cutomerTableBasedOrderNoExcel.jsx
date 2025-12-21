@@ -147,73 +147,78 @@ const CustomerClassificationTablesExcel = ({ fileId = null }) => {
 
   return (
     <div className="row">
-      {classificationOrder.map(({ key, label }) =>
-        groupedCustomers[key]?.length > 0 ? (
+      {classificationOrder.map(({ key, label }) => {
+        const items = groupedCustomers[key] || [];
+        const range = ranges[key];
+
+        return (
           <div className="col-6" key={key}>
             <div className="card">
               <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 border border-indigo-300 rounded-xl px-4 py-3 mb-4 shadow-sm text-center">
                 <h3 className="text-xl font-semibold text-indigo-800 tracking-wide">
                   {label}{" "}
                   <span className="text-sm text-indigo-600">
-                    ({groupedCustomers[key].length})
+                    ({items.length})
                   </span>
                 </h3>
 
                 <div className="text-sm text-indigo-700 mt-2 flex items-center justify-center gap-2">
-                  {Object.keys(ranges).map((groupName) => {
-                    if (groupName !== key) return null;
-                    const range = ranges[groupName];
-                    return (
-                      <>
-                        {"min" in range && (
-                          <>
-                            <label>Min</label>
-                            <input
-                              type="number"
-                              value={range.min ?? ""}
-                              onChange={(e) => onRangeChange(groupName, "min", e.target.value)}
-                            />
-                          </>
-                        )}
-                        {"max" in range && range.max !== undefined && (
-                          <>
-                            <label>Max</label>
-                            <input
-                              type="number"
-                              value={range.max ?? ""}
-                              onChange={(e) => onRangeChange(groupName, "max", e.target.value)}
-                            />
-                          </>
-                        )}
-                        {"equals" in range && (
-                          <>
-                            <label>Equals</label>
-                            <input
-                              type="number"
-                              value={range.equals ?? ""}
-                              onChange={(e) => onRangeChange(groupName, "equals", e.target.value)}
-                            />
-                          </>
-                        )}
-                      </>
-                    );
-                  })}
+                  {range && (
+                    <>
+                      {"min" in range && (
+                        <>
+                          <label>Min</label>
+                          <input
+                            type="number"
+                            value={range.min ?? ""}
+                            onChange={(e) => onRangeChange(key, "min", e.target.value)}
+                          />
+                        </>
+                      )}
+                      {"max" in range && range.max !== undefined && (
+                        <>
+                          <label>Max</label>
+                          <input
+                            type="number"
+                            value={range.max ?? ""}
+                            onChange={(e) => onRangeChange(key, "max", e.target.value)}
+                          />
+                        </>
+                      )}
+                      {"equals" in range && (
+                        <>
+                          <label>Equals</label>
+                          <input
+                            type="number"
+                            value={range.equals ?? ""}
+                            onChange={(e) => onRangeChange(key, "equals", e.target.value)}
+                          />
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="card__body">
-                <Table
-                  limit="10"
-                  headData={tableHead}
-                  renderHead={renderHead}
-                  bodyData={groupedCustomers[key]}
-                  renderBody={renderBody}
-                />
+                {items.length === 0 ? (
+                  <p className="text-sm text-muted-foreground italic text-center py-4">
+                    No customers in this classification.
+                  </p>
+                ) : (
+                  <Table
+                    limit="10"
+                    headData={tableHead}
+                    renderHead={renderHead}
+                    bodyData={items}
+                    renderBody={renderBody}
+                  />
+                )}
               </div>
             </div>
           </div>
-        ) : null
-      )}
+        );
+      })}
     </div>
   );
 };

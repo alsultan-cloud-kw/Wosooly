@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
   Upload,
   FileSpreadsheet,
   ShoppingCart,
@@ -24,11 +32,20 @@ import {
   HelpCircle,
   FileCheck,
   Zap,
+  Settings,
+  Eye,
+  EyeOff,
+  Store,
+  Key,
+  Lock,
+  ExternalLink,
 } from "lucide-react"
 import { toast } from "sonner"
 import api from "../../api_config"
+import { useTranslation } from "react-i18next"
 
 export default function UserDashboard() {
+  const { t } = useTranslation("userDashboard");
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [wooCommerceConnected, setWooCommerceConnected] = useState(false)
   const [activeDataSource, setActiveDataSource] = useState(null)
@@ -36,6 +53,13 @@ export default function UserDashboard() {
   const [isLoadingFiles, setIsLoadingFiles] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState(null)
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
+  const [updateStoreUrl, setUpdateStoreUrl] = useState("")
+  const [updateConsumerKey, setUpdateConsumerKey] = useState("")
+  const [updateConsumerSecret, setUpdateConsumerSecret] = useState("")
+  const [showUpdateSecret, setShowUpdateSecret] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [currentStoreUrl, setCurrentStoreUrl] = useState("")
 
   const navigate = useNavigate()
 
@@ -72,8 +96,8 @@ export default function UserDashboard() {
       }
     } catch (error) {
       console.error("Error fetching uploaded files:", error)
-      toast.error("Failed to load files", {
-        description: "Could not retrieve your uploaded files. Please try again.",
+      toast.error(t("toasts.failedToLoadFiles"), {
+        description: t("toasts.failedToLoadFilesDesc"),
       })
     } finally {
       setIsLoadingFiles(false)
@@ -86,6 +110,7 @@ export default function UserDashboard() {
       const response = await api.get("/woocommerce-credentials")
       const isConnected = response.data.is_connected === true
       setWooCommerceConnected(isConnected)
+      setCurrentStoreUrl(response.data.store_url || "")
       // Update localStorage to keep it in sync
       if (isConnected) {
         localStorage.setItem("woocommerce_connected", "true")
@@ -97,6 +122,64 @@ export default function UserDashboard() {
       console.error("Error checking WooCommerce connection:", error)
       setWooCommerceConnected(false)
       localStorage.removeItem("woocommerce_connected")
+      return false
+    }
+  }
+
+  // Handle opening update dialog
+  const handleOpenUpdateDialog = () => {
+    setUpdateStoreUrl(currentStoreUrl || "")
+    setUpdateConsumerKey("")
+    setUpdateConsumerSecret("")
+    setShowUpdateSecret(false)
+    setIsUpdateDialogOpen(true)
+  }
+
+  // Handle updating WooCommerce credentials
+  const handleUpdateCredentials = async (e) => {
+    e.preventDefault()
+    setIsUpdating(true)
+
+    try {
+      const response = await api.post("/woocommerce-credentials", {
+        store_url: updateStoreUrl.trim(),
+        consumer_key: updateConsumerKey.trim(),
+        consumer_secret: updateConsumerSecret.trim(),
+      })
+
+      if (response.data && response.data.message) {
+        toast.success(t("toasts.credentialsUpdated") || "Credentials updated successfully", {
+          description: t("toasts.credentialsUpdatedDesc") || "Your WooCommerce credentials have been updated and sync has started.",
+        })
+        setIsUpdateDialogOpen(false)
+        // Refresh connection status
+        await checkWooCommerceConnection()
+      } else {
+        toast.error("Failed to update credentials. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error updating WooCommerce credentials:", error)
+      let errorMessage = "Failed to update credentials. Please check your input."
+      
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (error.response?.status === 401) {
+        errorMessage = "You are not authenticated. Please log in and try again."
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.detail || "Invalid credentials. Please check your input."
+      }
+      
+      toast.error(errorMessage)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const isValidUrl = (url) => {
+    try {
+      new URL(url)
+      return true
+    } catch {
       return false
     }
   }
@@ -134,8 +217,8 @@ export default function UserDashboard() {
       !file.name.endsWith(".xlsx") &&
       !file.name.endsWith(".xls")
     ) {
-      toast.error("Invalid file type", {
-        description: "Please upload an Excel (.xlsx, .xls) or CSV file.",
+      toast.error(t("toasts.invalidFileType"), {
+        description: t("toasts.invalidFileTypeDesc"),
       })
       return
     }
@@ -156,8 +239,8 @@ export default function UserDashboard() {
       })
 
       if (response.data && response.data.file_id) {
-        toast.success("File uploaded successfully", {
-          description: `${file.name} has been uploaded and is ready to use.`,
+        toast.success(t("toasts.fileUploadedSuccess"), {
+          description: `${file.name} ${t("toasts.fileUploadedSuccessDesc")}`,
         })
         
         // Refresh files list from backend
@@ -169,8 +252,8 @@ export default function UserDashboard() {
       }
     } catch (error) {
       console.error("Upload error:", error)
-      toast.error("Upload failed", {
-        description: error.response?.data?.detail || "There was an error uploading your file. Please try again.",
+      toast.error(t("toasts.uploadFailed"), {
+        description: error.response?.data?.detail || t("toasts.uploadFailedDesc"),
       })
       setSelectedFileName(null)
     } finally {
@@ -226,8 +309,8 @@ export default function UserDashboard() {
     }))
 
     const selectedFile = uploadedFiles.find((f) => f.id === fileId)
-    toast.success("Data source activated", {
-      description: `Now using "${selectedFile?.name}" as your active data source. All analytics will use this file.`,
+    toast.success(t("toasts.dataSourceActivated"), {
+      description: t("toasts.dataSourceActivatedExcelDesc").replace("{fileName}", selectedFile?.name || ""),
     })
   }
 
@@ -236,8 +319,8 @@ export default function UserDashboard() {
     const isConnected = await checkWooCommerceConnection()
     
     if (!isConnected) {
-      toast.error("WooCommerce not connected", {
-        description: "Please connect your WooCommerce store first.",
+      toast.error(t("toasts.woocommerceNotConnected"), {
+        description: t("toasts.woocommerceNotConnectedDesc"),
       })
       navigate("/connect-woocommerce")
       return
@@ -255,8 +338,8 @@ export default function UserDashboard() {
       detail: { dataSource: "woocommerce", fileId: null } 
     }))
 
-    toast.success("Data source activated", {
-      description: "Now using WooCommerce as your active data source. All analytics will use your store data.",
+    toast.success(t("toasts.dataSourceActivated"), {
+      description: t("toasts.dataSourceActivatedWooCommerceDesc"),
     })
   }
 
@@ -285,13 +368,13 @@ export default function UserDashboard() {
         setActiveDataSource(null)
       }
 
-      toast.success("File deleted", {
-        description: `${fileToDelete?.name} has been removed.`,
+      toast.success(t("toasts.fileDeleted"), {
+        description: `${fileToDelete?.name} ${t("toasts.fileDeletedDesc")}`,
       })
     } catch (error) {
       console.error("Error deleting file:", error)
-      toast.error("Failed to delete file", {
-        description: error.response?.data?.detail || "There was an error deleting the file. Please try again.",
+      toast.error(t("toasts.failedToDeleteFile"), {
+        description: error.response?.data?.detail || t("toasts.failedToDeleteFileDesc"),
       })
     }
   }
@@ -337,11 +420,11 @@ export default function UserDashboard() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  Data Source Manager
+                  {t("title")}
                 </h1>
                 <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Choose and manage your data sources for analytics
+                  {t("subtitle")}
                 </p>
               </div>
             </div>
@@ -359,21 +442,21 @@ export default function UserDashboard() {
             <AlertDescription className="ml-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-semibold text-base ml-4">Active Data Source: </span>
+                  <span className="font-semibold text-base ml-4">{t("activeDataSource.label")} </span>
                   <strong className="text-lg text-primary ml-2">
                     {activeDataSource === "excel" 
-                      ? "Excel File" 
-                      : "WooCommerce Store"}
+                      ? t("activeDataSource.excelFile")
+                      : t("activeDataSource.woocommerceStore")}
                   </strong>
                   <p className="text-sm text-muted-foreground mt-1 ml-4">
                     {activeDataSource === "excel" 
-                      ? "All analytics, reports, and messaging will use data from your selected Excel file."
-                      : "All analytics, reports, and messaging will use data from your WooCommerce store."}
+                      ? t("activeDataSource.excelDescription")
+                      : t("activeDataSource.woocommerceDescription")}
                   </p>
                 </div>
                 <Badge className="bg-gradient-to-r from-primary to-secondary border-0 shadow-md text-sm px-4 py-1.5">
                   <Zap className="h-3.5 w-3.5 mr-1.5" />
-                  Active
+                  {t("activeDataSource.badge")}
                 </Badge>
               </div>
             </AlertDescription>
@@ -384,10 +467,10 @@ export default function UserDashboard() {
             <AlertDescription className="ml-4">
               <div>
                 <span className="font-semibold text-base text-amber-900 dark:text-amber-100">
-                  No Active Data Source
+                  {t("noActiveDataSource.title")}
                 </span>
                 <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
-                  Please select a data source below to start analyzing your data. You can choose between uploading an Excel file or connecting your WooCommerce store.
+                  {t("noActiveDataSource.description")}
                 </p>
               </div>
             </AlertDescription>
@@ -409,11 +492,11 @@ export default function UserDashboard() {
                     </div>
                     <div>
                       <CardTitle className="text-2xl flex items-center gap-2">
-                        Step 1: Upload Excel File
-                        <Badge variant="outline" className="text-xs">Optional</Badge>
+                        {t("step1.title")}
+                        <Badge variant="outline" className="text-xs">{t("step1.optional")}</Badge>
                       </CardTitle>
                       <CardDescription className="text-base mt-1">
-                        Upload your Excel or CSV files to analyze customer and order data
+                        {t("step1.description")}
                       </CardDescription>
                     </div>
                   </div>
@@ -426,11 +509,10 @@ export default function UserDashboard() {
                   <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                      What files can I upload?
+                      {t("step1.whatFilesCanUpload")}
                     </p>
                     <p className="text-xs text-blue-800 dark:text-blue-200">
-                      Upload Excel (.xlsx, .xls) or CSV files containing customer data, orders, or products. 
-                      After uploading, you'll map your columns to our system format.
+                      {t("step1.whatFilesInfo")}
                     </p>
                   </div>
                 </div>
@@ -467,10 +549,10 @@ export default function UserDashboard() {
                       </div>
                       <div className="text-center">
                         <p className="text-lg font-semibold text-foreground mb-1">
-                          Uploading {selectedFileName}...
+                          {t("step1.uploading")} {selectedFileName}...
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Please wait while we process your file
+                          {t("step1.pleaseWait")}
                         </p>
                       </div>
                     </div>
@@ -488,17 +570,17 @@ export default function UserDashboard() {
                       
                       <div className="text-center space-y-2">
                         <p className="text-xl font-bold text-foreground">
-                          {isDragging ? "Drop your file here" : "Drag & drop your file here"}
+                          {isDragging ? t("step1.dropHere") : t("step1.dragDrop")}
                         </p>
                         <p className="text-base text-muted-foreground">
-                          or <span className="text-primary font-semibold underline">click to browse</span>
+                          {t("step1.orClick")} <span className="text-primary font-semibold underline">{t("step1.clickToBrowse")}</span>
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2 border border-border/50">
                         <FileSpreadsheet className="h-4 w-4 text-primary flex-shrink-0" />
                         <span>
-                          <strong>Supported:</strong> .xlsx, .xls, .csv • <strong>Max:</strong> 10MB
+                          <strong>{t("step1.supported")}</strong> .xlsx, .xls, .csv • <strong>{t("step1.max")}</strong> 10MB
                         </span>
                       </div>
                     </div>
@@ -546,11 +628,11 @@ export default function UserDashboard() {
                   </div>
                   <div>
                     <CardTitle className="text-2xl flex items-center gap-2">
-                      Step 2: Select Your File
-                      <Badge variant="outline" className="text-xs">Required for Excel</Badge>
+                      {t("step2.title")}
+                      <Badge variant="outline" className="text-xs">{t("step2.required")}</Badge>
                     </CardTitle>
                     <CardDescription className="text-base mt-1">
-                      Choose which uploaded file to use as your data source
+                      {t("step2.description")}
                     </CardDescription>
                   </div>
                 </div>
@@ -562,36 +644,36 @@ export default function UserDashboard() {
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/20 to-primary/20 mb-4">
                       <span className="animate-spin text-3xl">⏳</span>
                     </div>
-                    <p className="text-base font-semibold text-foreground mb-1">Loading your files...</p>
-                    <p className="text-sm text-muted-foreground">Please wait while we fetch your uploaded files</p>
+                    <p className="text-base font-semibold text-foreground mb-1">{t("step2.loadingFiles")}</p>
+                    <p className="text-sm text-muted-foreground">{t("step2.loadingDescription")}</p>
                   </div>
                 ) : uploadedFiles.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl bg-gradient-to-br from-muted/50 to-accent/5 border-2 border-dashed border-border">
                     <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/20 to-primary/20 mb-4">
                       <FileSpreadsheet className="h-10 w-10 text-accent" />
                     </div>
-                    <p className="text-lg font-semibold text-foreground mb-2">No files uploaded yet</p>
+                    <p className="text-lg font-semibold text-foreground mb-2">{t("step2.noFiles")}</p>
                     <p className="text-sm text-muted-foreground mb-4 max-w-md">
-                      Upload your first Excel or CSV file using the form above to get started with data analysis.
+                      {t("step2.noFilesDescription")}
                     </p>
-                    <Button
+                    {/* <Button
                       variant="outline"
                       onClick={() => document.getElementById("file-upload")?.click()}
                       className="border-primary/30 text-primary hover:bg-primary hover:text-white"
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      Upload Your First File
-                    </Button>
+                      {t("step2.uploadFirstFile")}
+                    </Button> */}
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm text-muted-foreground">
-                        <strong className="text-foreground">{uploadedFiles.length}</strong> file{uploadedFiles.length !== 1 ? "s" : ""} available
+                        <strong className="text-foreground">{uploadedFiles.length}</strong> {uploadedFiles.length !== 1 ? t("step2.filesAvailablePlural") : t("step2.filesAvailable")} {t("step2.available")}
                       </p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <HelpCircle className="h-3.5 w-3.5" />
-                        Click "Use This File" to activate a file
+                        {t("step2.clickToActivate")}
                       </p>
                     </div>
                     {uploadedFiles.map((file) => (
@@ -622,7 +704,7 @@ export default function UserDashboard() {
                               {file.isActive && (
                                 <Badge className="bg-gradient-to-r from-primary to-secondary border-0 shadow-md flex-shrink-0">
                                   <Check className="h-3.5 w-3.5 mr-1.5" />
-                                  Currently Active
+                                  {t("step2.currentlyActive")}
                                 </Badge>
                               )}
                             </div>
@@ -631,13 +713,13 @@ export default function UserDashboard() {
                               {file.total_rows && (
                                 <span className="px-2.5 py-1 bg-accent/10 text-accent rounded-md font-semibold flex items-center gap-1">
                                   <Database className="h-3 w-3" />
-                                  {file.total_rows.toLocaleString()} rows
+                                  {file.total_rows.toLocaleString()} {t("step2.rows")}
                                 </span>
                               )}
                               {file.total_columns && (
                                 <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-md font-semibold flex items-center gap-1">
                                   <Layers className="h-3 w-3" />
-                                  {file.total_columns} columns
+                                  {file.total_columns} {t("step2.columns")}
                                 </span>
                               )}
                               <span className="flex items-center gap-1">
@@ -657,13 +739,13 @@ export default function UserDashboard() {
                               className="border-primary/30 text-primary hover:bg-primary hover:text-white transition-all h-10 px-4"
                             >
                               <Layers className="h-4 w-4 mr-2" />
-                              Use This File
+                              {t("step2.useThisFile")}
                             </Button>
                           )}
                           {file.isActive && (
                             <Badge className="bg-green-500 text-white border-0 px-3 py-1.5">
                               <Check className="h-3.5 w-3.5 mr-1.5" />
-                              Active
+                              {t("step2.active")}
                             </Badge>
                           )}
                         </div>
@@ -687,9 +769,9 @@ export default function UserDashboard() {
                     <ShoppingCart className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-xl">WooCommerce Store</CardTitle>
+                    <CardTitle className="text-xl">{t("woocommerce.title")}</CardTitle>
                     <CardDescription className="text-sm">
-                      Connect your online store
+                      {t("woocommerce.description")}
                     </CardDescription>
                   </div>
                 </div>
@@ -698,21 +780,34 @@ export default function UserDashboard() {
               <CardContent className="space-y-4 relative z-10">
                 {wooCommerceConnected ? (
                   <>
-                    <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-2 border-green-200 dark:border-green-800">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 shadow-md">
-                        <Check className="h-5 w-5 text-white" />
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-2 border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 shadow-md">
+                          <Check className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-bold text-green-700 dark:text-green-300 block">{t("woocommerce.connectedReady")}</span>
+                          <span className="text-xs text-green-600 dark:text-green-400">
+                            {currentStoreUrl ? `Store: ${currentStoreUrl}` : t("woocommerce.yourStoreConnected")}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-sm font-bold text-green-700 dark:text-green-300 block">Connected & Ready</span>
-                        <span className="text-xs text-green-600 dark:text-green-400">Your store is connected</span>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleOpenUpdateDialog}
+                        className="border-secondary/30 text-secondary hover:bg-secondary/10"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Update
+                      </Button>
                     </div>
 
                     <Separator />
 
                     <div className="space-y-3">
                       <p className="text-xs text-muted-foreground font-medium">
-                        Activate WooCommerce as your data source:
+                        {t("woocommerce.activateWooCommerce")}
                       </p>
                       <Button
                         className={`w-full transition-all h-12 ${
@@ -726,12 +821,12 @@ export default function UserDashboard() {
                         {activeDataSource === "woocommerce" ? (
                           <>
                             <Check className="h-4 w-4 mr-2" />
-                            Currently Active
+                            {t("woocommerce.currentlyActive")}
                           </>
                         ) : (
                           <>
                             <TrendingUp className="h-4 w-4 mr-2" />
-                            Activate WooCommerce
+                            {t("woocommerce.activateButton")}
                           </>
                         )}
                       </Button>
@@ -742,9 +837,9 @@ export default function UserDashboard() {
                     <Alert className="border-2 border-secondary/20 bg-secondary/5">
                       <AlertCircle className="h-4 w-4 text-secondary" />
                       <AlertDescription className="text-xs">
-                        <strong className="text-foreground">Not Connected</strong>
+                        <strong className="text-foreground">{t("woocommerce.notConnected")}</strong>
                         <p className="mt-1">
-                          Connect your WooCommerce store to analyze sales, products, and customer data in real-time.
+                          {t("woocommerce.notConnectedDescription")}
                         </p>
                       </AlertDescription>
                     </Alert>
@@ -766,7 +861,7 @@ export default function UserDashboard() {
                       onClick={connectWooCommerce}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      Connect WooCommerce Store
+                      {t("woocommerce.connectButton")}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </>
@@ -781,14 +876,14 @@ export default function UserDashboard() {
               <CardHeader className="relative z-10 pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  Quick Overview
+                  {t("quickOverview.title")}
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-4 relative z-10">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/5 border border-primary/20">
                   <div>
-                    <span className="text-sm font-medium text-muted-foreground block">Total Files</span>
+                    <span className="text-sm font-medium text-muted-foreground block">{t("quickOverview.totalFiles")}</span>
                     <span className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                       {uploadedFiles.length}
                     </span>
@@ -800,7 +895,7 @@ export default function UserDashboard() {
 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-accent/10 to-primary/5 border border-accent/20">
                   <div>
-                    <span className="text-sm font-medium text-muted-foreground block">Active Source</span>
+                    <span className="text-sm font-medium text-muted-foreground block">{t("quickOverview.activeSource")}</span>
                     <Badge
                       variant={activeDataSource ? "default" : "secondary"}
                       className={
@@ -811,9 +906,9 @@ export default function UserDashboard() {
                     >
                       {activeDataSource
                         ? activeDataSource === "excel"
-                          ? "Excel File"
-                          : "WooCommerce"
-                        : "Not Set"}
+                          ? t("activeDataSource.excelFile")
+                          : t("woocommerce.title")
+                        : t("quickOverview.notSet")}
                     </Badge>
                   </div>
                   <Activity className={`h-8 w-8 ${activeDataSource ? "text-accent" : "text-muted-foreground/40"}`} />
@@ -823,7 +918,7 @@ export default function UserDashboard() {
 
                 <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-secondary/10 to-accent/5 border border-secondary/20">
                   <div>
-                    <span className="text-sm font-medium text-muted-foreground block">Integrations</span>
+                    <span className="text-sm font-medium text-muted-foreground block">{t("quickOverview.integrations")}</span>
                     <span className="text-3xl font-bold bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
                       {wooCommerceConnected ? 1 : 0}
                     </span>
@@ -838,24 +933,161 @@ export default function UserDashboard() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  Need Help?
+                  {t("help.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-blue-900 dark:text-blue-100">
-                <p className="font-medium">How to get started:</p>
+                <p className="font-medium">{t("help.howToGetStarted")}</p>
                 <ol className="list-decimal list-inside space-y-1.5 text-xs text-blue-800 dark:text-blue-200 ml-2">
-                  <li>Upload an Excel file OR connect WooCommerce</li>
-                  <li>Select which data source to use</li>
-                  <li>Start analyzing your data in Analytics pages</li>
+                  <li>{t("help.step1")}</li>
+                  <li>{t("help.step2")}</li>
+                  <li>{t("help.step3")}</li>
                 </ol>
                 <p className="text-xs text-blue-700 dark:text-blue-300 mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                  <strong>Tip:</strong> You can switch between data sources anytime. Only one can be active at a time.
+                  <strong>{t("help.tip")}</strong> {t("help.tipDescription")}
                 </p>
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
+
+      {/* Update WooCommerce Credentials Dialog */}
+      <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-secondary to-accent">
+                <Settings className="h-5 w-5 text-white" />
+              </div>
+              Update WooCommerce Credentials
+            </DialogTitle>
+            <DialogDescription>
+              Update your store credentials to sync your products and orders. Your credentials are encrypted and stored securely.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateCredentials}>
+            <div className="space-y-4 py-4">
+              {/* Store URL Field */}
+              <div className="space-y-2">
+                <Label htmlFor="update-store-url" className="flex items-center gap-2">
+                  <Store className="h-4 w-4" />
+                  Store URL
+                </Label>
+                <Input
+                  id="update-store-url"
+                  type="url"
+                  placeholder="https://yourstore.com"
+                  value={updateStoreUrl}
+                  onChange={(e) => setUpdateStoreUrl(e.target.value)}
+                  className="h-11"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your WooCommerce store's full URL (including https://)
+                </p>
+              </div>
+
+              {/* Consumer Key Field */}
+              <div className="space-y-2">
+                <Label htmlFor="update-consumer-key" className="flex items-center gap-2">
+                  <Key className="h-4 w-4" />
+                  Consumer Key
+                </Label>
+                <Input
+                  id="update-consumer-key"
+                  type="text"
+                  placeholder="ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  value={updateConsumerKey}
+                  onChange={(e) => setUpdateConsumerKey(e.target.value)}
+                  className="h-11 font-mono text-sm"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Starts with <code className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">ck_</code>
+                </p>
+              </div>
+
+              {/* Consumer Secret Field */}
+              <div className="space-y-2">
+                <Label htmlFor="update-consumer-secret" className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Consumer Secret
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="update-consumer-secret"
+                    type={showUpdateSecret ? "text" : "password"}
+                    placeholder="cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    value={updateConsumerSecret}
+                    onChange={(e) => setUpdateConsumerSecret(e.target.value)}
+                    className="h-11 font-mono text-sm pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowUpdateSecret(!showUpdateSecret)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showUpdateSecret ? "Hide secret" : "Show secret"}
+                  >
+                    {showUpdateSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Starts with <code className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">cs_</code>
+                </p>
+              </div>
+
+              {/* Help Section */}
+              <Alert className="bg-muted/50">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <strong className="block mb-1">Need help finding your credentials?</strong>
+                  Go to <strong>WooCommerce → Settings → Advanced → REST API</strong> to generate new keys.
+                  <a
+                    href="https://woocommerce.com/document/woocommerce-rest-api/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline ml-1"
+                  >
+                    View Documentation
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsUpdateDialogOpen(false)}
+                disabled={isUpdating}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isUpdating || !updateStoreUrl || !updateConsumerKey || !updateConsumerSecret || !isValidUrl(updateStoreUrl)}
+                className="bg-gradient-to-r from-secondary to-accent"
+              >
+                {isUpdating ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4 mr-2" />
+                    Update Credentials
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

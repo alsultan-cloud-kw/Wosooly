@@ -10,15 +10,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
 export function DashboardHeader() {
+  const { t } = useTranslation("adminDashboard");
   const navigate = useNavigate()
   const location = useLocation()
   return (
     <header className="border-b border-border bg-card">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-8">
-          <h1 className="text-xl font-semibold text-foreground">Admin Dashboard</h1>
+          <h1 className="text-xl font-semibold text-foreground">{t("header.title")}</h1>
           <nav className="hidden md:flex gap-6">
             <button
               onClick={() => navigate("/admin-dashboard")}
@@ -28,7 +30,7 @@ export function DashboardHeader() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Overview
+              {t("header.overview")}
             </button>
             <button
               onClick={() => navigate("/clients")}
@@ -38,7 +40,7 @@ export function DashboardHeader() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Clients
+              {t("header.clients")}
             </button>
             <button
               onClick={() => navigate("/admin/integrations")}
@@ -48,7 +50,7 @@ export function DashboardHeader() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Integrations
+              {t("header.integrations")}
             </button>
             <button
               onClick={() => navigate("/admin-register")}
@@ -58,7 +60,7 @@ export function DashboardHeader() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Register Admin
+              {t("header.registerAdmin")}
             </button>
           </nav>
         </div>
@@ -68,7 +70,7 @@ export function DashboardHeader() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search clients..."
+              placeholder={t("header.searchPlaceholder")}
               className="pl-10 w-64"
             />
           </div> */}
@@ -88,12 +90,12 @@ export function DashboardHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("header.myAccount")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>{t("header.profile")}</DropdownMenuItem>
+              <DropdownMenuItem>{t("header.settings")}</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem>{t("header.logout")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu> */}
         </div>

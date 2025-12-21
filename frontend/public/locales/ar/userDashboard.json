@@ -1,0 +1,97 @@
+{
+  "title": "مدير مصدر البيانات",
+  "subtitle": "اختر وأدر مصادر البيانات الخاصة بك للتحليلات",
+  "activeDataSource": {
+    "label": "مصدر البيانات النشط:",
+    "excelFile": "ملف Excel",
+    "woocommerceStore": "متجر WooCommerce",
+    "excelDescription": "ستستخدم جميع التحليلات والتقارير والرسائل البيانات من ملف Excel المحدد الخاص بك.",
+    "woocommerceDescription": "ستستخدم جميع التحليلات والتقارير والرسائل البيانات من متجر WooCommerce الخاص بك.",
+    "badge": "نشط"
+  },
+  "noActiveDataSource": {
+    "title": "لا يوجد مصدر بيانات نشط",
+    "description": "يرجى اختيار مصدر بيانات أدناه لبدء تحليل بياناتك. يمكنك الاختيار بين تحميل ملف Excel أو ربط متجر WooCommerce الخاص بك."
+  },
+  "step1": {
+    "title": "الخطوة 1: تحميل ملف Excel",
+    "optional": "اختياري",
+    "description": "قم بتحميل ملفات Excel أو CSV لتحليل بيانات العملاء والطلبات",
+    "whatFilesCanUpload": "ما هي الملفات التي يمكنني تحميلها؟",
+    "whatFilesInfo": "قم بتحميل ملفات Excel (.xlsx, .xls) أو CSV التي تحتوي على بيانات العملاء أو الطلبات أو المنتجات. بعد التحميل، ستقوم بتعيين أعمدةك إلى تنسيق نظامنا.",
+    "dragDrop": "اسحب وأفلت ملفك هنا",
+    "dropHere": "أفلت ملفك هنا",
+    "orClick": "أو",
+    "clickToBrowse": "انقر للتصفح",
+    "supported": "مدعوم:",
+    "max": "الحد الأقصى:",
+    "uploading": "جاري التحميل",
+    "pleaseWait": "يرجى الانتظار بينما نقوم بمعالجة ملفك"
+  },
+  "step2": {
+    "title": "الخطوة 2: اختر ملفك",
+    "required": "مطلوب لـ Excel",
+    "description": "اختر الملف المرفوع الذي تريد استخدامه كمصدر بيانات",
+    "loadingFiles": "جاري تحميل ملفاتك...",
+    "loadingDescription": "يرجى الانتظار بينما نجلب ملفاتك المرفوعة",
+    "noFiles": "لم يتم تحميل أي ملفات بعد",
+    "noFilesDescription": "قم بتحميل أول ملف Excel أو CSV باستخدام النموذج أعلاه للبدء في تحليل البيانات.",
+    "uploadFirstFile": "قم بتحميل ملفك الأول",
+    "filesAvailable": "ملف",
+    "filesAvailablePlural": "ملفات",
+    "available": "متاح",
+    "clickToActivate": "انقر على \"استخدم هذا الملف\" لتفعيل ملف",
+    "currentlyActive": "نشط حاليًا",
+    "rows": "صفوف",
+    "columns": "أعمدة",
+    "useThisFile": "استخدم هذا الملف",
+    "active": "نشط"
+  },
+  "woocommerce": {
+    "title": "متجر WooCommerce",
+    "description": "ربط متجرك الإلكتروني",
+    "connectedReady": "متصل وجاهز",
+    "yourStoreConnected": "متجرك متصل",
+    "activateWooCommerce": "تفعيل WooCommerce كمصدر بيانات:",
+    "currentlyActive": "نشط حاليًا",
+    "activateButton": "تفعيل WooCommerce",
+    "notConnected": "غير متصل",
+    "notConnectedDescription": "قم بربط متجر WooCommerce الخاص بك لتحليل المبيعات والمنتجات وبيانات العملاء في الوقت الفعلي.",
+    "connectButton": "ربط متجر WooCommerce"
+  },
+  "quickOverview": {
+    "title": "نظرة سريعة",
+    "totalFiles": "إجمالي الملفات",
+    "activeSource": "المصدر النشط",
+    "notSet": "غير محدد",
+    "integrations": "التكاملات"
+  },
+  "help": {
+    "title": "تحتاج مساعدة؟",
+    "howToGetStarted": "كيفية البدء:",
+    "step1": "قم بتحميل ملف Excel أو ربط WooCommerce",
+    "step2": "اختر مصدر البيانات الذي تريد استخدامه",
+    "step3": "ابدأ في تحليل بياناتك في صفحات التحليلات",
+    "tip": "نصيحة:",
+    "tipDescription": "يمكنك التبديل بين مصادر البيانات في أي وقت. يمكن أن يكون واحد فقط نشطًا في كل مرة."
+  },
+  "toasts": {
+    "failedToLoadFiles": "فشل تحميل الملفات",
+    "failedToLoadFilesDesc": "تعذر استرجاع ملفاتك المرفوعة. يرجى المحاولة مرة أخرى.",
+    "invalidFileType": "نوع ملف غير صالح",
+    "invalidFileTypeDesc": "يرجى تحميل ملف Excel (.xlsx, .xls) أو CSV.",
+    "fileUploadedSuccess": "تم تحميل الملف بنجاح",
+    "fileUploadedSuccessDesc": "تم تحميله وهو جاهز للاستخدام.",
+    "uploadFailed": "فشل التحميل",
+    "uploadFailedDesc": "حدث خطأ أثناء تحميل ملفك. يرجى المحاولة مرة أخرى.",
+    "dataSourceActivated": "تم تفعيل مصدر البيانات",
+    "dataSourceActivatedExcelDesc": "الآن تستخدم \"{fileName}\" كمصدر بيانات نشط. ستستخدم جميع التحليلات هذا الملف.",
+    "dataSourceActivatedWooCommerceDesc": "الآن تستخدم WooCommerce كمصدر بيانات نشط. ستستخدم جميع التحليلات بيانات متجرك.",
+    "woocommerceNotConnected": "WooCommerce غير متصل",
+    "woocommerceNotConnectedDesc": "يرجى ربط متجر WooCommerce الخاص بك أولاً.",
+    "fileDeleted": "تم حذف الملف",
+    "fileDeletedDesc": "تمت إزالته.",
+    "failedToDeleteFile": "فشل حذف الملف",
+    "failedToDeleteFileDesc": "حدث خطأ أثناء حذف الملف. يرجى المحاولة مرة أخرى."
+  }
+}

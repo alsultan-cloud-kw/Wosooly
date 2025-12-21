@@ -57,6 +57,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.60.0",
     "react-i18next": "^16.1.0",
+    "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^7.9.4",

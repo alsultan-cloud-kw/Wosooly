@@ -210,14 +210,23 @@ def login_client(
     )
 
     # --- Trigger background sync since last login ---
-    # Only if credentials exist
+    # Only if credentials exist - fetch products first, then orders
     if user.store_url and user.consumer_key and user.consumer_secret:
         try:
-            fetch_orders_task.delay(client_id=user.id, full_fetch=False)
-            print(f"✅ Triggered incremental sync for client {user.id}")
+            from tasks.fetch_products import fetch_products_task
+            from tasks.fetch_orders import fetch_orders_task
+            from celery import chain
+            
+            # Chain products first, then incremental orders
+            workflow = chain(
+                fetch_products_task.si(client_id=user.id),
+                fetch_orders_task.si(client_id=user.id, full_fetch=False)
+            )
+            workflow.apply_async()
+            print(f"✅ Triggered product + incremental order sync for client {user.id} on login")
         except Exception as e:
             # Log but don't fail login - periodic task will handle it
-            print(f"⚠️ Could not enqueue fetch_orders_task: {e}")
+            print(f"⚠️ Could not enqueue sync tasks: {e}")
             print(f"⚠️ Periodic task will handle sync for client {user.id}")
     else:
         print(f"⚠️ Client {user.id} missing WooCommerce credentials. Skipping sync.")
@@ -444,14 +453,38 @@ def update_woocommerce_credentials(
     db.commit()
     db.refresh(current_user)
     
-    # Optionally trigger a sync task
-    try:
-        from tasks.fetch_orders import fetch_orders_task
-        fetch_orders_task.delay(client_id=current_user.id, full_fetch=True)
-        print(f"✅ Triggered full sync for client {current_user.id} after credential update")
-    except Exception as e:
-        # Log but don't fail the request - periodic task will handle it
-        print(f"⚠️ Could not enqueue fetch_orders_task: {e}")
+    # Retry enqueueing so transient broker/worker startup delays don't fail the request
+    # Fetch products first, then orders (same as onboarding flow)
+    task_id = None
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            from tasks.fetch_products import fetch_products_task
+            from tasks.fetch_orders import fetch_orders_task
+            from celery import chain
+            
+            # Chain products first, then orders (products are needed for order processing)
+            workflow = chain(
+                fetch_products_task.si(client_id=current_user.id),
+                fetch_orders_task.si(client_id=current_user.id, full_fetch=True)
+            )
+            task = workflow.apply_async()
+            task_id = task.id
+            print(f"✅ Triggered product + order sync for client {current_user.id} after credential update (task_id={task_id})")
+            break
+        except OperationalError as e:
+            # kombu/celery raises OperationalError on connection refused
+            print(f"⚠️ Celery broker not ready (attempt {attempt}/{max_attempts}): {e}")
+            if attempt < max_attempts:
+                time.sleep(2)
+            else:
+                print("❌ Could not enqueue sync tasks after retries; periodic sync will handle it.")
+                task_id = None
+        except Exception as e:
+            # fallback catch-all (keeps the request from failing)
+            print(f"⚠️ Could not enqueue sync tasks for {current_user.email}: {e}")
+            task_id = None
+            break
     
     return {
         "message": "WooCommerce credentials updated successfully",

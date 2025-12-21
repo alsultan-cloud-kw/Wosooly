@@ -7,68 +7,64 @@ import {
   Package,
   Lock,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import {Card, CardContent, CardDescription, CardHeader, CardTitle}  from "../ui/card";
 
-const features = [
-  {
-    icon: ShoppingCart,
-    title: "WooCommerce Integration",
-    description:
-      "Securely connect your WooCommerce store using API keys. Analyze orders, customers, and products in real-time.",
-    gradient: "gradient-primary",
-  },
-  {
-    icon: FileSpreadsheet,
-    title: "Excel Sheet Analysis",
-    description:
-      "Upload your sales Excel files and map column names. Get instant insights from your existing data.",
-    gradient: "gradient-secondary",
-  },
-  {
-    icon: TrendingUp,
-    title: "Order Analytics",
-    description:
-      "Track revenue trends, order patterns, and sales performance with comprehensive order analysis.",
-    gradient: "gradient-accent",
-  },
-  {
-    icon: Users,
-    title: "Customer Insights",
-    description:
-      "Understand customer behavior, lifetime value, and purchasing patterns to boost retention.",
-    gradient: "gradient-success",
-  },
-  {
-    icon: Package,
-    title: "Product Performance",
-    description:
-      "Identify top-selling products, inventory trends, and optimize your product catalog.",
-    gradient: "bg-gradient-to-br from-warning to-warning",
-  },
-  {
-    icon: Lock,
-    title: "Secure & Private",
-    description:
-      "Your data is encrypted and never shared. We follow industry-best security practices.",
-    gradient: "bg-gradient-to-br from-chart-5 to-chart-5",
-  },
-];
-
 export default function Features() {
+  const { t } = useTranslation("landing");
+
+  const features = [
+    {
+      icon: ShoppingCart,
+      title: t("features.woocommerce.title"),
+      description: t("features.woocommerce.description"),
+      gradient: "gradient-primary",
+    },
+    {
+      icon: FileSpreadsheet,
+      title: t("features.excel.title"),
+      description: t("features.excel.description"),
+      gradient: "gradient-secondary",
+    },
+    {
+      icon: TrendingUp,
+      title: t("features.analytics.title"),
+      description: t("features.analytics.description"),
+      gradient: "gradient-accent",
+    },
+    {
+      icon: Users,
+      title: t("features.customers.title"),
+      description: t("features.customers.description"),
+      gradient: "gradient-success",
+    },
+    {
+      icon: Package,
+      title: t("features.products.title"),
+      description: t("features.products.description"),
+      gradient: "bg-gradient-to-br from-warning to-warning",
+    },
+    {
+      icon: Lock,
+      title: t("features.security.title"),
+      description: t("features.security.description"),
+      gradient: "bg-gradient-to-br from-chart-5 to-chart-5",
+    },
+  ];
+
   return (
     <section id="features" className="py-20 md:py-28 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl mb-4 text-balance">
-            Everything You Need to{" "}
+            {t("features.title")}{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent">
-              Analyze Your Data
+              {t("features.titleHighlight")}
             </span>
           </h2>
           <p className="text-lg text-muted-foreground text-pretty leading-relaxed">
-            Powerful features designed to help you understand your business
-            better
+            {t("features.subtitle")}
           </p>
         </div>
 

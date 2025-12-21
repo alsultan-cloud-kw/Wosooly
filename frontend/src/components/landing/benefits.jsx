@@ -1,44 +1,46 @@
 import React from "react";
 import { Card, CardContent } from "../ui/card";
 import { CheckCircle2 } from "lucide-react";
-
-const benefits = [
-  {
-    stat: "10x",
-    label: "Faster Insights",
-    description: "Get instant analytics instead of manual spreadsheet work",
-    gradient: "gradient-primary",
-  },
-  {
-    stat: "100%",
-    label: "Data Security",
-    description: "Enterprise-grade encryption and secure API connections",
-    gradient: "gradient-accent",
-  },
-  {
-    stat: "50+",
-    label: "Analytics Reports",
-    description: "Pre-built reports for orders, customers, and products",
-    gradient: "gradient-secondary",
-  },
-  {
-    stat: "24/7",
-    label: "Real-time Sync",
-    description: "Always up-to-date data from your WooCommerce store",
-    gradient: "gradient-success",
-  },
-];
-
-const highlights = [
-  "No technical knowledge required",
-  "Automatic data synchronization",
-  "Custom column mapping for Excel",
-  "Export reports to PDF or Excel",
-  // "Team collaboration features",
-  "Priority customer support",
-];
+import { useTranslation } from "react-i18next";
 
 export default function Benefits() {
+  const { t } = useTranslation("landing");
+
+  const benefits = [
+    {
+      stat: t("benefits.benefitCards.fasterInsights.stat"),
+      label: t("benefits.benefitCards.fasterInsights.label"),
+      description: t("benefits.benefitCards.fasterInsights.description"),
+      gradient: "gradient-primary",
+    },
+    {
+      stat: t("benefits.benefitCards.dataSecurity.stat"),
+      label: t("benefits.benefitCards.dataSecurity.label"),
+      description: t("benefits.benefitCards.dataSecurity.description"),
+      gradient: "gradient-accent",
+    },
+    {
+      stat: t("benefits.benefitCards.analyticsReports.stat"),
+      label: t("benefits.benefitCards.analyticsReports.label"),
+      description: t("benefits.benefitCards.analyticsReports.description"),
+      gradient: "gradient-secondary",
+    },
+    {
+      stat: t("benefits.benefitCards.realtimeSync.stat"),
+      label: t("benefits.benefitCards.realtimeSync.label"),
+      description: t("benefits.benefitCards.realtimeSync.description"),
+      gradient: "gradient-success",
+    },
+  ];
+
+  const highlights = [
+    t("benefits.highlights.noTechnicalKnowledge"),
+    t("benefits.highlights.automaticSync"),
+    t("benefits.highlights.customMapping"),
+    t("benefits.highlights.exportReports"),
+    t("benefits.highlights.prioritySupport"),
+  ];
+
   return (
     <section id="benefits" className="py-20 md:py-28 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -46,13 +48,13 @@ export default function Benefits() {
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl mb-4 text-balance">
-            Why Choose{" "}
+            {t("benefits.title")}{" "}
             <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Wosooly
+              {t("benefits.titleHighlight")}
             </span>
           </h2>
           <p className="text-lg text-muted-foreground text-pretty leading-relaxed">
-            Join hundreds of businesses making smarter decisions with their data
+            {t("benefits.subtitle")}
           </p>
         </div>
 

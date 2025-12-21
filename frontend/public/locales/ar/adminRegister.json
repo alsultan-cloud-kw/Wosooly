@@ -1,0 +1,25 @@
+{
+  "title": "بوابة المسؤول",
+  "subtitle": "أنشئ حساب المسؤول الخاص بك وابدأ في إدارة عملائك باستخدام",
+  "subtitleHighlight": "لوحة تحكم ملونة وعصرية",
+  "cardTitle": "إنشاء حساب مسؤول",
+  "cardDescription": "بعض التفاصيل السريعة لتخصيص مساحة العمل الخاصة بك.",
+  "form": {
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أحمد محمد",
+    "workEmail": "البريد الإلكتروني للعمل",
+    "workEmailPlaceholder": "admin@company.com",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "confirmPasswordPlaceholder": "••••••••"
+  },
+  "button": {
+    "createAccount": "إنشاء حساب مسؤول",
+    "creating": "جاري إنشاء مساحتك..."
+  },
+  "errors": {
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "failedToCreate": "فشل إنشاء حساب المسؤول. يرجى المحاولة مرة أخرى."
+  }
+}

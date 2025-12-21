@@ -2,14 +2,15 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function CTA() {
+  const { t } = useTranslation("landing");
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
-
-  const handleGetStart=()=>{
-    navigate("/register")
-  }
+  const handleGetStart = () => {
+    navigate("/register");
+  };
 
   return (
     <section className="py-20 md:py-28 relative overflow-hidden">
@@ -26,15 +27,15 @@ export default function CTA() {
           <div className="relative mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-5 py-2.5 text-sm font-medium text-white shadow-lg">
               <Sparkles className="h-4 w-4" />
-              <span>7-Day Free Trial Available</span>
+              <span>{t("cta.badge")}</span>
             </div>
 
             <h2 className="text-3xl font-bold tracking-tight text-white md:text-5xl mb-6 text-balance">
-              Ready to Transform Your Data?
+              {t("cta.title")}
             </h2>
 
             <p className="text-lg text-white/90 mb-10 text-pretty leading-relaxed">
-              Start analyzing your WooCommerce or Excel data today. No credit card required for your 7-day free trial.
+              {t("cta.description")}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -44,7 +45,7 @@ export default function CTA() {
                 className="w-full sm:w-auto text-base shadow-xl hover:scale-105 transition-transform"
                 onClick={handleGetStart}
               >
-                Start
+                {t("cta.button")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
 

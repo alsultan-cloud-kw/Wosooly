@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import api from "../../../../api_config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,8 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
   const [selected, setSelected] = useState(new Set()); // ✅ shared state
   const [filter, setFilter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filteredCustomerId, setFilteredCustomerId] = useState(null); // Track if we're showing only one customer
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,12 +30,18 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
         
         // Map Excel customer data to a consistent format
         // Excel data might have different field names, so we'll try common variations
-        const mappedCustomers = rows.map((customer, index) => ({
-          id: customer.customer_id || customer.id || index,
-          name: customer.customer_name || customer.name || customer.user || customer.full_name || "Unknown",
-          phone: customer.phone || customer.phone_number || customer.mobile || customer.contact || "",
-          ...customer // Keep all original fields
-        }));
+        // IMPORTANT: Use customer_id as primary ID to match with table
+        const mappedCustomers = rows.map((customer, index) => {
+          // Prefer customer_id, fallback to id, then index
+          const primaryId = customer.customer_id || customer.id || index;
+          return {
+            ...customer, // Keep all original fields first
+            id: primaryId, // Override with our consistent ID (this is what we use in the Set)
+            customer_id: customer.customer_id || primaryId, // Ensure customer_id exists
+            name: customer.customer_name || customer.name || customer.user || customer.full_name || "Unknown",
+            phone: customer.phone || customer.phone_number || customer.mobile || customer.contact || "",
+          };
+        });
         
         setCustomers(mappedCustomers);
       } catch (err) {
@@ -45,16 +54,73 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
     fetchCustomers();
   }, []);
 
+  // Auto-select customer from URL params and filter to show only that customer
+  useEffect(() => {
+    const customerId = searchParams.get('customerId');
+    if (customerId && customers.length > 0 && !isLoading) {
+      // Try to match as both string and number to handle different formats
+      const customerIdStr = String(customerId).trim();
+      const customerIdNum = isNaN(parseInt(customerId, 10)) ? null : parseInt(customerId, 10);
+      
+      // Find customer by matching both id and customer_id fields as string or number
+      const customer = customers.find(c => {
+        // Get both possible ID values
+        const cId = c.id;
+        const cCustomerId = c.customer_id;
+        
+        // Compare as strings and numbers
+        const cIdStr = String(cId || '').trim();
+        const cCustomerIdStr = String(cCustomerId || '').trim();
+        
+        return (
+          cIdStr === customerIdStr ||
+          cCustomerIdStr === customerIdStr ||
+          (customerIdNum !== null && (cId === customerIdNum || cCustomerId === customerIdNum)) ||
+          cIdStr === String(customerIdNum || '').trim() ||
+          cCustomerIdStr === String(customerIdNum || '').trim()
+        );
+      });
+      
+      if (customer) {
+        // Use the mapped id field (which is what's used in the Set and checkboxes)
+        const actualId = customer.id;
+        setSelected(new Set([actualId]));
+        setFilteredCustomerId(actualId); // Filter to show only this customer
+        // Remove the param from URL after selection
+        searchParams.delete('customerId');
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [customers, searchParams, setSearchParams, isLoading]);
+
+  // Function to clear filter and show all customers
+  const clearFilter = () => {
+    setFilteredCustomerId(null);
+    setFilter("");
+    setCurrentPage(1);
+  };
+
   useEffect(() => {
     onSelectCustomers(Array.from(selected)); // send selected ids to parent
   }, [selected, onSelectCustomers]);
 
-  // Filtering - search by name or phone
-  const filteredCustomers = customers.filter(
-    (c) =>
-      c.name.toLowerCase().includes(filter.toLowerCase()) ||
-      (c.phone && c.phone.toString().includes(filter))
-  );
+  // Filtering - first by selected customer (if filtered), then by search term
+  const filteredCustomers = customers.filter((c) => {
+    // If filteredCustomerId is set, show only that customer
+    if (filteredCustomerId !== null) {
+      if (c.id !== filteredCustomerId) return false;
+    }
+    
+    // Then apply search filter
+    if (filter.trim()) {
+      return (
+        c.name.toLowerCase().includes(filter.toLowerCase()) ||
+        (c.phone && c.phone.toString().includes(filter))
+      );
+    }
+    
+    return true;
+  });
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
@@ -106,14 +172,28 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
   return (
     <div className="p-4">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Users className="h-5 w-5 text-blue-600" />
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Customers List (Excel)
-          </h2>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+              {filteredCustomerId !== null ? "Selected Customer" : "Customers List (Excel)"}
+            </h2>
+          </div>
+          {filteredCustomerId !== null && (
+            <Button
+              onClick={clearFilter}
+              variant="outline"
+              size="sm"
+              className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+            >
+              Show All Customers
+            </Button>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Select customers to send messages
+          {filteredCustomerId !== null 
+            ? "Showing only the selected customer" 
+            : "Select customers to send messages"}
         </p>
       </div>
 
@@ -126,6 +206,7 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="pl-10 h-10 border-2 focus:border-blue-500 focus:ring-blue-500/20"
+          disabled={filteredCustomerId !== null} // Disable search when showing only one customer
         />
       </div>
 

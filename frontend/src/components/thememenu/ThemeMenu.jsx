@@ -38,45 +38,11 @@ const ThemeMenu = () => {
 
     const [currColor, setcurrColor] = useState('blue')
 
+    const [currLang, setCurrLang] = useState(i18n.language || "en");
+
     const dispatch = useDispatch()
 
-    const setMode = mode => {
-        setcurrMode(mode.id)
-        localStorage.setItem('themeMode', mode.class)
-        dispatch(ThemeAction.setMode(mode.class))
-    }
-
-    const setColor = color => {
-        setcurrColor(color.id)
-        localStorage.setItem('colorMode', color.class)
-        dispatch(ThemeAction.setColor(color.class))
-    }
-
-    useEffect(() => {
-        const themeClass = mode_settings.find(e => e.class === localStorage.getItem('themeMode', 'theme-mode-light'))
-
-        const colorClass = color_settings.find(e => e.class === localStorage.getItem('colorMode', 'theme-mode-light'))
-
-        if (themeClass !== undefined) setcurrMode(themeClass.id)
-
-        if (colorClass !== undefined) setcurrColor(colorClass.id)
-
-        const savedLang = localStorage.getItem("appLanguage") || "en";
-            setCurrLang(savedLang);
-            i18n.changeLanguage(savedLang);
-
-    }, []);
-
-    
-        const [currLang, setCurrLang] = useState(i18n.language || "en");
-
-        const setLanguage = (lang) => {
-            setCurrLang(lang.id);
-            i18n.changeLanguage(lang.id);
-            localStorage.setItem("appLanguage", lang.id);
-        };
-
-        const mode_settings = [
+    const mode_settings = [
             {
                 id: 'light',
                 name: t("light"),
@@ -123,6 +89,75 @@ const ThemeMenu = () => {
                 class: 'theme-color-orange'
             },
         ]
+
+    const setMode = mode => {
+        setcurrMode(mode.id)
+        localStorage.setItem('themeMode', mode.class)
+        dispatch(ThemeAction.setMode(mode.class))
+    }
+
+    const setColor = color => {
+        setcurrColor(color.id)
+        localStorage.setItem('colorMode', color.class)
+        dispatch(ThemeAction.setColor(color.class))
+    }
+
+    const setLanguage = (lang) => {
+        setCurrLang(lang.id);
+        i18n.changeLanguage(lang.id);
+        // Use consistent 'language' key, also update 'appLanguage' for backward compatibility
+        localStorage.setItem("language", lang.id);
+        localStorage.setItem("appLanguage", lang.id);
+    };
+
+    // Initialize theme and color from localStorage (only once on mount)
+    useEffect(() => {
+        const savedThemeMode = localStorage.getItem('themeMode');
+        const savedColorMode = localStorage.getItem('colorMode');
+        
+        if (savedThemeMode) {
+            const themeClass = mode_settings.find(e => e.class === savedThemeMode);
+            if (themeClass) {
+                setcurrMode(themeClass.id);
+            }
+        }
+
+        if (savedColorMode) {
+            const colorClass = color_settings.find(e => e.class === savedColorMode);
+            if (colorClass) {
+                setcurrColor(colorClass.id);
+            }
+        }
+    }, []); // Only run once on mount
+
+    // Initialize language from localStorage and set up listener (only once on mount)
+    useEffect(() => {
+        // Use consistent 'language' key, fallback to 'appLanguage' for backward compatibility
+        const savedLang = localStorage.getItem("language") || localStorage.getItem("appLanguage") || "en";
+        
+        // Only update if language actually changed to prevent infinite loops
+        if (savedLang !== i18n.language) {
+            i18n.changeLanguage(savedLang);
+            setCurrLang(savedLang);
+        }
+
+        // Listen for language changes from other components
+        const handleLanguageChange = (lng) => {
+            // Only update state if it's different to prevent unnecessary re-renders
+            setCurrLang(prevLang => {
+                if (lng !== prevLang) {
+                    return lng;
+                }
+                return prevLang;
+            });
+        };
+        
+        i18n.on('languageChanged', handleLanguageChange);
+
+        return () => {
+            i18n.off('languageChanged', handleLanguageChange);
+        };
+    }, []); // Empty dependency array - only run once on mount
 
     return (
         <div>

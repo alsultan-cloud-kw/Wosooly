@@ -2,8 +2,10 @@ import { useState, useEffect } from "react"
 import { Users, FileSpreadsheet, ShoppingCart } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import api from "../../../api_config"
+import { useTranslation } from "react-i18next"
 
 export function StatsOverview() {
+  const { t } = useTranslation("adminDashboard");
   const [stats, setStats] = useState({
     total_clients: 0,
     total_excel_files: 0,
@@ -21,14 +23,14 @@ export function StatsOverview() {
         setStats(response.data)
       } catch (err) {
         console.error("Failed to fetch admin stats:", err)
-        setError(err.response?.data?.detail || "Failed to load statistics")
+        setError(err.response?.data?.detail || t("stats.failedToLoad"))
       } finally {
         setLoading(false)
       }
     }
 
     fetchStats()
-  }, [])
+  }, [t])
 
   const formatNumber = (num) => {
     return new Intl.NumberFormat("en-US").format(num)
@@ -36,17 +38,17 @@ export function StatsOverview() {
 
   const statsConfig = [
     {
-      title: "Total Clients",
+      title: t("stats.totalClients"),
       value: stats.total_clients,
       icon: Users,
     },
     {
-      title: "Excel Files",
+      title: t("stats.excelFiles"),
       value: stats.total_excel_files,
       icon: FileSpreadsheet,
     },
     {
-      title: "WooCommerce Connected",
+      title: t("stats.woocommerceConnected"),
       value: stats.woo_commerce_connected,
       icon: ShoppingCart,
     },
@@ -67,7 +69,7 @@ export function StatsOverview() {
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{stat.title}</p>
                 {loading ? (
-                  <p className="text-2xl font-semibold text-foreground">Loading...</p>
+                  <p className="text-2xl font-semibold text-foreground">{t("stats.loading")}</p>
                 ) : error ? (
                   <p className="text-sm text-destructive">{error}</p>
                 ) : (

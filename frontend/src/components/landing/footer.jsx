@@ -1,7 +1,10 @@
 import React from "react";
 import { BarChart3, Github, Twitter, Linkedin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation("landing");
+
   return (
     <footer className="border-t border-border bg-muted/30 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-mesh opacity-20" />
@@ -20,8 +23,7 @@ export default function Footer() {
             </div>
 
             <p className="text-muted-foreground leading-relaxed max-w-md mb-6">
-              Transform your WooCommerce and Excel data into actionable insights.
-              Make smarter business decisions with powerful analytics.
+              {t("footer.description")}
             </p>
 
             <div className="flex items-center gap-3">
@@ -49,22 +51,22 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Product</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t("footer.product.title")}</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Features</a></li>
-              <li><a href="/subscription" className="text-muted-foreground hover:text-accent transition-colors">Pricing</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors">Security</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-success transition-colors">Changelog</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t("footer.product.features")}</a></li>
+              <li><a href="/subscription" className="text-muted-foreground hover:text-accent transition-colors">{t("footer.product.pricing")}</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.product.security")}</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-success transition-colors">{t("footer.product.changelog")}</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <h3 className="font-semibold text-foreground mb-4">{t("footer.company.title")}</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">About</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-accent transition-colors">Blog</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors">Contact</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-success transition-colors">Support</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">{t("footer.company.about")}</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-accent transition-colors">{t("footer.company.blog")}</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.company.contact")}</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-success transition-colors">{t("footer.company.support")}</a></li>
             </ul>
           </div>
 

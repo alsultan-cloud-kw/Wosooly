@@ -1,0 +1,23 @@
+{
+  "title": "Messaging",
+  "subtitle": "Send WhatsApp messages to your customers using templates",
+  "customers": "Customers",
+  "excel": "Excel",
+  "woocommerce": "WooCommerce",
+  "templates": "Templates",
+  "syncing": "Syncing...",
+  "syncTemplates": "Sync Templates",
+  "selectTemplatesToView": "Select templates to view details",
+  "lastUpdated": "Last updated:",
+  "sending": "Sending...",
+  "sendMessage": "Send Message to",
+  "customer": "Customer",
+  "alerts": {
+    "selectCustomerFirst": "Please select at least one customer first!",
+    "selectTemplateFirst": "Please select at least one template!",
+    "messageSentSuccess": "Message sent successfully!",
+    "messageSendFailed": "Failed to send message. Check console for details.",
+    "templatesSyncedSuccess": "Templates synced successfully!",
+    "templatesSyncFailed": "Failed to sync templates. Check console for details."
+  }
+}

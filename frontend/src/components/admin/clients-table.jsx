@@ -12,8 +12,10 @@ import {
 import { ClientDetailsDialog } from "@/components/admin/client-details-dialog"
 import { ExcelViewerDialog } from "@/components/admin/excel-viewer-dialog"
 import api from "../../../api_config"
+import { useTranslation } from "react-i18next"
 
 export function ClientsTable() {
+  const { t } = useTranslation("adminDashboard");
   const [clients, setClients] = useState([])
   const [selectedClient, setSelectedClient] = useState(null)
   const [showDetails, setShowDetails] = useState(false)
@@ -32,8 +34,11 @@ export function ClientsTable() {
         const mapped = (data || []).map((c) => ({
           id: c.id,
           name: c.name,
+          phone: c.phone,
           email: c.email,
           status: c.status,
+          createdAt: c.created_at,
+          lastLoginTime: c.last_login_time,
           filesCount: c.files_count ?? 0,
           wooCommerce: c.woo_commerce ?? false,
         }))
@@ -42,14 +47,14 @@ export function ClientsTable() {
       } catch (err) {
         console.error("Failed to fetch admin clients:", err)
         const backendMessage = err.response?.data?.detail
-        setError(backendMessage || "Failed to load clients.")
+        setError(backendMessage || t("clientsTable.failedToLoad"))
       } finally {
         setLoading(false)
       }
     }
 
     fetchClients()
-  }, [])
+  }, [t])
 
   const toggleClientStatus = (clientId) => {
     setClients((prev) =>
@@ -75,17 +80,17 @@ export function ClientsTable() {
     <>
       <Card className="border border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">Recent Clients</CardTitle>
+          <CardTitle className="text-foreground">{t("clientsTable.title")}</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && <p className="text-sm text-muted-foreground">Loading clients...</p>}
+          {loading && <p className="text-sm text-muted-foreground">{t("clientsTable.loading")}</p>}
           {error && !loading && (
             <p className="text-sm text-destructive mb-2">{error}</p>
           )}
           {!loading && !error && (
             <div className="space-y-4">
               {clients.length === 0 && (
-                <p className="text-sm text-muted-foreground">No clients found yet.</p>
+                <p className="text-sm text-muted-foreground">{t("clientsTable.noClients")}</p>
               )}
               {clients.map((client) => (
                 <div
@@ -106,10 +111,10 @@ export function ClientsTable() {
 
                     <div className="flex items-center gap-2">
                       <Badge variant={client.status === "active" ? "default" : "secondary"}>
-                        {client.status}
+                        {client.status === "active" ? t("clientsTable.status.active") : t("clientsTable.status.disabled")}
                       </Badge>
                       <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {client.filesCount} files
+                        {client.filesCount} {t("clientsTable.files")}
                       </span>
                     </div>
                   </div>
@@ -123,14 +128,14 @@ export function ClientsTable() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openDetails(client)}>
                         <Eye className="h-4 w-4 mr-2" />
-                        View Details
+                        {t("clientsTable.viewDetails")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openExcelViewer(client)}>
                         <Download className="h-4 w-4 mr-2" />
-                        View Excel Files
+                        {t("clientsTable.viewExcelFiles")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => toggleClientStatus(client.id)}>
-                        {client.status === "active" ? "Disable Client" : "Enable Client"}
+                        {client.status === "active" ? t("clientsTable.disableClient") : t("clientsTable.enableClient")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

@@ -1,0 +1,42 @@
+{
+  "header": {
+    "title": "Admin Dashboard",
+    "overview": "Overview",
+    "clients": "Clients",
+    "integrations": "Integrations",
+    "registerAdmin": "Register Admin",
+    "searchPlaceholder": "Search clients...",
+    "myAccount": "My Account",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "stats": {
+    "totalClients": "Total Clients",
+    "excelFiles": "Excel Files",
+    "woocommerceConnected": "WooCommerce Connected",
+    "loading": "Loading...",
+    "failedToLoad": "Failed to load statistics"
+  },
+  "activityChart": {
+    "title": "Growth Overview",
+    "description": "Client and file growth over time",
+    "clients": "Clients",
+    "files": "Files"
+  },
+  "clientsTable": {
+    "title": "Recent Clients",
+    "loading": "Loading clients...",
+    "noClients": "No clients found yet.",
+    "files": "files",
+    "viewDetails": "View Details",
+    "viewExcelFiles": "View Excel Files",
+    "disableClient": "Disable Client",
+    "enableClient": "Enable Client",
+    "failedToLoad": "Failed to load clients.",
+    "status": {
+      "active": "active",
+      "disabled": "disabled"
+    }
+  }
+}

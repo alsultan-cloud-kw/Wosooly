@@ -1,0 +1,42 @@
+{
+  "header": {
+    "title": "لوحة تحكم المسؤول",
+    "overview": "نظرة عامة",
+    "clients": "العملاء",
+    "integrations": "التكاملات",
+    "registerAdmin": "تسجيل مسؤول",
+    "searchPlaceholder": "البحث عن العملاء...",
+    "myAccount": "حسابي",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "stats": {
+    "totalClients": "إجمالي العملاء",
+    "excelFiles": "ملفات Excel",
+    "woocommerceConnected": "WooCommerce متصل",
+    "loading": "جاري التحميل...",
+    "failedToLoad": "فشل تحميل الإحصائيات"
+  },
+  "activityChart": {
+    "title": "نظرة عامة على النمو",
+    "description": "نمو العملاء والملفات بمرور الوقت",
+    "clients": "العملاء",
+    "files": "الملفات"
+  },
+  "clientsTable": {
+    "title": "العملاء الأخيرون",
+    "loading": "جاري تحميل العملاء...",
+    "noClients": "لم يتم العثور على عملاء بعد.",
+    "files": "ملفات",
+    "viewDetails": "عرض التفاصيل",
+    "viewExcelFiles": "عرض ملفات Excel",
+    "disableClient": "تعطيل العميل",
+    "enableClient": "تفعيل العميل",
+    "failedToLoad": "فشل تحميل العملاء.",
+    "status": {
+      "active": "نشط",
+      "disabled": "معطل"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Admin Portal",
+  "subtitle": "Create your admin account and start managing your clients with a",
+  "subtitleHighlight": "colorful, modern dashboard",
+  "cardTitle": "Create Admin Account",
+  "cardDescription": "A few quick details to personalize your workspace.",
+  "form": {
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "workEmail": "Work Email",
+    "workEmailPlaceholder": "admin@company.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "••••••••"
+  },
+  "button": {
+    "createAccount": "Create Admin Account",
+    "creating": "Creating Your Space..."
+  },
+  "errors": {
+    "passwordsDoNotMatch": "Passwords do not match",
+    "failedToCreate": "Failed to create admin account. Please try again."
+  }
+}

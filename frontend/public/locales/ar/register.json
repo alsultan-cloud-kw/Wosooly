@@ -8,6 +8,8 @@
 
       "emailLabel": "عنوان البريد الإلكتروني *",
       "emailPlaceholder": "you@company.com",
+      "phoneLabel": "رقم الهاتف *",
+      "phonePlaceholder": "+1234567890",
 
       "passwordLabel": "كلمة المرور *",
       "passwordPlaceholder": "أنشئ كلمة مرور قوية",

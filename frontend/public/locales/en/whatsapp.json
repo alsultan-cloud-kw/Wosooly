@@ -1,0 +1,49 @@
+{
+  "title": "Connect WhatsApp Business",
+  "subtitle": "Set up your WhatsApp Business API credentials to start sending messages and managing templates",
+  "form": {
+    "title": "WhatsApp Business API",
+    "description": "Connect your WhatsApp Business account",
+    "phoneNumberId": "Phone Number ID",
+    "phoneNumberIdPlaceholder": "e.g., 123456789012345",
+    "phoneNumberIdInfo": "Find this in your <strong>Meta Business Manager</strong> under <strong>WhatsApp → API Setup</strong>",
+    "wabaId": "WhatsApp Business Account ID (WABA ID)",
+    "wabaIdPlaceholder": "e.g., 987654321098765",
+    "wabaIdInfo": "Your <strong>WhatsApp Business Account ID</strong> from Meta Business Suite",
+    "accessToken": "Access Token",
+    "accessTokenPlaceholder": "Enter your permanent access token",
+    "accessTokenInfo": "Generate a <strong>permanent access token</strong> from your Meta App settings. Make sure it has <strong>whatsapp_business_messaging</strong> permission.",
+    "connecting": "Connecting...",
+    "connectButton": "Connect WhatsApp Business",
+    "credentialsSaved": "Credentials saved successfully! Redirecting...",
+    "saveFailed": "Failed to save credentials. Please check your inputs and try again."
+  },
+  "guide": {
+    "title": "Quick Start Guide",
+    "description": "Follow these steps to get your WhatsApp Business API credentials",
+    "step1Title": "Create Meta Business Account",
+    "step1Description": "Sign up for a Meta Business account if you don't have one",
+    "step2Title": "Set Up WhatsApp Business",
+    "step2Description": "Add WhatsApp Business to your Meta Business Manager",
+    "step3Title": "Create Meta App",
+    "step3Description": "Create a new app in Meta for Developers",
+    "step4Title": "Get Your Credentials",
+    "step4Description": "Find Phone Number ID, WABA ID, and generate Access Token"
+  },
+  "documentation": {
+    "title": "Documentation & Resources",
+    "description": "Official guides and resources to help you set up WhatsApp Business API",
+    "gettingStarted": "Getting Started Guide",
+    "gettingStartedDesc": "Official WhatsApp Cloud API documentation",
+    "businessManager": "Meta Business Manager",
+    "businessManagerDesc": "Manage your WhatsApp Business account",
+    "apiOverview": "API Overview & Authentication",
+    "apiOverviewDesc": "Learn about access tokens and API setup",
+    "businessProfile": "Business Profile Setup",
+    "businessProfileDesc": "Configure your WhatsApp Business profile"
+  },
+  "security": {
+    "title": "Security Note",
+    "description": "Your access token is encrypted and stored securely. Never share your credentials with anyone. For production use, consider using environment variables or a secure vault."
+  }
+}

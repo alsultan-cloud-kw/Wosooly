@@ -396,3 +396,4 @@ def fetch_orders_task(self, client_id: int = None, full_fetch: bool = False):
 
 #     latest_time = datetime.utcnow().isoformat() + "Z"
 #     set_last_synced_time(db, latest_time)
+        

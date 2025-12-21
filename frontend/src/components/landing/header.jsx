@@ -19,9 +19,12 @@ export function Header() {
   const toggleLanguage = () => {
     const newLang = i18n.language === "en" ? "ar" : "en";
     i18n.changeLanguage(newLang);
+    // Persist language preference to localStorage for global access
+    localStorage.setItem('language', newLang);
 
     // Set HTML direction for proper RTL layout
-    // document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = newLang;
   };
 
   return (

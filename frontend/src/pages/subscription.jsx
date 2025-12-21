@@ -21,13 +21,14 @@ export default function PricingPage() {
       description: t("description1"),
       popular: false,
       features: [
-        "Perfect for small businesses to try Wosooly",
-        "Basic AI analytics",
-        "Access to marketing suggestions",
-        "Limited campaigns: 3 campaigns per month via WhatsApp & Email",
-        "Daily, weekly, and monthly reports",
-        "Customer support: 2 tickets per month",
-        "Price: Free"
+        t("features.free.feature1"),
+        t("features.free.feature2"),
+        t("features.free.feature3"),
+        t("features.free.feature4"),
+        t("features.free.feature5"),
+        t("features.free.feature6"),
+        t("features.free.feature7"),
+        t("features.free.feature8"),
       ],
     },
     {
@@ -39,14 +40,14 @@ export default function PricingPage() {
       description: t("description2"),
       popular: true,
       features: [
-        "AI-powered orders analysis",
-        "WhatsApp & Email marketing campaigns",
-        "Customer segmentation for personalized experience",
-        "Access to best-selling products insights",
-        "Daily, weekly and monthly reports",
-        "Campaign limit: up to 500 marketing campaigns",
-        "Customer support: 4 tickets per month",
-        
+        t("features.standard.feature1"),
+        t("features.standard.feature2"),
+        t("features.standard.feature3"),
+        t("features.standard.feature4"),
+        t("features.standard.feature5"),
+        t("features.standard.feature6"),
+        t("features.standard.feature7"),
+        t("features.standard.feature8"),
       ],
     },
     {
@@ -58,15 +59,14 @@ export default function PricingPage() {
       description: t("description3"),
       popular: false,
       features: [
-        "Full AI analytics & advanced orders insights",
-        "WhatsApp & Email marketing campaigns",
-        "VIP & top customer tracking",
-        "Product performance & previous customer analysis",
-        "Customizable reports (daily, weekly, monthly)",
-        "AI Chatbot & premium customer support",
-        "Campaign limit: up to 1500 marketing campaigns",
-        "Customer support: 25 tickets per month",
-        
+        t("features.professional.feature1"),
+        t("features.professional.feature2"),
+        t("features.professional.feature3"),
+        t("features.professional.feature4"),
+        t("features.professional.feature5"),
+        t("features.professional.feature6"),
+        t("features.professional.feature7"),
+        t("features.professional.feature8"),
       ],
     },
     {
@@ -78,15 +78,14 @@ export default function PricingPage() {
       description: t("description4"),
       popular: false,
       features: [
-          "Full AI analytics & advanced orders insights",
-          "Unlimited WhatsApp & Email marketing campaigns",
-          "Customer Segmentation",
-          "Product performance & previous customer analysis",
-          "Customizable reports (daily, weekly, monthly)",
-          "AI Chatbot & premium customer support",
-          "Campaign limit: unlimited",
-          "Customer support: unlimited",
-          
+        t("features.enterprise.feature1"),
+        t("features.enterprise.feature2"),
+        t("features.enterprise.feature3"),
+        t("features.enterprise.feature4"),
+        t("features.enterprise.feature5"),
+        t("features.enterprise.feature6"),
+        t("features.enterprise.feature7"),
+        t("features.enterprise.feature8"),
       ],
     },
   ];
@@ -162,7 +161,7 @@ export default function PricingPage() {
           {/* Billing Cycle Toggle */}
           <div className="flex items-center justify-center gap-4 mt-8">
             <span className={`text-sm font-medium transition-colors ${billingCycle === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>
-              Monthly
+              {t("monthly")}
             </span>
             <button
               type="button"
@@ -178,11 +177,11 @@ export default function PricingPage() {
               />
             </button>
             <span className={`text-sm font-medium transition-colors ${billingCycle === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>
-              Yearly
+              {t("yearly")}
             </span>
             {billingCycle === "yearly" && (
               <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-semibold">
-                Save up to 20%
+                {t("saveUpTo")}
               </span>
             )}
           </div>
@@ -215,13 +214,13 @@ export default function PricingPage() {
                       <div className="text-left">
                         <div className="text-sm font-semibold text-muted-foreground">{plan.currency}</div>
                         <div className="text-sm text-muted-foreground">
-                          /{billingCycle === "monthly" ? "month" : "year"}
+                          /{billingCycle === "monthly" ? t("month") : t("year")}
                         </div>
                       </div>
                     </div>
                     {billingCycle === "yearly" && plan.yearlyPrice > 0 && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        {plan.currency} {plan.monthlyPrice} per month billed annually
+                        {plan.currency} {plan.monthlyPrice} {t("perMonthBilledAnnually")}
                       </p>
                     )}
                   </div>
@@ -236,7 +235,7 @@ export default function PricingPage() {
                   }`}
                 >
                   {loadingPlan === plan.id ? (
-                    "Loading..."
+                    t("loading")
                   ) : (
                     (billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice) === 0 ? t("buttonFree") : t("buttonPaid")
                   )}

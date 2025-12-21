@@ -35,7 +35,7 @@ export default function WooCommerceCredentialsForm() {
       if (response.data && response.data.message) {
         setConnectionStatus("success")
         setErrorMessage("")
-        navigate("/dashboard")
+        navigate("/user-dashboard")
         // Optionally clear form or redirect
         // setStoreUrl("")
         // setConsumerKey("")

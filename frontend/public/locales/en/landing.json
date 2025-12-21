@@ -28,5 +28,114 @@
   "themeSettings": "Theme settings",
   "chooseMode": "Choose Mode",
   "chooseColor": "Choose Color",
-  "chooseLanguage": "Choose Language"
+  "chooseLanguage": "Choose Language",
+  "features": {
+    "title": "Everything You Need to",
+    "titleHighlight": "Analyze Your Data",
+    "subtitle": "Powerful features designed to help you understand your business better",
+    "woocommerce": {
+      "title": "WooCommerce Integration",
+      "description": "Securely connect your WooCommerce store using API keys. Analyze orders, customers, and products in real-time."
+    },
+    "excel": {
+      "title": "Excel Sheet Analysis",
+      "description": "Upload your sales Excel files and map column names. Get instant insights from your existing data."
+    },
+    "analytics": {
+      "title": "Order Analytics",
+      "description": "Track revenue trends, order patterns, and sales performance with comprehensive order analysis."
+    },
+    "customers": {
+      "title": "Customer Insights",
+      "description": "Understand customer behavior, lifetime value, and purchasing patterns to boost retention."
+    },
+    "products": {
+      "title": "Product Performance",
+      "description": "Identify top-selling products, inventory trends, and optimize your product catalog."
+    },
+    "security": {
+      "title": "Secure & Private",
+      "description": "Your data is encrypted and never shared. We follow industry-best security practices."
+    }
+  },
+  "howItWorks": {
+    "title": "Get Started in",
+    "titleHighlight": "Minutes",
+    "subtitle": "Simple process to unlock powerful analytics for your business",
+    "steps": {
+      "step1": {
+        "title": "Connect Your Data Source",
+        "description": "Choose between WooCommerce API integration or Excel file upload. Provide your credentials or map your column names."
+      },
+      "step2": {
+        "title": "Import & Process",
+        "description": "Our system securely imports your data and processes it in real-time. All data is encrypted and stored safely."
+      },
+      "step3": {
+        "title": "Analyze & Visualize",
+        "description": "Explore comprehensive dashboards with order, customer, and product analytics. Filter, sort, and drill down into your data."
+      },
+      "step4": {
+        "title": "Make Better Decisions",
+        "description": "Use actionable insights to optimize your business. Export reports and share findings with your team."
+      }
+    }
+  },
+  "benefits": {
+    "title": "Why Choose",
+    "titleHighlight": "Wosooly",
+    "subtitle": "Join hundreds of businesses making smarter decisions with their data",
+    "benefitCards": {
+      "fasterInsights": {
+        "stat": "10x",
+        "label": "Faster Insights",
+        "description": "Get instant analytics instead of manual spreadsheet work"
+      },
+      "dataSecurity": {
+        "stat": "100%",
+        "label": "Data Security",
+        "description": "Enterprise-grade encryption and secure API connections"
+      },
+      "analyticsReports": {
+        "stat": "50+",
+        "label": "Analytics Reports",
+        "description": "Pre-built reports for orders, customers, and products"
+      },
+      "realtimeSync": {
+        "stat": "24/7",
+        "label": "Real-time Sync",
+        "description": "Always up-to-date data from your WooCommerce store"
+      }
+    },
+    "highlights": {
+      "noTechnicalKnowledge": "No technical knowledge required",
+      "automaticSync": "Automatic data synchronization",
+      "customMapping": "Custom column mapping for Excel",
+      "exportReports": "Export reports to PDF or Excel",
+      "prioritySupport": "Priority customer support"
+    }
+  },
+  "cta": {
+    "badge": "7-Day Free Trial Available",
+    "title": "Ready to Transform Your Data?",
+    "description": "Start analyzing your WooCommerce or Excel data today. No credit card required for your 7-day free trial.",
+    "button": "Start"
+  },
+  "footer": {
+    "description": "Transform your WooCommerce and Excel data into actionable insights. Make smarter business decisions with powerful analytics.",
+    "product": {
+      "title": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "security": "Security",
+      "changelog": "Changelog"
+    },
+    "company": {
+      "title": "Company",
+      "about": "About",
+      "blog": "Blog",
+      "contact": "Contact",
+      "support": "Support"
+    }
+  }
 }

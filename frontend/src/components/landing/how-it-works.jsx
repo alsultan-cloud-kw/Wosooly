@@ -1,43 +1,42 @@
 import React from "react";
 import { Card, CardContent } from "../ui/card";
 import { Key, Upload, BarChart, Rocket } from "lucide-react";
-
-const steps = [
-  {
-    icon: Key,
-    step: "01",
-    title: "Connect Your Data Source",
-    description:
-      "Choose between WooCommerce API integration or Excel file upload. Provide your credentials or map your column names.",
-    gradient: "gradient-primary",
-  },
-  {
-    icon: Upload,
-    step: "02",
-    title: "Import & Process",
-    description:
-      "Our system securely imports your data and processes it in real-time. All data is encrypted and stored safely.",
-    gradient: "gradient-accent",
-  },
-  {
-    icon: BarChart,
-    step: "03",
-    title: "Analyze & Visualize",
-    description:
-      "Explore comprehensive dashboards with order, customer, and product analytics. Filter, sort, and drill down into your data.",
-    gradient: "gradient-secondary",
-  },
-  {
-    icon: Rocket,
-    step: "04",
-    title: "Make Better Decisions",
-    description:
-      "Use actionable insights to optimize your business. Export reports and share findings with your team.",
-    gradient: "gradient-success",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function HowItWorks() {
+  const { t } = useTranslation("landing");
+
+  const steps = [
+    {
+      icon: Key,
+      step: "01",
+      title: t("howItWorks.steps.step1.title"),
+      description: t("howItWorks.steps.step1.description"),
+      gradient: "gradient-primary",
+    },
+    {
+      icon: Upload,
+      step: "02",
+      title: t("howItWorks.steps.step2.title"),
+      description: t("howItWorks.steps.step2.description"),
+      gradient: "gradient-accent",
+    },
+    {
+      icon: BarChart,
+      step: "03",
+      title: t("howItWorks.steps.step3.title"),
+      description: t("howItWorks.steps.step3.description"),
+      gradient: "gradient-secondary",
+    },
+    {
+      icon: Rocket,
+      step: "04",
+      title: t("howItWorks.steps.step4.title"),
+      description: t("howItWorks.steps.step4.description"),
+      gradient: "gradient-success",
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-20 md:py-28 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-mesh opacity-50" />
@@ -45,13 +44,13 @@ export default function HowItWorks() {
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl mb-4 text-balance">
-            Get Started in{" "}
+            {t("howItWorks.title")}{" "}
             <span className="bg-gradient-to-r from-accent to-success bg-clip-text text-transparent">
-              Minutes
+              {t("howItWorks.titleHighlight")}
             </span>
           </h2>
           <p className="text-lg text-muted-foreground text-pretty leading-relaxed">
-            Simple process to unlock powerful analytics for your business
+            {t("howItWorks.subtitle")}
           </p>
         </div>
 

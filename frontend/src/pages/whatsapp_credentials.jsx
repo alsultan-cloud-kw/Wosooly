@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom"
 import api from "../../api_config"; // your axios instance
 import { WhatsAppCredentialsForm } from "@/components/ui/whatsappCredentialsForm";
 import { MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Whatsapp() {
+  const { t } = useTranslation("whatsapp");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate()
 
@@ -22,7 +24,7 @@ export default function Whatsapp() {
       navigate("/messaging")
     } catch (err) {
       console.error("Failed to save credentials:", err);
-      alert("Failed to save credentials. Please check your inputs and try again.");
+      alert(t("form.saveFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -36,10 +38,10 @@ export default function Whatsapp() {
           <MessageSquare className="h-8 w-8 text-white" />
         </div>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-          Connect WhatsApp Business
+          {t("title")}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Set up your WhatsApp Business API credentials to start sending messages and managing templates
+          {t("subtitle")}
         </p>
       </div>
 

@@ -1,0 +1,23 @@
+{
+  "title": "الرسائل",
+  "subtitle": "أرسل رسائل WhatsApp لعملائك باستخدام القوالب",
+  "customers": "العملاء",
+  "excel": "Excel",
+  "woocommerce": "WooCommerce",
+  "templates": "القوالب",
+  "syncing": "جاري المزامنة...",
+  "syncTemplates": "مزامنة القوالب",
+  "selectTemplatesToView": "اختر القوالب لعرض التفاصيل",
+  "lastUpdated": "آخر تحديث:",
+  "sending": "جاري الإرسال...",
+  "sendMessage": "إرسال رسالة إلى",
+  "customer": "عميل",
+  "alerts": {
+    "selectCustomerFirst": "يرجى اختيار عميل واحد على الأقل أولاً!",
+    "selectTemplateFirst": "يرجى اختيار قالب واحد على الأقل!",
+    "messageSentSuccess": "تم إرسال الرسالة بنجاح!",
+    "messageSendFailed": "فشل إرسال الرسالة. تحقق من وحدة التحكم للتفاصيل.",
+    "templatesSyncedSuccess": "تمت مزامنة القوالب بنجاح!",
+    "templatesSyncFailed": "فشلت مزامنة القوالب. تحقق من وحدة التحكم للتفاصيل."
+  }
+}

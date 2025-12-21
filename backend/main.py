@@ -25,6 +25,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],              # allow all HTTP methods
     allow_headers=["*"],              # allow all headers
+    expose_headers=["*"],             # expose all headers
 )
 
 # Redis connection (for example/demo purposes)

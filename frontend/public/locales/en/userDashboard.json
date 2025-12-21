@@ -1,0 +1,97 @@
+{
+  "title": "Data Source Manager",
+  "subtitle": "Choose and manage your data sources for analytics",
+  "activeDataSource": {
+    "label": "Active Data Source:",
+    "excelFile": "Excel File",
+    "woocommerceStore": "WooCommerce Store",
+    "excelDescription": "All analytics, reports, and messaging will use data from your selected Excel file.",
+    "woocommerceDescription": "All analytics, reports, and messaging will use data from your WooCommerce store.",
+    "badge": "Active"
+  },
+  "noActiveDataSource": {
+    "title": "No Active Data Source",
+    "description": "Please select a data source below to start analyzing your data. You can choose between uploading an Excel file or connecting your WooCommerce store."
+  },
+  "step1": {
+    "title": "Step 1: Upload Excel File",
+    "optional": "Optional",
+    "description": "Upload your Excel or CSV files to analyze customer and order data",
+    "whatFilesCanUpload": "What files can I upload?",
+    "whatFilesInfo": "Upload Excel (.xlsx, .xls) or CSV files containing customer data, orders, or products. After uploading, you'll map your columns to our system format.",
+    "dragDrop": "Drag & drop your file here",
+    "dropHere": "Drop your file here",
+    "orClick": "or",
+    "clickToBrowse": "click to browse",
+    "supported": "Supported:",
+    "max": "Max:",
+    "uploading": "Uploading",
+    "pleaseWait": "Please wait while we process your file"
+  },
+  "step2": {
+    "title": "Step 2: Select Your File",
+    "required": "Required for Excel",
+    "description": "Choose which uploaded file to use as your data source",
+    "loadingFiles": "Loading your files...",
+    "loadingDescription": "Please wait while we fetch your uploaded files",
+    "noFiles": "No files uploaded yet",
+    "noFilesDescription": "Upload your first Excel or CSV file using the form above to get started with data analysis.",
+    "uploadFirstFile": "Upload Your First File",
+    "filesAvailable": "file",
+    "filesAvailablePlural": "files",
+    "available": "available",
+    "clickToActivate": "Click \"Use This File\" to activate a file",
+    "currentlyActive": "Currently Active",
+    "rows": "rows",
+    "columns": "columns",
+    "useThisFile": "Use This File",
+    "active": "Active"
+  },
+  "woocommerce": {
+    "title": "WooCommerce Store",
+    "description": "Connect your online store",
+    "connectedReady": "Connected & Ready",
+    "yourStoreConnected": "Your store is connected",
+    "activateWooCommerce": "Activate WooCommerce as your data source:",
+    "currentlyActive": "Currently Active",
+    "activateButton": "Activate WooCommerce",
+    "notConnected": "Not Connected",
+    "notConnectedDescription": "Connect your WooCommerce store to analyze sales, products, and customer data in real-time.",
+    "connectButton": "Connect WooCommerce Store"
+  },
+  "quickOverview": {
+    "title": "Quick Overview",
+    "totalFiles": "Total Files",
+    "activeSource": "Active Source",
+    "notSet": "Not Set",
+    "integrations": "Integrations"
+  },
+  "help": {
+    "title": "Need Help?",
+    "howToGetStarted": "How to get started:",
+    "step1": "Upload an Excel file OR connect WooCommerce",
+    "step2": "Select which data source to use",
+    "step3": "Start analyzing your data in Analytics pages",
+    "tip": "Tip:",
+    "tipDescription": "You can switch between data sources anytime. Only one can be active at a time."
+  },
+  "toasts": {
+    "failedToLoadFiles": "Failed to load files",
+    "failedToLoadFilesDesc": "Could not retrieve your uploaded files. Please try again.",
+    "invalidFileType": "Invalid file type",
+    "invalidFileTypeDesc": "Please upload an Excel (.xlsx, .xls) or CSV file.",
+    "fileUploadedSuccess": "File uploaded successfully",
+    "fileUploadedSuccessDesc": "has been uploaded and is ready to use.",
+    "uploadFailed": "Upload failed",
+    "uploadFailedDesc": "There was an error uploading your file. Please try again.",
+    "dataSourceActivated": "Data source activated",
+    "dataSourceActivatedExcelDesc": "Now using \"{fileName}\" as your active data source. All analytics will use this file.",
+    "dataSourceActivatedWooCommerceDesc": "Now using WooCommerce as your active data source. All analytics will use your store data.",
+    "woocommerceNotConnected": "WooCommerce not connected",
+    "woocommerceNotConnectedDesc": "Please connect your WooCommerce store first.",
+    "fileDeleted": "File deleted",
+    "fileDeletedDesc": "has been removed.",
+    "failedToDeleteFile": "Failed to delete file",
+    "failedToDeleteFileDesc": "There was an error deleting the file. Please try again."
+  }
+}

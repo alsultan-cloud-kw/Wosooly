@@ -1,11 +1,75 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Table from '../../table/Table';
 import { useTranslation } from 'react-i18next';
+import api from '../../../../api_config';
+// import { MessageCircle } from 'lucide-react';
+import { FaWhatsapp } from "react-icons/fa";
 
 const CustomersTableExcel = ({ customers = [], totalCustomers }) => {
   const navigate = useNavigate();
   const { t } = useTranslation("customerAnalysis");
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [checkingSubscription, setCheckingSubscription] = useState(false);
+
+  // Fetch subscription info on mount
+  useEffect(() => {
+    const fetchSubscriptionInfo = async () => {
+      try {
+        const res = await api.get('/subscription-info');
+        setSubscriptionInfo(res.data);
+      } catch (error) {
+        console.error('Failed to fetch subscription info:', error);
+        setSubscriptionInfo(null);
+      }
+    };
+    fetchSubscriptionInfo();
+  }, []);
+
+  // Check if user has WhatsApp messaging feature
+  const hasWhatsAppAccess = () => {
+    if (!subscriptionInfo) return false;
+    const features = subscriptionInfo.available_features || [];
+    return features.includes('whatsapp_messaging');
+  };
+
+  const handleWhatsAppClick = async (e, customerId) => {
+    e.stopPropagation(); // Prevent row click navigation
+    
+    if (checkingSubscription) return;
+
+    try {
+      setCheckingSubscription(true);
+      
+      // If subscription info not loaded, fetch it
+      if (!subscriptionInfo) {
+        const res = await api.get('/subscription-info');
+        setSubscriptionInfo(res.data);
+        
+        const features = res.data?.available_features || [];
+        if (!features.includes('whatsapp_messaging')) {
+          alert('WhatsApp messaging is not available in your current subscription plan. Please upgrade to Standard, Professional, or Enterprise plan.');
+          return;
+        }
+      } else {
+        // Check with cached subscription info
+        if (!hasWhatsAppAccess()) {
+          alert('WhatsApp messaging is not available in your current subscription plan. Please upgrade to Standard, Professional, or Enterprise plan.');
+          return;
+        }
+      }
+
+      // Navigate to messaging page with customer pre-selected
+      // Ensure customerId is converted to string for URL consistency
+      const customerIdStr = String(customerId);
+      navigate(`/messaging?customerId=${customerIdStr}`);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      alert('Failed to check subscription. Please try again.');
+    } finally {
+      setCheckingSubscription(false);
+    }
+  };
 
   if (!customers || customers.length === 0) {
     return <p>No customer data found.</p>;
@@ -50,17 +114,56 @@ const CustomersTableExcel = ({ customers = [], totalCustomers }) => {
         ? parseDob(row.customer_id)
         : "";
 
+    // Get phone number from various possible field names
+    const phone = row.phone || row.phone_number || row.mobile || row.contact || "";
+    // Ensure customerId is consistent - prefer customer_id, fallback to id
+    // Convert to string for consistent comparison
+    const customerId = row.customer_id || row.id;
+
+    // Check if a column is a phone-related column
+    const isPhoneColumn = (colName) => {
+      const phoneKeywords = ['phone', 'mobile', 'contact', 'tel', 'telephone'];
+      return phoneKeywords.some(keyword => 
+        colName.toLowerCase().includes(keyword)
+      );
+    };
+
     return (
       <tr
         key={index}
         style={{ cursor: 'pointer' }}
-        onClick={() => navigate(`/customer-details/${row.customer_id}`)}
+        onClick={() => navigate(`/customer-details/${customerId}`)}
       >
-        {topCustomerHead.map((col, i) => (
-          <td key={i}>
-            {col === "dob" ? dobValue : (row[col] ?? "")}
-          </td>
-        ))}
+        {topCustomerHead.map((col, i) => {
+          // Special handling for phone column - add WhatsApp button
+          if (isPhoneColumn(col)) {
+            const phoneValue = row[col] || phone || "";
+            return (
+              <td key={i}>
+                <div className="flex items-center gap-2">
+                  <span>{phoneValue || 'N/A'}</span>
+                  {phoneValue && customerId && (
+                    <button
+                      onClick={(e) => handleWhatsAppClick(e, customerId)}
+                      disabled={checkingSubscription}
+                      className="p-1.5 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Send WhatsApp message"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <FaWhatsapp size={18} color="#128C7E"/>
+                    </button>
+                  )}
+                </div>
+              </td>
+            );
+          }
+          
+          return (
+            <td key={i}>
+              {col === "dob" ? dobValue : (row[col] ?? "")}
+            </td>
+          );
+        })}
       </tr>
     );
   };

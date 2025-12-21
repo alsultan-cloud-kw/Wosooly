@@ -75,6 +75,23 @@ export function DatabaseChat() {
     }
   };
 
+  // Ready-made questions for database chat
+  const readyQuestions = [
+    "Show me all customers",
+    "What are the top 5 products by sales?",
+    "How many orders were placed this month?",
+    "Show me customers with more than 10 orders",
+    "What is the total revenue?",
+    "Which customers have the highest spending?",
+    "Show me recent orders",
+    "What are the best-selling products?",
+  ];
+
+  const handleQuestionClick = (question) => {
+    setInput(question);
+    textareaRef.current?.focus();
+  };
+
   return (
     <Card className="flex flex-col h-[600px] bg-card shadow-lg">
       {/* Messages Area */}
@@ -220,6 +237,26 @@ export function DatabaseChat() {
 
       {/* Input Area */}
       <div className="border-t border-border p-4 bg-card">
+        {/* Ready-made Questions - Always visible */}
+        <div className="mb-4">
+          <p className="text-xs text-muted-foreground mb-2 font-medium">
+            Try asking:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {readyQuestions.map((question, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => handleQuestionClick(question)}
+                className="text-xs px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground rounded-full border border-border transition-colors cursor-pointer"
+                disabled={isLoading}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+        </div>
+        
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
             ref={textareaRef}

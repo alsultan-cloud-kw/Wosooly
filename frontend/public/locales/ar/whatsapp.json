@@ -1,0 +1,49 @@
+{
+  "title": "ربط WhatsApp Business",
+  "subtitle": "قم بإعداد بيانات اعتماد WhatsApp Business API لبدء إرسال الرسائل وإدارة القوالب",
+  "form": {
+    "title": "WhatsApp Business API",
+    "description": "ربط حساب WhatsApp Business الخاص بك",
+    "phoneNumberId": "معرف رقم الهاتف",
+    "phoneNumberIdPlaceholder": "مثال: 123456789012345",
+    "phoneNumberIdInfo": "ابحث عن هذا في <strong>Meta Business Manager</strong> تحت <strong>WhatsApp → API Setup</strong>",
+    "wabaId": "معرف حساب WhatsApp Business (WABA ID)",
+    "wabaIdPlaceholder": "مثال: 987654321098765",
+    "wabaIdInfo": "معرف <strong>حساب WhatsApp Business</strong> الخاص بك من Meta Business Suite",
+    "accessToken": "رمز الوصول",
+    "accessTokenPlaceholder": "أدخل رمز الوصول الدائم الخاص بك",
+    "accessTokenInfo": "قم بإنشاء <strong>رمز وصول دائم</strong> من إعدادات تطبيق Meta الخاص بك. تأكد من أنه يحتوي على إذن <strong>whatsapp_business_messaging</strong>.",
+    "connecting": "جاري الاتصال...",
+    "connectButton": "ربط WhatsApp Business",
+    "credentialsSaved": "تم حفظ بيانات الاعتماد بنجاح! جاري إعادة التوجيه...",
+    "saveFailed": "فشل حفظ بيانات الاعتماد. يرجى التحقق من المدخلات والمحاولة مرة أخرى."
+  },
+  "guide": {
+    "title": "دليل البدء السريع",
+    "description": "اتبع هذه الخطوات للحصول على بيانات اعتماد WhatsApp Business API",
+    "step1Title": "إنشاء حساب Meta Business",
+    "step1Description": "سجل للحصول على حساب Meta Business إذا لم يكن لديك واحد",
+    "step2Title": "إعداد WhatsApp Business",
+    "step2Description": "أضف WhatsApp Business إلى Meta Business Manager الخاص بك",
+    "step3Title": "إنشاء تطبيق Meta",
+    "step3Description": "قم بإنشاء تطبيق جديد في Meta for Developers",
+    "step4Title": "الحصول على بيانات الاعتماد",
+    "step4Description": "ابحث عن معرف رقم الهاتف و WABA ID وقم بإنشاء رمز الوصول"
+  },
+  "documentation": {
+    "title": "التوثيق والموارد",
+    "description": "أدلة وموارد رسمية لمساعدتك في إعداد WhatsApp Business API",
+    "gettingStarted": "دليل البدء",
+    "gettingStartedDesc": "توثيق WhatsApp Cloud API الرسمي",
+    "businessManager": "Meta Business Manager",
+    "businessManagerDesc": "إدارة حساب WhatsApp Business الخاص بك",
+    "apiOverview": "نظرة عامة على API والمصادقة",
+    "apiOverviewDesc": "تعرف على رموز الوصول وإعداد API",
+    "businessProfile": "إعداد ملف الأعمال",
+    "businessProfileDesc": "تكوين ملف WhatsApp Business الخاص بك"
+  },
+  "security": {
+    "title": "ملاحظة الأمان",
+    "description": "رمز الوصول الخاص بك مشفر ومخزن بأمان. لا تشارك بيانات اعتمادك مع أي شخص أبدًا. للاستخدام في الإنتاج، فكر في استخدام متغيرات البيئة أو خزنة آمنة."
+  }
+}
