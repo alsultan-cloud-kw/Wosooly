@@ -1,0 +1,58 @@
+{
+  "title": "التسويق عبر البريد الإلكتروني",
+  "subtitle": "أرسل رسائل بريد إلكتروني مخصصة لعملائك باستخدام القوالب",
+  "customers": "العملاء",
+  "emailTemplates": "قوالب البريد الإلكتروني",
+  "selectTemplatesToView": "اختر قوالب البريد الإلكتروني لعرضها وإرسالها",
+  "templatesList": {
+    "newTemplate": "قالب جديد",
+    "noTemplates": "لا توجد قوالب بريد إلكتروني بعد.",
+    "createFirst": "إنشاء أول قالب لك",
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف القالب \"{name}\"?",
+    "deleteFailed": "فشل حذف القالب",
+    "deleteError": "لا يمكن حذف القالب: معرف القالب مفقود"
+  },
+  "subject": "الموضوع",
+  "inactive": "غير نشط",
+  "updated": "تم التحديث",
+  "attachments": {
+    "label": "المرفقات (اختياري)",
+    "uploaded": "ملف/ملفات تم رفعها"
+  },
+  "sending": "جاري الإرسال...",
+  "sendEmail": "إرسال بريد إلكتروني إلى",
+  "customer": "عميل",
+  "customers": "عملاء",
+  "dialog": {
+    "editTitle": "تعديل قالب البريد الإلكتروني",
+    "createTitle": "إنشاء قالب بريد إلكتروني جديد",
+    "templateName": "اسم القالب *",
+    "templateNamePlaceholder": "مثال: بريد الترحيب",
+    "subject": "الموضوع *",
+    "subjectPlaceholder": "مثال: مرحباً بك في متجرنا!",
+    "category": "الفئة",
+    "categoryPlaceholder": "مثال: التسويق",
+    "language": "اللغة",
+    "languagePlaceholder": "مثال: en, ar",
+    "body": "محتوى البريد الإلكتروني (HTML) *",
+    "bodyPlaceholder": "<h1>مرحباً {{1}}</h1><p>مرحباً بك في متجرنا!</p>",
+    "bodyHelp": "استخدم {{1}}، {{2}}، إلخ للمتغيرات التي سيتم استبدالها ببيانات العميل",
+    "cancel": "إلغاء",
+    "update": "تحديث القالب",
+    "create": "إنشاء القالب"
+  },
+  "alerts": {
+    "selectCustomer": "يرجى اختيار عميل واحد على الأقل",
+    "selectTemplate": "يرجى اختيار قالب بريد إلكتروني واحد على الأقل",
+    "fillRequired": "يرجى ملء اسم القالب والموضوع والمحتوى",
+    "templateUpdated": "تم تحديث القالب بنجاح!",
+    "templateCreated": "تم إنشاء القالب بنجاح!",
+    "templateSaveFailed": "فشل حفظ القالب",
+    "uploadFailed": "فشل رفع المرفقات. يرجى المحاولة مرة أخرى.",
+    "sendFailed": "فشل إرسال البريد الإلكتروني",
+    "sendSuccess": "تم إرسال {count} بريد/برامج إلكترونية بنجاح!",
+    "sendPartial": "تم الإرسال: {sent}، فشل: {failed}",
+    "failedEmails": "البريد الإلكتروني الفاشل:"
+  }
+}
+

@@ -9,7 +9,6 @@
     "emailPlaceholder": "you@company.com",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
-    "forgotPassword": "Forgot password?",
     "rememberMe": "Remember me for 30 days",
     "button": "Sign In",
 
@@ -18,7 +17,36 @@
     "failure": "Invalid credentials, please try again.",
 
     "text": "Don't have an account?",
-    "link": "Create account"
+    "link": "Create account",
 
+    "forgotPassword": {
+        "title": "Forgot Password?",
+        "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+        "cardTitle": "Reset Password",
+        "cardDescription": "We'll send you a password reset link",
+        "emailRequired": "Please enter your email address",
+        "successMessage": "If an account with that email exists, a password reset link has been sent.",
+        "errorMessage": "An error occurred. Please try again.",
+        "button": "Send Reset Link",
+        "buttonLoading": "Sending...",
+        "backToLogin": "Back to Login"
+    },
 
+    "resetPassword": {
+        "title": "Reset Password",
+        "subtitle": "Enter your new password below",
+        "cardTitle": "Set New Password",
+        "cardDescription": "Choose a strong password for your account",
+        "noToken": "Invalid reset link. Please request a new password reset.",
+        "passwordRequired": "Please enter both password fields",
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "passwordsDontMatch": "Passwords do not match",
+        "successMessage": "Password has been reset successfully!",
+        "errorMessage": "An error occurred. Please try again.",
+        "confirmPasswordLabel": "Confirm Password",
+        "confirmPasswordPlaceholder": "Confirm your password",
+        "button": "Reset Password",
+        "buttonLoading": "Resetting...",
+        "backToLogin": "Back to Login"
+    }
 }

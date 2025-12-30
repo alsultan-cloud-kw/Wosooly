@@ -1,0 +1,20 @@
+{
+  "header": {
+    "title": "Analyzed images ({{count}})"
+  },
+  "toasts": {
+    "clear_confirm": "Are you sure you want to delete all analyzed images? This action cannot be undone.",
+    "clear_loading": "Deleting...",
+    "clear_failed": "Failed to delete images"
+  },
+  "buttons": {
+    "refresh": "Refresh",
+    "delete_all": "🗑️ Delete all"
+  },
+  "cards": {
+    "promotional_badge": "Promotional",
+    "view_source": "View source →"
+  }
+}
+
+

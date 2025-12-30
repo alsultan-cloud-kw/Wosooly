@@ -1,0 +1,14 @@
+{
+  "empty": {
+    "no_offers": "لا توجد عروض نشطة"
+  },
+  "fields": {
+    "source": "المصدر: {{source}}",
+    "valid_until": "صالح حتى: {{date}}"
+  },
+  "actions": {
+    "view": "عرض →"
+  }
+}
+
+

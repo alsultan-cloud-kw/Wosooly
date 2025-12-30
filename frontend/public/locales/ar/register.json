@@ -22,6 +22,8 @@
 
       "companyDetailsLabel": "تفاصيل الشركة",
       "companyDetailsPlaceholder": "مثال: بيع الإلكترونيات أو الملابس أو المنتجات اليدوية",
+      "businessTypeLabel": "نوع العمل",
+      "businessTypePlaceholder": "اختر أو أضف نوع عملك",
 
       "storeSectionTitle": "بيانات WooCommerce",
       "storeSectionSubtitle": "أضف تفاصيل متجرك على WooCommerce",

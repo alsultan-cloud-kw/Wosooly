@@ -92,7 +92,8 @@ function CustomerAnalysis() {
       const nameField = customer.user || customer.customer_name || "";
       const name = nameField.toLowerCase();
   
-      const phone = (customer.phone || "").replace(/\D/g, "");
+      const phone = String(customer.phone || "").replace(/\D/g, "");
+      const email = String(customer.email || "").toLowerCase();
   
       const orders = Number(customer.total_orders ?? customer.order_count ?? 0);
       const spending = Number(customer.total_spending ?? customer.total_amount ?? 0);

@@ -31,6 +31,36 @@ import adminDashboardEN from '../public/locales/en/adminDashboard.json';
 import adminDashboardAR from '../public/locales/ar/adminDashboard.json';
 import adminRegisterEN from '../public/locales/en/adminRegister.json';
 import adminRegisterAR from '../public/locales/ar/adminRegister.json';
+import scraperDashboardEN from '../public/locales/en/scraperDashboard.json';
+import scraperDashboardAR from '../public/locales/ar/scraperDashboard.json';
+import scraperWebsitesEN from '../public/locales/en/scraperWebsites.json';
+import scraperWebsitesAR from '../public/locales/ar/scraperWebsites.json';
+import scraperSnapchatEN from '../public/locales/en/scraperSnapchat.json';
+import scraperSnapchatAR from '../public/locales/ar/scraperSnapchat.json';
+import scraperTikTokEN from '../public/locales/en/scraperTikTok.json';
+import scraperTikTokAR from '../public/locales/ar/scraperTikTok.json';
+import scraperInstagramEN from '../public/locales/en/scraperInstagram.json';
+import scraperInstagramAR from '../public/locales/ar/scraperInstagram.json';
+import scraperBrandResearchEN from '../public/locales/en/scraperBrandResearch.json';
+import scraperBrandResearchAR from '../public/locales/ar/scraperBrandResearch.json';
+import scraperImageAnalysisEN from '../public/locales/en/scraperImageAnalysis.json';
+import scraperImageAnalysisAR from '../public/locales/ar/scraperImageAnalysis.json';
+import scraperOfferSuggestionsEN from '../public/locales/en/scraperOfferSuggestions.json';
+import scraperOfferSuggestionsAR from '../public/locales/ar/scraperOfferSuggestions.json';
+import scraperOffersListEN from '../public/locales/en/scraperOffersList.json';
+import scraperOffersListAR from '../public/locales/ar/scraperOffersList.json';
+import scraperAddWebsiteEN from '../public/locales/en/scraperAddWebsite.json';
+import scraperAddWebsiteAR from '../public/locales/ar/scraperAddWebsite.json';
+import scraperAddSocialMediaAccountEN from '../public/locales/en/scraperAddSocialMediaAccount.json';
+import scraperAddSocialMediaAccountAR from '../public/locales/ar/scraperAddSocialMediaAccount.json';
+import scraperSocialMediaAccountsListEN from '../public/locales/en/scraperSocialMediaAccountsList.json';
+import scraperSocialMediaAccountsListAR from '../public/locales/ar/scraperSocialMediaAccountsList.json';
+import customerListEN from '../public/locales/en/customerList.json';
+import customerListAR from '../public/locales/ar/customerList.json';
+import emailingEN from '../public/locales/en/emailing.json';
+import emailingAR from '../public/locales/ar/emailing.json';
+import scraperResearchResultModalEN from '../public/locales/en/scraperResearchResultModal.json';
+import scraperResearchResultModalAR from '../public/locales/ar/scraperResearchResultModal.json';
 
 // Get initial language from localStorage
 const getInitialLanguage = () => {
@@ -65,7 +95,22 @@ i18next
         whatsapp: whatsappEN,
         userDashboard: userDashboardEN,
         adminDashboard: adminDashboardEN,
-        adminRegister: adminRegisterEN
+        adminRegister: adminRegisterEN,
+        scraperDashboard: scraperDashboardEN,
+        scraperWebsites: scraperWebsitesEN,
+        scraperSnapchat: scraperSnapchatEN,
+        scraperTikTok: scraperTikTokEN,
+        scraperInstagram: scraperInstagramEN,
+        scraperBrandResearch: scraperBrandResearchEN,
+        scraperImageAnalysis: scraperImageAnalysisEN,
+        scraperOfferSuggestions: scraperOfferSuggestionsEN,
+        scraperOffersList: scraperOffersListEN,
+        scraperAddWebsite: scraperAddWebsiteEN,
+        scraperAddSocialMediaAccount: scraperAddSocialMediaAccountEN,
+        scraperSocialMediaAccountsList: scraperSocialMediaAccountsListEN,
+        customerList: customerListEN,
+        emailing: emailingEN,
+        scraperResearchResultModal: scraperResearchResultModalEN
         
       },
 
@@ -84,7 +129,22 @@ i18next
         whatsapp: whatsappAR,
         userDashboard: userDashboardAR,
         adminDashboard: adminDashboardAR,
-        adminRegister: adminRegisterAR
+        adminRegister: adminRegisterAR,
+        scraperDashboard: scraperDashboardAR,
+        scraperWebsites: scraperWebsitesAR,
+        scraperSnapchat: scraperSnapchatAR,
+        scraperTikTok: scraperTikTokAR,
+        scraperInstagram: scraperInstagramAR,
+        scraperBrandResearch: scraperBrandResearchAR,
+        scraperImageAnalysis: scraperImageAnalysisAR,
+        scraperOfferSuggestions: scraperOfferSuggestionsAR,
+        scraperOffersList: scraperOffersListAR,
+        scraperAddWebsite: scraperAddWebsiteAR,
+        scraperAddSocialMediaAccount: scraperAddSocialMediaAccountAR,
+        scraperSocialMediaAccountsList: scraperSocialMediaAccountsListAR,
+        customerList: customerListAR,
+        emailing: emailingAR,
+        scraperResearchResultModal: scraperResearchResultModalAR
 
       },
 
@@ -94,7 +154,7 @@ i18next
     interpolation: {
       escapeValue: false, // React already does escaping
     },
-    ns: ['landing_top','landing', 'side_bar', 'productAnalysis', 'customerAnalysis', 'ordersAnalysis', 'register', 'signin', 'subscription', 'chat', 'messaging', 'whatsapp', 'userDashboard', 'adminDashboard', 'adminRegister'], // List of namespaces
+    ns: ['landing_top','landing', 'side_bar', 'productAnalysis', 'customerAnalysis', 'ordersAnalysis', 'register', 'signin', 'subscription', 'chat', 'messaging', 'whatsapp', 'userDashboard', 'adminDashboard', 'adminRegister', 'scraperDashboard', 'scraperWebsites', 'scraperSnapchat', 'scraperTikTok', 'scraperInstagram', 'scraperBrandResearch', 'scraperImageAnalysis', 'scraperOfferSuggestions', 'scraperOffersList', 'scraperAddWebsite', 'scraperAddSocialMediaAccount', 'scraperSocialMediaAccountsList', 'customerList', 'emailing', 'scraperResearchResultModal'], // List of namespaces
     defaultNS: 'landing', // Default namespace to use
   });
 

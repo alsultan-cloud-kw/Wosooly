@@ -19,12 +19,12 @@ def function_get_customers_details(db, id: int):
 
     df = pd.DataFrame(raw_records)
 
-    # ✅ Only completed orders
-    df_completed = df[df["order_status"] == "completed"]
+    # ✅ Only completed orders - use .copy() to avoid SettingWithCopyWarning
+    df_completed = df[df["order_status"] == "completed"].copy()
 
     # Top 5 products
     df_completed["product_key"] = df_completed["product_id"].fillna(
-    df_completed["product_name"]
+        df_completed["product_name"]
     )
 
     top_products = (

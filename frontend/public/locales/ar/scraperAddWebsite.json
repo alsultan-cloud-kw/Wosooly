@@ -1,0 +1,29 @@
+{
+  "toasts": {
+    "missing_fields": "يرجى إدخال رابط الموقع واسم العلامة التجارية",
+    "invalid_url": "يرجى إدخال رابط صحيح",
+    "submitting": "جاري إضافة الموقع...",
+    "submit_failed": "فشل إضافة الموقع"
+  },
+  "modal": {
+    "title": "إضافة موقع {{category}}",
+    "category_local": "محلي",
+    "category_international": "دولي",
+    "close": "إغلاق"
+  },
+  "form": {
+    "website_label": "رابط الموقع *",
+    "website_placeholder": "https://example.com",
+    "brand_label": "اسم العلامة التجارية *",
+    "brand_placeholder": "اسم العلامة التجارية",
+    "description_label": "الوصف (اختياري)",
+    "description_placeholder": "وصف الموقع أو العلامة التجارية"
+  },
+  "buttons": {
+    "submit_loading": "جاري الإضافة...",
+    "submit": "إضافة",
+    "cancel": "إلغاء"
+  }
+}
+
+

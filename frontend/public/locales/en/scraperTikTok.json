@@ -1,0 +1,42 @@
+{
+  "header": {
+    "no_accounts_title": "No TikTok accounts",
+    "no_accounts_body": "Go to the {settings} tab to add TikTok profiles of competitors for monitoring and analysis.",
+    "title": "🎵 TikTok data",
+    "summary": "{{accounts}} active accounts | {{offers}} collected videos"
+  },
+  "toasts": {
+    "scrape_profile_loading": "Collecting data for {{brandName}}...",
+    "scrape_profile_success": "Data collected for {{brandName}}",
+    "scrape_profile_failed": "Failed to collect data for {{brandName}}",
+    "scrape_all_loading": "Collecting data for all accounts...",
+    "scrape_all_failed": "Failed to collect data",
+    "clear_offers_confirm": "Are you sure you want to delete all TikTok offers? This action cannot be undone.",
+    "clear_offers_loading": "Deleting TikTok offers...",
+    "clear_offers_failed": "Failed to delete offers"
+  },
+  "buttons": {
+    "scrape_all_loading": "Collecting...",
+    "scrape_all": "🔄 Collect data for all accounts",
+    "clear_offers": "🗑️ Delete all offers",
+    "scrape_loading": "⏳ Collecting...",
+    "scrape_updated": "✓ Updated",
+    "scrape": "📥 Collect data"
+  },
+  "accounts": {
+    "active_accounts_title": "Active accounts",
+    "offers_collected": "{{count}} collected videos"
+  },
+  "offers_list": {
+    "title": "Videos and offers from TikTok ({{count}})",
+    "badge": "TikTok",
+    "tag": "@{{tag}}",
+    "discount": "{{value}}% discount",
+    "source": "Source: tiktok",
+    "view_video": "View video →",
+    "empty_title": "No videos available right now",
+    "empty_body": "Click the \"Collect data\" button for any account to start collecting videos and offers."
+  }
+}
+
+

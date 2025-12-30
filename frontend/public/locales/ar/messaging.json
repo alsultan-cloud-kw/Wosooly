@@ -2,6 +2,7 @@
   "title": "الرسائل",
   "subtitle": "أرسل رسائل WhatsApp لعملائك باستخدام القوالب",
   "customers": "العملاء",
+  "customers_plural": "عملاء",
   "excel": "Excel",
   "woocommerce": "WooCommerce",
   "templates": "القوالب",
@@ -12,6 +13,14 @@
   "sending": "جاري الإرسال...",
   "sendMessage": "إرسال رسالة إلى",
   "customer": "عميل",
+  "customer_plural": "عملاء",
+  "category": "الفئة",
+  "language": "اللغة",
+  "status": {
+    "APPROVED": "معتمد",
+    "PENDING": "قيد الانتظار",
+    "REJECTED": "مرفوض"
+  },
   "alerts": {
     "selectCustomerFirst": "يرجى اختيار عميل واحد على الأقل أولاً!",
     "selectTemplateFirst": "يرجى اختيار قالب واحد على الأقل!",

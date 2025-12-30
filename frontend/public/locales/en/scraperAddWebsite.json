@@ -1,0 +1,29 @@
+{
+  "toasts": {
+    "missing_fields": "Please enter the website URL and brand name",
+    "invalid_url": "Please enter a valid URL",
+    "submitting": "Adding website...",
+    "submit_failed": "Failed to add website"
+  },
+  "modal": {
+    "title": "Add {{category}} website",
+    "category_local": "local",
+    "category_international": "international",
+    "close": "Close"
+  },
+  "form": {
+    "website_label": "Website URL *",
+    "website_placeholder": "https://example.com",
+    "brand_label": "Brand name *",
+    "brand_placeholder": "Brand name",
+    "description_label": "Description (optional)",
+    "description_placeholder": "Description of the website or brand"
+  },
+  "buttons": {
+    "submit_loading": "Adding...",
+    "submit": "Add",
+    "cancel": "Cancel"
+  }
+}
+
+

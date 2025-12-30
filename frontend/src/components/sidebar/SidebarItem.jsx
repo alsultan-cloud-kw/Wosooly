@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import api from "../../../api_config";
+import { toast } from "react-hot-toast";
 import '../../assets/css/sidebar.css';
 
 const SidebarItem = ({ title, icon, route, active, premium, featureKey }) => {
@@ -12,15 +13,34 @@ const SidebarItem = ({ title, icon, route, active, premium, featureKey }) => {
 
     // Check if this is a premium feature
     if (premium) {
-      const availableFeatures = JSON.parse(localStorage.getItem("available_features") || "[]");
+      let availableFeatures = [];
+      try {
+        const featuresStr = localStorage.getItem("available_features");
+        if (featuresStr) {
+          availableFeatures = JSON.parse(featuresStr);
+        }
+      } catch (error) {
+        console.error("Error parsing available_features from localStorage:", error);
+        // If parsing fails, default to empty array
+        availableFeatures = [];
+        // Optionally clear the corrupted data
+        localStorage.removeItem("available_features");
+      }
+      
       if (!availableFeatures.includes(featureKey)) {
-        alert("You need to upgrade your plan to access this feature!");
-        navigate("/subscription")
-        return; // Prevent navigation
+        toast.error("You need to upgrade your plan to access this feature!", {
+          icon: "👑",
+          duration: 4000,
+        });
+        // Navigate after a short delay to ensure toast is visible
+        setTimeout(() => {
+          navigate("/subscription");
+        }, 500);
+        return; // Prevent navigation to the original route
       }
     }
     // Only for Messaging menu item
-    if (title === "Messaging") {
+    if (title === "messaging") {
       try {
         const res = await api.get("/whatsapp/has-credentials");
         if (res.data.hasCredentials) {

@@ -1,4 +1,5 @@
 import api from "../../../api_config"; // adjust path based on your folder structure
+import { toast } from "react-hot-toast";
 
 export const login = (email, password) => async dispatch => {
   try {
@@ -88,16 +89,35 @@ export const register =
     try {
       // Call the backend logout endpoint
       await api.post("/logout");
-  
-      // Clear localStorage after successful logout
-      localStorage.clear();
-  
-      dispatch({ type: "LOGOUT" });
+      
+      // Show success toast
+      toast.success("Successfully logged out! 👋", {
+        icon: "👋",
+        duration: 3000,
+        style: {
+          borderRadius: "10px",
+          background: "#10b981",
+          color: "#fff",
+        },
+      });
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error.message);
-  
-      // Still clear localStorage to ensure client-side logout
-      localStorage.clear();
-      dispatch({ type: "LOGOUT" });
+      // Continue with logout even if API call fails
+      // Still show success toast since we're clearing local storage
+      toast.success("Successfully logged out! 👋", {
+        icon: "👋",
+        duration: 3000,
+        style: {
+          borderRadius: "10px",
+          background: "#10b981",
+          color: "#fff",
+        },
+      });
     }
+    
+    // Clear localStorage (always, regardless of API success/failure)
+    localStorage.clear();
+    
+    // Dispatch logout action
+    dispatch({ type: "LOGOUT" });
   };

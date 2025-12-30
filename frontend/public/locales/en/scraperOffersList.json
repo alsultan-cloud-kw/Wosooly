@@ -1,0 +1,14 @@
+{
+  "empty": {
+    "no_offers": "There are no active offers"
+  },
+  "fields": {
+    "source": "Source: {{source}}",
+    "valid_until": "Valid until: {{date}}"
+  },
+  "actions": {
+    "view": "View →"
+  }
+}
+
+

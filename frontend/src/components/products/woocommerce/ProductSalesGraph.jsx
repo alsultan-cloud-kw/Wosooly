@@ -90,7 +90,7 @@ const ProductSalesGraph = () => {
         height={400}
       />
       {/* 🔥 Render forecast only if externalId is available */}
-      {externalId && <ForecastTable productId={externalId} productName={productName} />}
+      {/* {externalId && <ForecastTable productId={externalId} productName={productName} />} */}
     </div>
   )
 }

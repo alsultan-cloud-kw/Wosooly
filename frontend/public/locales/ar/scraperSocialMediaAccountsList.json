@@ -1,0 +1,25 @@
+{
+  "empty": {
+    "title": "لا توجد حسابات مضافة"
+  },
+  "sections": {
+    "accounts_title": "حسابات {{platform}}",
+    "count": "{{count}}"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط"
+  },
+  "platforms": {
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "snapchat": "Snapchat"
+  },
+  "buttons": {
+    "view": "عرض",
+    "deactivate": "إيقاف",
+    "activate": "تفعيل",
+    "delete": "حذف"
+  }
+}
+

@@ -1,0 +1,25 @@
+{
+  "empty": {
+    "title": "No accounts added"
+  },
+  "sections": {
+    "accounts_title": "{{platform}} Accounts",
+    "count": "{{count}}"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "platforms": {
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "snapchat": "Snapchat"
+  },
+  "buttons": {
+    "view": "View",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "delete": "Delete"
+  }
+}
+

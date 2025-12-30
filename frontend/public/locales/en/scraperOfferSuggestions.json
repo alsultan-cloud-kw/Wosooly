@@ -1,0 +1,67 @@
+{
+  "toasts": {
+    "loading": "Analyzing the market and generating suggestions...",
+    "success": "{{count}} strategic suggestions generated successfully!",
+    "error_generic": "Failed to generate suggestions",
+    "error_loading": "An error occurred while loading suggestions",
+    "error_loading_history": "Failed to load historical suggestions",
+    "delete_success": "Suggestion deleted successfully",
+    "delete_error": "Failed to delete suggestion",
+    "delete_all_success": "All suggestions deleted successfully",
+    "delete_all_error": "Failed to delete suggestions"
+  },
+  "header": {
+    "title": "💡 Strategic offer suggestions",
+    "subtitle_with_business": "Based on competitor offers, {{businessType}} market trends, and local events",
+    "subtitle_generic": "Based on competitor offers, market trends, and local events"
+  },
+  "buttons": {
+    "refresh_loading": "Analyzing...",
+    "refresh": "🔄 Refresh suggestions",
+    "create_new": "Create new suggestions",
+    "show_history": "Show History",
+    "hide_history": "Hide History",
+    "delete": "Delete",
+    "delete_all": "Delete All",
+    "view": "View"
+  },
+  "market_analysis": {
+    "title": "📊 Market analysis"
+  },
+  "loading": {
+    "text": "Analyzing data and generating suggestions..."
+  },
+  "urgency": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "cards": {
+    "suggestion_label": "Suggestion #{{index}}",
+    "target_competitor_label": "Target competitor:",
+    "event_label": "Event:",
+    "duration_label": "Offer duration:",
+    "differentiation_label": "Differentiation point:",
+    "added_value_label": "Added value:",
+    "marketing_strategy_label": "Marketing strategy:",
+    "reasoning_label": "Strategic justification:",
+    "expected_impact_label": "Expected impact:",
+    "discount": "{{value}}% discount"
+  },
+  "empty": {
+    "needs_business_type_title": "⚠️ Please select a business type from the Business Settings tab first",
+    "needs_business_type_body": "Suggestions cannot be generated without an active business type selected.",
+    "no_suggestions_title": "No suggestions are currently available"
+  },
+  "history": {
+    "title": "Stored Suggestions",
+    "business_type": "Business Type",
+    "suggestions_count": "suggestions"
+  },
+  "confirmations": {
+    "delete_suggestion": "Are you sure you want to delete this suggestion?",
+    "delete_all_suggestions": "Are you sure you want to delete all stored suggestions?"
+  }
+}
+
+

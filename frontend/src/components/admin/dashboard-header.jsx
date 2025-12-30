@@ -11,11 +11,20 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import { useState, useEffect } from "react"
 
 export function DashboardHeader() {
   const { t } = useTranslation("adminDashboard");
   const navigate = useNavigate()
   const location = useLocation()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    // Check if current user is an admin
+    const userType = localStorage.getItem("user_type")
+    setIsAdmin(userType === "admin")
+  }, [])
+
   return (
     <header className="border-b border-border bg-card">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
@@ -52,16 +61,18 @@ export function DashboardHeader() {
             >
               {t("header.integrations")}
             </button>
-            <button
-              onClick={() => navigate("/admin-register")}
-              className={`text-sm font-medium transition-colors ${
-                location.pathname === "/admin-register"
-                  ? "text-primary hover:text-primary/80"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("header.registerAdmin")}
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/admin-register")}
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === "/admin-register"
+                    ? "text-primary hover:text-primary/80"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t("header.registerAdmin")}
+              </button>
+            )}
           </nav>
         </div>
 

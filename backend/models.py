@@ -49,12 +49,33 @@ class Client(Base):
     accepted_terms = Column(Boolean, default=False)
     terms_accepted_at = Column(DateTime(timezone=True), nullable=True)
     terms_version = Column(String, nullable=True)
+    # Password reset fields
+    password_reset_token = Column(String, nullable=True)
+    password_reset_token_expires = Column(DateTime(timezone=True), nullable=True)
     # 🔗 Relationship to customers
     whatsapp_messages = relationship("WhatsAppMessage", back_populates="client", cascade="all, delete-orphan")
     customers = relationship("Customer", back_populates="client", cascade="all, delete-orphan")
     subscription = relationship("Subscription", back_populates="client", uselist=False)
     whatsapp_templates = relationship("WhatsAppTemplate", back_populates="client", cascade="all, delete-orphan")
+    email_templates = relationship("EmailTemplate", back_populates="client", cascade="all, delete-orphan")
     uploaded_files = relationship("UploadedFile", back_populates="client", cascade="all, delete-orphan")
+    # 🔗 Competitor / social media tracking (non-breaking addition)
+    competitor_social_media_accounts = relationship(
+        "CompetitorSocialMediaAccount",
+        back_populates="client",
+        cascade="all, delete-orphan",
+    )
+    competitor_brand_offers = relationship("CompetitorBrandOffer", back_populates="client", cascade="all, delete-orphan")
+    competitor_website_accounts = relationship("CompetitorWebsiteAccount", back_populates="client", cascade="all, delete-orphan")
+    competitor_business_configs = relationship("CompetitorBusinessConfig", back_populates="client", cascade="all, delete-orphan")
+    competitor_news_sources = relationship("CompetitorNewsSource", back_populates="client", cascade="all, delete-orphan")
+    competitor_news = relationship("CompetitorGoldNews", back_populates="client", cascade="all, delete-orphan")
+    competitor_daily_news_summaries = relationship("CompetitorDailyNewsSummary", back_populates="client", cascade="all, delete-orphan")
+    competitor_deep_research = relationship("CompetitorDeepResearchResult", back_populates="client", cascade="all, delete-orphan")
+    competitor_analyzed_images = relationship("CompetitorAnalyzedImage", back_populates="client", cascade="all, delete-orphan")
+    competitor_tiktok_hashtags = relationship("CompetitorTikTokHashtag", back_populates="client", cascade="all, delete-orphan")
+    competitor_price_alerts = relationship("CompetitorPriceAlert", back_populates="client", cascade="all, delete-orphan")
+    competitor_offer_suggestions = relationship("CompetitorOfferSuggestion", back_populates="client", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Client(email={self.email}, store_url={self.store_url})>"
@@ -216,6 +237,60 @@ class WhatsAppTemplate(Base):
     def variables(self) -> list[str]:
         return re.findall(r"{{.*?}}", self.body or "")
 
+class EmailTemplate(Base):
+    __tablename__ = "email_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
+    template_name = Column(String, unique=True, index=True, nullable=False)
+    subject = Column(String, nullable=False)
+    category = Column(String(100), nullable=True)
+    language = Column(String(10), nullable=True)
+    body = Column(Text, nullable=False)  # HTML body
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    client = relationship("Client", back_populates="email_templates")
+
+    @property
+    def variables(self) -> list[str]:
+        return re.findall(r"{{.*?}}", self.body or "")
+
+class EmailMessage(Base):
+    __tablename__ = "email_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)  # Can be null for bulk sends
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
+    direction = Column(String, nullable=False)  # "incoming" or "outgoing"
+    to_email = Column(String, nullable=False)
+    subject = Column(String, nullable=False)
+    body = Column(Text, nullable=False)  # HTML body
+    template_name = Column(String, nullable=True)  # Reference to template if used
+    status = Column(String, nullable=True)  # sent, failed, delivered, etc.
+    error_message = Column(Text, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    customer = relationship("Customer", backref="email_messages")
+    client = relationship("Client", backref="email_messages")
+
+class EmailAttachment(Base):
+    __tablename__ = "email_attachments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email_message_id = Column(Integer, ForeignKey("email_messages.id", ondelete="CASCADE"), nullable=False)
+    filename = Column(String, nullable=False)
+    file_path = Column(String, nullable=True)  # Path to stored file
+    cloudinary_url = Column(String, nullable=True)  # If using Cloudinary
+    cloudinary_public_id = Column(String, nullable=True)
+    content_type = Column(String, nullable=True)
+    file_size = Column(Integer, nullable=True)  # Size in bytes
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    email_message = relationship("EmailMessage", backref="attachments")
+
 class WhatsAppCredentials(Base):
     __tablename__ = "whatsapp_credentials"
 
@@ -258,6 +333,69 @@ class WhatsAppCredentials(Base):
     @access_token.setter
     def access_token(self, value):
         self._access_token = fernet.encrypt(value.encode()).decode()
+
+class InstagramCredentials(Base):
+    __tablename__ = "instagram_credentials"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    client_id = Column(Integer, ForeignKey("clients.id"), unique=True, nullable=False)
+
+    # Encrypted columns (similar to WooCommerce keys)
+    _username = Column("username", String, nullable=False)
+    _password = Column("password", String, nullable=False)
+    _email = Column("email", String, nullable=True)  # Optional email field
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    client = relationship("Client", backref="instagram_credentials", uselist=False)
+
+    # Encryption wrappers -----------------------
+
+    @property
+    def username(self):
+        return fernet.decrypt(self._username.encode()).decode()
+
+    @username.setter
+    def username(self, value):
+        self._username = fernet.encrypt(value.encode()).decode()
+
+    @property
+    def password(self):
+        return fernet.decrypt(self._password.encode()).decode()
+
+    @password.setter
+    def password(self, value):
+        self._password = fernet.encrypt(value.encode()).decode()
+
+    @property
+    def email(self):
+        if self._email:
+            return fernet.decrypt(self._email.encode()).decode()
+        return None
+
+    @email.setter
+    def email(self, value):
+        if value:
+            self._email = fernet.encrypt(value.encode()).decode()
+        else:
+            self._email = None
+
+class BusinessType(Base):
+    __tablename__ = "business_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False, index=True)  # Business type name
+    is_predefined = Column(Boolean, default=False)  # True for predefined, False for user-added
+    created_at = Column(DateTime, default=datetime.utcnow)
+    created_by_client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)  # Who added it (null for predefined)
+    
+    created_by = relationship("Client", foreign_keys=[created_by_client_id])
+
+    __table_args__ = (
+        Index("ix_business_types_name", "name"),
+    )
 
 class SubscriptionPlan(Base):
     __tablename__ = "subscription_plans"
@@ -395,3 +533,345 @@ class ColumnMapping(Base):
     __table_args__ = (
         Index("ix_column_mappings_file_user_analysis", "file_id", "user_id", "analysis_type"),
     )
+
+
+# ------------------------------
+# Competitor / Social Media models (additive, does not touch existing tables)
+# ------------------------------
+
+class CompetitorSocialMediaAccount(Base):
+    """
+    Unified social media account for competitors (Instagram / TikTok / Snapchat, etc.)
+    Matches Alembic table: competitor_social_media_accounts
+    """
+
+    __tablename__ = "competitor_social_media_accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    username = Column(String, nullable=False)
+    brand_name = Column(String, nullable=False)
+    platform = Column(String, nullable=False)  # e.g. "instagram", "tiktok", "snapchat"
+    profile_url = Column(String, nullable=False)
+
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_social_media_accounts")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "username", "platform", name="uq_social_account"),
+    )
+
+
+class CompetitorGoldPrice(Base):
+    """
+    Gold prices per client/source/karat.
+    Matches Alembic table: competitor_gold_prices
+    """
+
+    __tablename__ = "competitor_gold_prices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    date = Column(DateTime, nullable=False)
+    karat = Column(Integer, nullable=False)
+    price_per_gram = Column(Float, nullable=False)
+    currency = Column(String, default="KWD")
+    source = Column(String, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "date", "karat", "source", name="uq_gold_price"),
+    )
+
+
+class CompetitorBrandOffer(Base):
+    """
+    Brand offers/promotions scraped from various sources.
+    Matches Alembic table: competitor_brand_offers
+    """
+
+    __tablename__ = "competitor_brand_offers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    brand = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    discount_percentage = Column(Float, nullable=True)
+    valid_until = Column(DateTime, nullable=True)
+    source = Column(String, nullable=False)  # website, instagram, tiktok, snapchat, etc.
+    source_url = Column(String, nullable=False)
+    scraped_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+
+    client = relationship("Client", back_populates="competitor_brand_offers")
+
+    __table_args__ = (
+        Index("ix_brand_offers_brand", "brand"),
+        Index("ix_brand_offers_active", "is_active"),
+        Index("ix_brand_offers_scraped_at", "scraped_at"),
+    )
+
+
+class CompetitorWebsiteAccount(Base):
+    """
+    Website accounts to monitor for competitor analysis.
+    Matches Alembic table: competitor_website_accounts
+    """
+
+    __tablename__ = "competitor_website_accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    website_url = Column(String, nullable=False)
+    brand_name = Column(String, nullable=False)
+    category = Column(String, nullable=False)  # local, international
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_website_accounts")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "website_url", name="uq_website_url"),
+    )
+
+
+class CompetitorBusinessConfig(Base):
+    """
+    Business configuration for competitor analysis (business type, keywords, etc.).
+    Matches Alembic table: competitor_business_config
+    """
+
+    __tablename__ = "competitor_business_config"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    business_type = Column(String, nullable=False)  # Gold, Jewelleries, Watches, etc.
+    keywords = Column(Text, nullable=False)  # Comma-separated
+    price_keywords = Column(Text, nullable=True)  # Comma-separated
+    offer_keywords = Column(Text, nullable=True)  # Comma-separated
+    is_active = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_business_configs")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "business_type", name="uq_client_business_type"),
+    )
+
+
+class CompetitorNewsSource(Base):
+    """
+    News sources for gold/news scraping.
+    Matches Alembic table: competitor_news_sources
+    """
+
+    __tablename__ = "competitor_news_sources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    source_name = Column(String, nullable=False)
+    source_url = Column(String, nullable=False)
+    region = Column(String, nullable=True)  # local, international, null
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    auto_categorize = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_news_sources")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "source_url", name="uq_news_source"),
+    )
+
+
+class CompetitorGoldNews(Base):
+    """
+    Gold/news articles scraped from various sources.
+    Matches Alembic table: competitor_news
+    """
+
+    __tablename__ = "competitor_news"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    source = Column(String, nullable=False)
+    source_url = Column(String, nullable=False)
+    published_at = Column(DateTime, nullable=False)
+    region = Column(String, nullable=False)  # local, international
+    category = Column(String, nullable=True)
+    scraped_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_news")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "source_url", "published_at", name="uq_news"),
+        Index("ix_news_date", "published_at"),
+        Index("ix_news_region", "region"),
+    )
+
+
+class CompetitorDailyNewsSummary(Base):
+    """
+    Daily news summaries generated by AI.
+    Matches Alembic table: competitor_daily_news_summaries
+    """
+
+    __tablename__ = "competitor_daily_news_summaries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    date = Column(DateTime, nullable=False)
+    summary = Column(Text, nullable=False)
+    expert_opinion = Column(Text, nullable=True)
+    expectations = Column(Text, nullable=True)
+    key_points = Column(JSONB, nullable=True)  # Array of strings
+    news_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_daily_news_summaries")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "date", name="uq_daily_summary"),
+    )
+
+
+class CompetitorDeepResearchResult(Base):
+    """
+    Deep research results from AI-powered brand research.
+    Matches Alembic table: competitor_deep_research
+    """
+
+    __tablename__ = "competitor_deep_research"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    brand_name = Column(String, nullable=False)
+    research_query = Column(Text, nullable=False)
+    research_result = Column(Text, nullable=False)
+    extracted_info = Column(JSONB, nullable=True)
+    citations = Column(JSONB, nullable=True)
+    search_queries = Column(JSONB, nullable=True)
+    interaction_id = Column(String, nullable=True)
+    status = Column(String, default="completed")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_deep_research")
+
+    __table_args__ = (
+        Index("ix_deep_research_brand", "brand_name"),
+        Index("ix_deep_research_date", "created_at"),
+    )
+
+
+class CompetitorAnalyzedImage(Base):
+    """
+    Images analyzed by AI for promotional content.
+    Matches Alembic table: competitor_analyzed_images
+    """
+
+    __tablename__ = "competitor_analyzed_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    brand_name = Column(String, nullable=False)
+    image_url = Column(String, nullable=False)
+    source = Column(String, nullable=False)  # instagram, website, snapchat, tiktok
+    source_url = Column(String, nullable=False)
+    analysis_result = Column(Text, nullable=False)
+    extracted_info = Column(JSONB, nullable=True)
+    is_promotional = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_analyzed_images")
+
+    __table_args__ = (
+        Index("ix_analyzed_images_brand", "brand_name"),
+        Index("ix_analyzed_images_source", "source"),
+    )
+
+
+class CompetitorTikTokHashtag(Base):
+    """
+    TikTok hashtags for business types.
+    Matches Alembic table: competitor_tiktok_hashtags
+    """
+
+    __tablename__ = "competitor_tiktok_hashtags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    business_type = Column(String, nullable=False)
+    hashtags = Column(JSONB, nullable=False)  # Array of hashtag strings
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_tiktok_hashtags")
+
+    __table_args__ = (
+        UniqueConstraint("client_id", "business_type", name="uq_tiktok_hashtags"),
+    )
+
+
+class CompetitorPriceAlert(Base):
+    """
+    Price alerts for gold prices.
+    Matches Alembic table: competitor_price_alerts
+    """
+
+    __tablename__ = "competitor_price_alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    karat = Column(Integer, nullable=False)
+    threshold_percentage = Column(Float, nullable=False)
+    notified = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_price_alerts")
+
+
+class CompetitorOfferSuggestion(Base):
+    """
+    AI-generated offer suggestions stored for one month.
+    Matches Alembic table: competitor_offer_suggestions
+    """
+
+    __tablename__ = "competitor_offer_suggestions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    client_id = Column(Integer, ForeignKey("clients.id", ondelete="CASCADE"), nullable=False)
+
+    business_type = Column(String, nullable=False)
+    suggestions = Column(JSONB, nullable=False)  # Array of suggestion objects
+    market_analysis = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="competitor_offer_suggestions")
+
+    __table_args__ = (
+        Index("ix_offer_suggestions_client_date", "client_id", "created_at"),
+        Index("ix_offer_suggestions_date", "created_at"),
+    )
+

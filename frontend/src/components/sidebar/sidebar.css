@@ -104,7 +104,23 @@
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid #fff;
-    object-fit: cover;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .sidebar__avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar__avatar-icon {
+    width: 32px;
+    height: 32px;
+    color: #ffffff;
   }
   
   /* Dropdown */

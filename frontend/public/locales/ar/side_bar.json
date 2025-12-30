@@ -1,11 +1,13 @@
 {
-  "dashboard": "لوحة التحكم",
+  "overview": "الملخص",
   "productsAnalytics": "تحليلات المنتجات",
   "customersAnalytics": "تحليلات العملاء",
   "ordersAnalytics": "تحليلات الطلبات",
   "registerAdmin": "تسجيل مدير جديد",
-  "chatCrm": "الدردشة مع CRM",
+  "chatCrm": "الدردشة",
   "logout": "تسجيل الخروج",
-  "appName": ""
-
+  "appName": "",
+  "messaging": "الرسائل",
+  "emailMarketing": "البريد الإلكتروني",
+  "competitorAnalysis": "تحليل المنافسين"
 }

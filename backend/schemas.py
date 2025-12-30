@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List, Dict, Union
+from typing import Optional, List, Dict, Union, Any
 from datetime import datetime
 
 class LoginRequest(BaseModel):
@@ -17,6 +17,13 @@ class RegisterRequest(BaseModel):
     consumer_secret: Optional[str] = None
     accepted_terms: bool = Field(..., description="User must accept terms and privacy policy")
     plan: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 class ProductSchema(BaseModel):
     id: int
@@ -111,6 +118,11 @@ class WhatsAppCredentialsInput(BaseModel):
     wabaId: Optional[str]
     accessToken: Optional[str]
 
+class InstagramCredentialsInput(BaseModel):
+    username: str
+    password: Optional[str] = None  # Optional for updates
+    email: Optional[str] = None
+
 class WhatsAppTemplateBase(BaseModel):
     template_name: str
     category: str | None = None
@@ -126,6 +138,46 @@ class SendMessageRequest(BaseModel):
     customers: List[int]
     templates: List[str]
     variables: Optional[Dict[int, List[str]]] = None
+
+class EmailTemplateBase(BaseModel):
+    id: int
+    template_name: str
+    subject: str
+    category: Optional[str] = None
+    language: Optional[str] = None
+    body: str
+    is_active: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+class EmailTemplateCreate(BaseModel):
+    template_name: str
+    subject: str
+    category: Optional[str] = None
+    language: Optional[str] = None
+    body: str
+    is_active: bool = True
+
+class EmailTemplateUpdate(BaseModel):
+    template_name: Optional[str] = None
+    subject: Optional[str] = None
+    category: Optional[str] = None
+    language: Optional[str] = None
+    body: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class SendEmailRequest(BaseModel):
+    customers: List[int]
+    templates: List[str]  # Template names
+    subject: Optional[str] = None  # Override template subject if provided
+    body: Optional[str] = None  # Override template body if provided
+    variables: Optional[Dict[int, List[str]]] = None  # Customer-specific variables
+    attachments: Optional[List[str]] = None  # List of file URLs or paths
+    data_source: Optional[str] = "woocommerce"  # "woocommerce" or "excel"
+    file_id: Optional[int] = None  # Required if data_source is "excel"
 
 class WooCommerceCredentialsRequest(BaseModel):
     store_url: str
@@ -188,3 +240,251 @@ class ClientStatusUpdateRequest(BaseModel):
 class SelectSubscriptionPlanRequest(BaseModel):
     plan_name: str
     billing_cycle: str = "monthly"  # monthly or yearly
+
+
+# ------------------------------
+# Competitor / Social media schemas (additive)
+# ------------------------------
+
+class SocialMediaAccountCreate(BaseModel):
+    username: str
+    brand_name: str
+    platform: str  # "instagram", "tiktok", "snapchat"
+    profile_url: str
+    is_active: Optional[bool] = True
+
+
+class SocialMediaAccountSchema(BaseModel):
+    id: int
+    username: str
+    brand_name: str
+    platform: str
+    profile_url: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+class InstagramProfileCreate(BaseModel):
+    username: str
+    brand_name: str
+    profile_url: str
+
+
+class InstagramProfileResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[SocialMediaAccountSchema] = None
+
+
+class GoldPriceSchema(BaseModel):
+    id: int
+    date: datetime
+    karat: int
+    price_per_gram: float
+    currency: str
+    source: str
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+# Additional Competitor Analysis Schemas
+class BrandOfferCreate(BaseModel):
+    brand: str
+    title: str
+    description: Optional[str] = None
+    discount_percentage: Optional[float] = None
+    valid_until: Optional[datetime] = None
+    source: str
+    source_url: str
+
+
+class BrandOfferSchema(BaseModel):
+    id: int
+    brand: str
+    title: str
+    description: Optional[str] = None
+    discount_percentage: Optional[float] = None
+    valid_until: Optional[datetime] = None
+    source: str
+    source_url: str
+    scraped_at: datetime
+    is_active: bool
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+class WebsiteAccountCreate(BaseModel):
+    website_url: str
+    brand_name: str
+    category: str  # local, international
+    description: Optional[str] = None
+    is_active: Optional[bool] = True
+
+
+class WebsiteAccountSchema(BaseModel):
+    id: int
+    website_url: str
+    brand_name: str
+    category: str
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class BusinessConfigCreate(BaseModel):
+    business_type: str
+    keywords: str
+    price_keywords: Optional[str] = None
+    offer_keywords: Optional[str] = None
+    is_active: Optional[bool] = False
+
+class BusinessConfigUpdate(BaseModel):
+    keywords: Optional[str] = None
+    price_keywords: Optional[str] = None
+    offer_keywords: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class BusinessConfigSchema(BaseModel):
+    id: int
+    business_type: str
+    keywords: str
+    price_keywords: Optional[str] = None
+    offer_keywords: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class NewsSourceCreate(BaseModel):
+    source_name: str
+    source_url: str
+    region: Optional[str] = None  # local, international
+    description: Optional[str] = None
+    is_active: Optional[bool] = True
+    auto_categorize: Optional[bool] = True
+
+class NewsSourceUpdate(BaseModel):
+    source_name: Optional[str] = None
+    region: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+    auto_categorize: Optional[bool] = None
+
+class NewsSourceSchema(BaseModel):
+    id: int
+    source_name: str
+    source_url: str
+    region: Optional[str] = None
+    description: Optional[str] = None
+    is_active: bool
+    auto_categorize: bool
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class GoldNewsSchema(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    source: str
+    source_url: str
+    published_at: datetime
+    region: str
+    category: Optional[str] = None
+    scraped_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class DailyNewsSummarySchema(BaseModel):
+    id: int
+    date: datetime
+    summary: str
+    expert_opinion: Optional[str] = None
+    expectations: Optional[str] = None
+    key_points: Optional[List[str]] = None
+    news_count: int
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class DeepResearchResultSchema(BaseModel):
+    id: int
+    brand_name: str
+    research_query: str
+    research_result: str
+    extracted_info: Optional[Dict] = None
+    citations: Optional[List] = None
+    search_queries: Optional[List] = None
+    interaction_id: Optional[str] = None
+    status: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class AnalyzedImageSchema(BaseModel):
+    id: int
+    brand_name: str
+    image_url: str
+    source: str
+    source_url: str
+    analysis_result: str
+    extracted_info: Optional[Dict] = None
+    is_promotional: bool
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class TikTokHashtagSchema(BaseModel):
+    id: int
+    business_type: str
+    hashtags: List[str]
+    created_at: datetime
+    updated_at: datetime
+    model_config = {
+        "from_attributes": True,
+    }
+
+class PriceAlertSchema(BaseModel):
+    id: int
+    karat: int
+    threshold_percentage: float
+    notified: bool
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True,
+    }
+
+class GenericResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[Any] = None
+
+class EmailRequest(BaseModel):
+    subject: str
+    body: str
+    recipients: List[str]

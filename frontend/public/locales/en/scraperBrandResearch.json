@@ -1,0 +1,30 @@
+{
+  "form": {
+    "title": "🔍 Deep brand research",
+    "brand_label": "Brand name *",
+    "brand_placeholder": "Example: Jawesh Al-Arbash",
+    "context_label": "Additional context (optional)",
+    "context_placeholder": "Example: Search for current promotional offers and gold prices",
+    "error_required_brand": "Please enter a brand name",
+    "submit_loading": "Researching...",
+    "submit": "🔍 Start deep research"
+  },
+  "toasts": {
+    "research_loading": "Running research...",
+    "research_generic_error": "An error occurred while researching",
+    "delete_all_confirm": "Are you sure you want to delete all previous research results? This action cannot be undone.",
+    "delete_all_loading": "Deleting...",
+    "delete_all_failed": "Failed to delete results"
+  },
+  "results": {
+    "title": "Previous research results ({{count}})",
+    "refresh": "Refresh",
+    "delete_all": "🗑️ Delete all",
+    "status_completed": "Completed",
+    "extracted_summary": "Extracted: {{offers}} offers, {{prices}} prices",
+    "extracted_generic": "Information extracted",
+    "view_full": "View full details →"
+  }
+}
+
+

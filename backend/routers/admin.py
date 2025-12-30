@@ -5,10 +5,14 @@ from sqlalchemy import func
 from datetime import datetime
 import io
 
-from schemas import AdminRegisterRequest, LoginRequest, ClientStatusUpdateRequest
+from schemas import AdminRegisterRequest, LoginRequest, ClientStatusUpdateRequest, ForgotPasswordRequest, ResetPasswordRequest
 from database import get_db
 from utils.auth import get_current_client, hash_password, create_access_token, verify_password
 from models import Client, UploadedFile
+from routers.send_mail import send_single_email
+from datetime import datetime, timezone, timedelta
+import secrets
+import os
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -78,9 +82,11 @@ def login_admin(
 def register_admin(
     request: AdminRegisterRequest,
     db: Session = Depends(get_db),
+    current_admin: Client = Depends(get_admin_client),
 ):
     """
     Create a new admin user (stored in the `clients` table with user_type='admin').
+    Only existing admins can register new admins.
     """
     # Check if email already exists
     existing = db.query(Client).filter(Client.email == request.email).first()
@@ -382,3 +388,183 @@ def download_file(
             "Content-Disposition": f'attachment; filename="{f.filename}"'
         },
     )
+
+
+# Get frontend URL from environment
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+
+@router.post("/forgot-password")
+def forgot_password_admin(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Send password reset email to admin user.
+    Only works for users with user_type='admin'.
+    """
+    try:
+        # Find user by email
+        user = db.query(Client).filter(Client.email == request.email).first()
+        
+        # Always return success to prevent email enumeration
+        if not user:
+            return {
+                "success": True,
+                "message": "If an admin account with that email exists, a password reset link has been sent."
+            }
+        
+        # Verify user is an admin
+        if user.user_type != "admin":
+            # Return success even if not admin to prevent enumeration
+            return {
+                "success": True,
+                "message": "If an admin account with that email exists, a password reset link has been sent."
+            }
+        
+        # Generate secure reset token
+        reset_token = secrets.token_urlsafe(32)
+        token_expires = datetime.now(timezone.utc) + timedelta(hours=1)  # Token valid for 1 hour
+        
+        # Store token in database
+        user.password_reset_token = reset_token
+        user.password_reset_token_expires = token_expires
+        db.commit()
+        
+        # Create reset link
+        reset_link = f"{FRONTEND_URL}/admin/reset-password?token={reset_token}"
+        
+        # Send email
+        email_subject = "Admin Password Reset Request"
+        email_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+                .header {{ background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ margin: 0; font-size: 28px; }}
+                .content {{ padding: 30px 20px; }}
+                .content h2 {{ color: #7c3aed; margin-top: 0; }}
+                .button {{ display: inline-block; padding: 14px 28px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }}
+                .button:hover {{ background-color: #6d28d9; }}
+                .footer {{ margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }}
+                .footer a {{ color: #7c3aed; text-decoration: none; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔐 Admin Password Reset</h1>
+                </div>
+                <div class="content">
+                    <h2>Hello Admin,</h2>
+                    <p>You have requested to reset your admin account password. Click the button below to reset it:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{reset_link}" class="button">Reset Password</a>
+                    </div>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #7c3aed; background-color: #f9fafb; padding: 10px; border-radius: 4px;">{reset_link}</p>
+                    <p><strong>This link will expire in 1 hour.</strong></p>
+                    <p>If you did not request this password reset, please ignore this email and contact support immediately.</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated email. Please do not reply to this message.</p>
+                    <p>
+                        <a href="{FRONTEND_URL}/admin">Admin Portal</a>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        try:
+            send_single_email(
+                to_email=user.email,
+                subject=email_subject,
+                html_body=email_body
+            )
+        except Exception as e:
+            print(f"Error sending admin password reset email: {e}")
+            # Don't fail the request, just log the error
+        
+        return {
+            "success": True,
+            "message": "If an admin account with that email exists, a password reset link has been sent."
+        }
+    except Exception as e:
+        print(f"Error in admin forgot password: {e}")
+        # Always return success to prevent email enumeration
+        return {
+            "success": True,
+            "message": "If an admin account with that email exists, a password reset link has been sent."
+        }
+
+
+@router.post("/reset-password")
+def reset_password_admin(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Reset admin password using the reset token.
+    Only works for users with user_type='admin'.
+    """
+    try:
+        # Find user by reset token
+        user = db.query(Client).filter(
+            Client.password_reset_token == request.token
+        ).first()
+        
+        if not user:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid or expired reset token"
+            )
+        
+        # Verify user is an admin
+        if user.user_type != "admin":
+            raise HTTPException(
+                status_code=403,
+                detail="This reset token is not valid for admin accounts"
+            )
+        
+        # Check if token is expired
+        if user.password_reset_token_expires and user.password_reset_token_expires < datetime.now(timezone.utc):
+            # Clear expired token
+            user.password_reset_token = None
+            user.password_reset_token_expires = None
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Reset token has expired. Please request a new one."
+            )
+        
+        # Validate new password
+        if len(request.new_password) < 6:
+            raise HTTPException(
+                status_code=400,
+                detail="Password must be at least 6 characters long"
+            )
+        
+        # Update password
+        user.hashed_password = hash_password(request.new_password)
+        user.password_reset_token = None
+        user.password_reset_token_expires = None
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Password has been reset successfully. You can now login with your new password."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in admin reset password: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while resetting your password. Please try again."
+        )

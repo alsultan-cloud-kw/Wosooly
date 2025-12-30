@@ -1,0 +1,34 @@
+{
+  "title": {
+    "selected": "Selected Customer",
+    "all": "Customers List (all customers)"
+  },
+  "showAll": "Show All Customers",
+  "showAllTitle": "Show all customers",
+  "search": {
+    "byNameOrEmail": "Search by name or email...",
+    "byNameOrPhone": "Search by name or phone..."
+  },
+  "buttons": {
+    "selectAll": "Select All",
+    "unselectAll": "Unselect All"
+  },
+  "selected": "selected",
+  "table": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone"
+  },
+  "noData": {
+    "email": "No email",
+    "phone": "No phone",
+    "customers": "No customers found."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of"
+  }
+}
+

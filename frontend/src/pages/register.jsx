@@ -12,6 +12,7 @@ import { Trans,useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { BusinessTypeSelector } from "../components/ui/business-type-selector";
 
 export default function RegisterPage() {
   const [searchParams] = useSearchParams();
@@ -199,7 +200,7 @@ export default function RegisterPage() {
       // if (data.email) localStorage.setItem("email", data.email);
         // Save subscription info
       localStorage.setItem("user_plan", data.plan_name);
-      localStorage.setItem("available_features", JSON.stringify(data.available_features));
+      localStorage.setItem("available_features", JSON.stringify(data.available_features || []));
 
       // Dismiss loading toast and show success
       toast.dismiss(loadingToast);
@@ -353,18 +354,13 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="company_details">{t("companyDetailsLabel")}</Label>
-                <Input
-                  id="company_details"
-                  name="company_details"
-                  type="text"
-                  placeholder={t("companyDetailsPlaceholder")}
-                  value={form.company_details}
-                  onChange={handleChange}
-                  className="h-11"
-                />
-              </div>
+              <BusinessTypeSelector
+                value={form.company_details}
+                onChange={(value) => setForm((prev) => ({ ...prev, company_details: value }))}
+                label={t("businessTypeLabel") || t("companyDetailsLabel")}
+                placeholder={t("businessTypePlaceholder") || t("companyDetailsPlaceholder")}
+                required={false}
+              />
 
               {/* WooCommerce Credentials Section */}
               {/* <div className="border-t border-border pt-6">

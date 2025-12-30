@@ -1,0 +1,35 @@
+{
+  "title": "إضافة حساب وسائل التواصل الاجتماعي",
+  "form": {
+    "platform_label": "نوع المنصة",
+    "brand_label": "اسم العلامة التجارية",
+    "brand_placeholder": "مثال: جوائش العرباش",
+    "username_label": "اسم المستخدم أو الرابط",
+    "username_placeholder_instagram": "https://www.instagram.com/username/ أو @username",
+    "username_placeholder_tiktok": "https://www.tiktok.com/@username أو @username",
+    "username_placeholder_snapchat": "https://www.snapchat.com/add/username أو username",
+    "username_hint": "يمكنك إدخال الرابط الكامل أو اسم المستخدم فقط"
+  },
+  "platforms": {
+    "instagram": "📷 Instagram",
+    "tiktok": "🎵 TikTok",
+    "snapchat": "👻 Snapchat"
+  },
+  "errors": {
+    "missing_fields": "يرجى إدخال اسم المستخدم واسم العلامة التجارية",
+    "invalid_username": "اسم المستخدم غير صحيح. يرجى إدخال اسم مستخدم صحيح"
+  },
+  "buttons": {
+    "submit_loading": "جاري الإضافة...",
+    "submit": "إضافة الحساب"
+  },
+  "toasts": {
+    "success_instagram": "تم إضافة حساب إنستجرام بنجاح!",
+    "success_tiktok": "تم إضافة حساب TikTok بنجاح!",
+    "success_snapchat": "تم إضافة حساب Snapchat بنجاح!",
+    "success_generic": "تم إضافة الحساب بنجاح!",
+    "failed": "فشل إضافة الحساب",
+    "error": "حدث خطأ أثناء إضافة الحساب"
+  }
+}
+

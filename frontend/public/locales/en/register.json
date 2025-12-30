@@ -22,6 +22,8 @@
 
     "companyDetailsLabel": "Company Details",
     "companyDetailsPlaceholder": "e.g., Selling electronics, clothing, or handmade crafts",
+    "businessTypeLabel": "Business Type",
+    "businessTypePlaceholder": "Select or add your business type",
     
     "storeSectionTitle": "WooCommerce Credentials",
     "storeSectionSubtitle": "Add your WooCommerce store details",

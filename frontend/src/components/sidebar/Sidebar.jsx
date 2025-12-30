@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import { User } from 'lucide-react'
 import './sidebar.css'
 import logo from '../../assets/images/logo of feeds.jpg'
 import sidebar_items from '../../assets/JsonData/sidebar_routes.json'
@@ -31,8 +32,17 @@ const Sidebar = () => {
     const dispatch = useDispatch()
 
     const handleLogout = () => {
-        dispatch(logout())
-        navigate("/")          // 👈 redirect to SignIn page
+        // Clear localStorage immediately for instant logout
+        localStorage.clear();
+        
+        // Navigate immediately
+        navigate("/", { replace: true });
+        
+        // Dispatch logout action in background (API call)
+        // This will try to clear localStorage again (already cleared, so no issue)
+        dispatch(logout()).catch(err => {
+            console.error("Logout API call failed:", err);
+        });
     }
       // ✅ Get user_type from localStorage
   const userType = localStorage.getItem("user_type");
@@ -63,9 +73,6 @@ const Sidebar = () => {
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    const profileImage = localStorage.getItem("profile_image") ||
-        "https://ui-avatars.com/api/?name=User";
-
 
   return (
     <div className="sidebar">
@@ -74,12 +81,12 @@ const Sidebar = () => {
                 PROFILE AVATAR WITH DROPDOWN
             ============================ */}
             <div className="sidebar__profile" ref={dropdownRef}>
-                <img
-                    src={profileImage}
+                <div
                     className="sidebar__avatar"
-                    alt="profile"
                     onClick={toggleDropdown}
-                />
+                >
+                    <User className="sidebar__avatar-icon" />
+                </div>
 
                 {openDropdown && (
                     <div className="sidebar__dropdown">

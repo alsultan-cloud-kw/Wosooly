@@ -17,6 +17,8 @@ FEATURE_PLANS = {
     "advanced_analytics": ["Professional", "Enterprise"],
     "whatsapp_messaging": ["Standard", "Enterprise"],
     "custom_reports": ["Free", "Standard", "Professional", "Enterprise"],
+    "email_marketing": ["Standard", "Professional", "Enterprise"],
+    "competitor_analysis": ["Standard", "Professional", "Enterprise"],
     "unlimited_campaigns": ["Enterprise"],
 }
 
@@ -116,11 +118,19 @@ def require_feature(feature_name: str):
 # ---------------------------------------------------------
 def get_available_features(client: Client, db: Session) -> List[str]:
     plan_name = get_client_subscription_plan(client, db) or "Free"
+    
+    # Normalize plan name (trim whitespace, ensure proper case)
+    plan_name = plan_name.strip() if plan_name else "Free"
 
-    return [
+    available = [
         feature for feature, allowed_plans in FEATURE_PLANS.items()
         if plan_name in allowed_plans
     ]
+    
+    # Debug logging (can be removed in production)
+    print(f"🔍 get_available_features - Client {client.id}: plan_name='{plan_name}', available_features={available}")
+    
+    return available
 
 # ---------------------------------------------------------
 # Get full subscription info

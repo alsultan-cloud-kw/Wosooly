@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { Link } from "react-router-dom"
+import React, { useState, useEffect } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,9 +9,20 @@ import { ShieldCheck, Mail, Lock, User, Building2, AlertCircle, CheckCircle2 } f
 import api from "../../../api_config"
 import { DashboardHeader } from "@/components/admin/dashboard-header"
 import { useTranslation } from "react-i18next"
+import { toast } from "react-hot-toast"
 
 export default function AdminRegister() {
   const { t } = useTranslation("adminRegister");
+  const navigate = useNavigate()
+  
+  useEffect(() => {
+    // Check if current user is an admin
+    const userType = localStorage.getItem("user_type")
+    if (userType !== "admin") {
+      // Redirect to admin login if not an admin
+      navigate("/admin")
+    }
+  }, [navigate])
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -57,7 +68,23 @@ export default function AdminRegister() {
         localStorage.setItem("email", data.email)
       }
 
-      window.location.href = "/admin-dashboard"
+      // Show success toast
+      toast.success("Success! Admin account created successfully! 🎉", {
+        icon: "✅",
+        duration: 3000,
+        style: {
+          borderRadius: "10px",
+          background: "#10b981",
+          color: "#fff",
+          fontWeight: "500",
+          padding: "16px",
+        },
+      })
+
+      // Small delay to show the toast before redirecting
+      setTimeout(() => {
+        window.location.href = "/admin-dashboard"
+      }, 500)
     } catch (err) {
       console.error("Failed to register admin:", err)
       const backendMessage = err.response?.data?.detail

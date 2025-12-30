@@ -23,7 +23,19 @@ const CustomerDetails = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await api.get(`/customer-details/${id}`);
+        // Check data source to determine which endpoint to call
+        const dataSource = localStorage.getItem("data_source");
+        let endpoint;
+        
+        if (dataSource === "excel") {
+          // For Excel, use the excel_customers endpoint
+          endpoint = `/excel_customers/customer-details/${id}`;
+        } else {
+          // Default to WooCommerce endpoint
+          endpoint = `/customer-details/${id}`;
+        }
+        
+        const res = await api.get(endpoint);
         setData(res.data);
         console.log("Fetched customer data:", res.data);
       } catch (err) {
@@ -76,21 +88,16 @@ const CustomerDetails = () => {
     );
   };
 
-  const orderTableHead = ['Order ID', 'Date', 'Status', 'Product', 'Qty', 'Price', 'Category'];
+  // Check if this is Excel data
+  const dataSource = localStorage.getItem("data_source");
+  const isExcel = dataSource === "excel";
+  
+  // For Excel, add "Order Total" column; for WooCommerce, keep "Price" column
+  const orderTableHead = isExcel 
+    ? ['Order ID', 'Date', 'Status', 'Product', 'Qty', 'Order Total', 'Category']
+    : ['Order ID', 'Date', 'Status', 'Product', 'Qty', 'Price', 'Category'];
+  
   const renderOrderHead = (item, idx) => <th key={idx}>{item}</th>;
-  const renderOrderBody = (order, idx) => (
-    order.items.map((item, i) => (
-      <tr key={`${idx}-${i}`}>
-        <td>{order.external_order_id}</td>
-        <td>{new Date(order.order_date).toLocaleDateString()}</td>
-        <td>{order.order_status}</td>
-        <td>{item.product_name}</td>
-        <td>{item.product_quantity}</td>
-        <td>{item.product_price?.toFixed(2) ?? '-'}</td>
-        <td>{item.product_category || '-'}</td>
-      </tr>
-    ))
-  );
 
   return (
     <div className="col-12">
@@ -142,17 +149,35 @@ const CustomerDetails = () => {
             bodyData={orders.flatMap((order, idx) => order.items.map((item, i) => ({
               order, item, idx, i
             })))}
-            renderBody={({ order, item }, idx) => (
-              <tr key={idx}>
-                <td>{order.external_order_id}</td>
-                <td>{new Date(order.order_date).toLocaleDateString()}</td>
-                <td>{order.order_status}</td>
-                <td>{item.product_name}</td>
-                <td>{item.product_quantity}</td>
-                <td>{item.product_price?.toFixed(2) ?? '-'}</td>
-                <td>{item.product_category || '-'}</td>
-              </tr>
-            )}
+            renderBody={({ order, item, i }, idx) => {
+              // For Excel, show order total for the first item, "-" for others
+              // For WooCommerce, show individual product price
+              let priceDisplay = '-';
+              if (isExcel) {
+                // Show order total only for the first item (i === 0) of each order
+                if (i === 0) {
+                  // For Excel, order_total should be set from the product_price field
+                  // If order_total is not available, try to use the first item's product_price
+                  const orderTotal = order.order_total || (order.items && order.items[0] && order.items[0].product_price) || 0;
+                  priceDisplay = orderTotal > 0 ? orderTotal.toFixed(2) : '-';
+                }
+              } else {
+                // WooCommerce: show individual product price
+                priceDisplay = item.product_price > 0 ? item.product_price.toFixed(2) : '-';
+              }
+              
+              return (
+                <tr key={idx}>
+                  <td>{order.external_order_id || order.order_id || '-'}</td>
+                  <td>{order.order_date ? new Date(order.order_date).toLocaleDateString() : '-'}</td>
+                  <td>{order.order_status || '-'}</td>
+                  <td>{item.product_name || 'Unknown Product'}</td>
+                  <td>{item.product_quantity || 1}</td>
+                  <td>{priceDisplay}</td>
+                  <td>{item.product_category || '-'}</td>
+                </tr>
+              );
+            }}
           />
         </div>
       </div>

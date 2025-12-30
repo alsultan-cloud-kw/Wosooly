@@ -1,0 +1,30 @@
+{
+  "search_queries": {
+    "title": "Search queries used:",
+    "label": "Search Queries"
+  },
+  "citations": {
+    "title": "Sources and references:",
+    "label": "Citations"
+  },
+  "extracted_info": {
+    "title": "Extracted information:",
+    "offers": "Offers:",
+    "prices": "Prices:",
+    "social_media": "Social media:",
+    "website": "Website:",
+    "available": "Available"
+  },
+  "full_result": {
+    "title": "Full research result:"
+  },
+  "discovered": {
+    "offers": "Discovered offers:",
+    "prices": "Discovered prices:",
+    "social_media": "Social media:",
+    "website": "Website:"
+  },
+  "currency": "KWD",
+  "close": "Close"
+}
+

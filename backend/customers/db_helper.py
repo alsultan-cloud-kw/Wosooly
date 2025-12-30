@@ -14,6 +14,7 @@ def customers_table_data(db: Session, client_id) -> List[dict]:
             Customer.first_name,
             Customer.last_name,
             Customer.phone,
+            Customer.email,
             func.count(Order.id).label("total_orders"),
             func.coalesce(
                 func.sum(
@@ -69,6 +70,7 @@ def customers_table_data(db: Session, client_id) -> List[dict]:
             "id": row.id,
             "user": f"{row.first_name or ''} {row.last_name or ''}".strip() or "Unknown",
             "phone": row.phone or "-",
+            "email": row.email or "-",
             "total_orders": int(row.total_orders or 0),
             "total_spending": round(float(row.total_spending or 0), 2),
             "governorate": governorate,  # Add governorate (can be None)

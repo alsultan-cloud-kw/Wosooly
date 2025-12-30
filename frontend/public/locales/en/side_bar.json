@@ -1,10 +1,13 @@
 {
-  "dashboard": "Dashboard",
+  "overview": "Overview",
   "productsAnalytics": "Products Analytics",
   "customersAnalytics": "Customers Analytics",
   "ordersAnalytics": "Orders Analytics",
   "registerAdmin": "Register a new Admin",
-  "chatCrm": "Chat with CRM",
+  "chatCrm": "Chat",
   "logout": "Log Out",
-  "appName": ""
+  "appName": "",
+  "messaging": "Messaging",
+  "emailMarketing": "Email Marketing",
+  "competitorAnalysis": "Competitor Analysis"
 }

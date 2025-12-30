@@ -1,0 +1,58 @@
+{
+  "title": "Email Marketing",
+  "subtitle": "Send personalized emails to your customers using templates",
+  "customers": "Customers",
+  "emailTemplates": "Email Templates",
+  "selectTemplatesToView": "Select email templates to view and send",
+  "templatesList": {
+    "newTemplate": "New Template",
+    "noTemplates": "No email templates yet.",
+    "createFirst": "Create Your First Template",
+    "deleteConfirm": "Are you sure you want to delete template \"{name}\"?",
+    "deleteFailed": "Failed to delete template",
+    "deleteError": "Cannot delete template: Template ID is missing"
+  },
+  "subject": "Subject",
+  "inactive": "Inactive",
+  "updated": "Updated",
+  "attachments": {
+    "label": "Attachments (Optional)",
+    "uploaded": "file(s) uploaded"
+  },
+  "sending": "Sending...",
+  "sendEmail": "Send Email to",
+  "customer": "Customer",
+  "customers": "Customers",
+  "dialog": {
+    "editTitle": "Edit Email Template",
+    "createTitle": "Create New Email Template",
+    "templateName": "Template Name *",
+    "templateNamePlaceholder": "e.g., Welcome Email",
+    "subject": "Subject *",
+    "subjectPlaceholder": "e.g., Welcome to Our Store!",
+    "category": "Category",
+    "categoryPlaceholder": "e.g., Marketing",
+    "language": "Language",
+    "languagePlaceholder": "e.g., en, ar",
+    "body": "Email Body (HTML) *",
+    "bodyPlaceholder": "<h1>Hello {{1}}</h1><p>Welcome to our store!</p>",
+    "bodyHelp": "Use {{1}}, {{2}}, etc. for variables that will be replaced with customer data",
+    "cancel": "Cancel",
+    "update": "Update Template",
+    "create": "Create Template"
+  },
+  "alerts": {
+    "selectCustomer": "Please select at least one customer",
+    "selectTemplate": "Please select at least one email template",
+    "fillRequired": "Please fill in template name, subject, and body",
+    "templateUpdated": "Template updated successfully!",
+    "templateCreated": "Template created successfully!",
+    "templateSaveFailed": "Failed to save template",
+    "uploadFailed": "Failed to upload attachments. Please try again.",
+    "sendFailed": "Failed to send email",
+    "sendSuccess": "Successfully sent {count} email(s)!",
+    "sendPartial": "Sent: {sent}, Failed: {failed}",
+    "failedEmails": "Failed emails:"
+  }
+}
+

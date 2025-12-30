@@ -1,0 +1,30 @@
+{
+  "search_queries": {
+    "title": "استعلامات البحث المستخدمة:",
+    "label": "استعلامات البحث"
+  },
+  "citations": {
+    "title": "المصادر والمراجع:",
+    "label": "المصادر"
+  },
+  "extracted_info": {
+    "title": "المعلومات المستخرجة:",
+    "offers": "عروض:",
+    "prices": "أسعار:",
+    "social_media": "وسائل تواصل:",
+    "website": "موقع:",
+    "available": "موجود"
+  },
+  "full_result": {
+    "title": "نتيجة البحث الكاملة:"
+  },
+  "discovered": {
+    "offers": "العروض المكتشفة:",
+    "prices": "الأسعار المكتشفة:",
+    "social_media": "وسائل التواصل الاجتماعي:",
+    "website": "الموقع الإلكتروني:"
+  },
+  "currency": "د.ك",
+  "close": "إغلاق"
+}
+

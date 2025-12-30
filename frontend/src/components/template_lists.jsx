@@ -1,21 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import api from "../../api_config";
 
-function TemplatesList({ selectedTemplates, onSelect }) {
+const TemplatesList = forwardRef(({ selectedTemplates, onSelect, refreshTrigger }, ref) => {
   const [templates, setTemplates] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchTemplates = async () => {
+    try {
+      setIsLoading(true);
+      const res = await api.get('/templates');
+      setTemplates(res.data); 
+      // backend should return: [{id, template_name, body, category, language, variables, ...}]
+    } catch (err) {
+      console.error("Failed to fetch templates:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Expose refetch function via ref
+  useImperativeHandle(ref, () => ({
+    refetch: fetchTemplates
+  }));
 
   useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const res = await api.get('/templates');
-        setTemplates(res.data); 
-        // backend should return: [{id, template_name, body, category, language, variables, ...}]
-      } catch (err) {
-        console.error("Failed to fetch templates:", err);
-      }
-    };
     fetchTemplates();
-  }, []);
+  }, [refreshTrigger]); // Refetch when refreshTrigger changes
 
   const toggleTemplate = (tpl) => {
     const exists = selectedTemplates.find(
@@ -52,8 +62,20 @@ function TemplatesList({ selectedTemplates, onSelect }) {
           </div>
         );
       })}
+      {isLoading && (
+        <div className="text-center py-4 text-gray-500 text-sm">
+          Loading templates...
+        </div>
+      )}
+      {!isLoading && templates.length === 0 && (
+        <div className="text-center py-4 text-gray-500 text-sm">
+          No templates available
+        </div>
+      )}
     </div>
   );
-}
+});
+
+TemplatesList.displayName = "TemplatesList";
 
 export default TemplatesList;

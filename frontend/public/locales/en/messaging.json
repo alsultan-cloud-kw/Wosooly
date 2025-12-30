@@ -2,6 +2,7 @@
   "title": "Messaging",
   "subtitle": "Send WhatsApp messages to your customers using templates",
   "customers": "Customers",
+  "customers_plural": "customers",
   "excel": "Excel",
   "woocommerce": "WooCommerce",
   "templates": "Templates",
@@ -12,6 +13,14 @@
   "sending": "Sending...",
   "sendMessage": "Send Message to",
   "customer": "Customer",
+  "customer_plural": "customers",
+  "category": "Category",
+  "language": "Language",
+  "status": {
+    "APPROVED": "Approved",
+    "PENDING": "Pending",
+    "REJECTED": "Rejected"
+  },
   "alerts": {
     "selectCustomerFirst": "Please select at least one customer first!",
     "selectTemplateFirst": "Please select at least one template!",

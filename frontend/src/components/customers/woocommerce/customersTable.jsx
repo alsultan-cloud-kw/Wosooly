@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../../../api_config';
 // import { MessageCircle } from 'lucide-react';
 import { FaWhatsapp } from "react-icons/fa";
+import { toast } from 'react-hot-toast';
 
 const CustomersTable = ({customers, totalCustomers}) => {
     const [topCustomers, setTopCustomers] = useState([]);
@@ -77,10 +78,47 @@ const CustomersTable = ({customers, totalCustomers}) => {
 
     const renderCustomerHead = (item, index) => <th key={index}>{t(item)}</th>;
 
+    const handleCustomerRowClick = (customerId) => {
+        // Check if user has advanced_analytics feature
+        let availableFeatures = [];
+        try {
+            const featuresStr = localStorage.getItem("available_features");
+            if (featuresStr) {
+                availableFeatures = JSON.parse(featuresStr);
+            }
+        } catch (error) {
+            console.error("Error parsing available_features from localStorage:", error);
+            availableFeatures = [];
+            localStorage.removeItem("available_features");
+        }
+
+        // Check if advanced_analytics is in available features
+        if (!availableFeatures.includes("advanced_analytics")) {
+            toast.error("Upgrade your plan to get advanced analysis! 🚀", {
+                icon: "👑",
+                duration: 4000,
+                style: {
+                    borderRadius: "10px",
+                    background: "#ef4444",
+                    color: "#fff",
+                    fontWeight: "500",
+                },
+            });
+            // Navigate to subscription page after a short delay
+            setTimeout(() => {
+                navigate("/subscription");
+            }, 500);
+            return;
+        }
+
+        // User has the feature, proceed with navigation
+        navigate(`/customer-details/${customerId}`);
+    };
+
     const renderCustomerBody = (item, index) => (
         <tr 
             key={index} 
-            onClick={() => navigate(`/customer-details/${item.id}`)} 
+            onClick={() => handleCustomerRowClick(item.id)} 
             style={{ cursor: 'pointer' }}
         >
             <td>{item.user}</td>

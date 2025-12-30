@@ -7,6 +7,7 @@ import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { login } from "../redux/actions/AuthActions";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-hot-toast";
 
 const ShoppingBag = ({ className }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -51,9 +52,16 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      alert("Please enter both email and password");
+      toast.error(t("emptyFields"), {
+        icon: "⚠️",
+        duration: 4000,
+      });
       return;
     }
+
+    const toastId = toast.loading(t("button") || "Signing in...", {
+      duration: 0,
+    });
 
     try {
       const res = await dispatch(login(formData.email, formData.password));
@@ -64,15 +72,26 @@ export default function LoginPage() {
       }
 
       // Save subscription info
-    localStorage.setItem("user_plan", data.plan_name);
-    localStorage.setItem("available_features", JSON.stringify(data.available_features || []));
+      localStorage.setItem("user_plan", data.plan_name);
+      localStorage.setItem("available_features", JSON.stringify(data.available_features || []));
 
+      toast.success(t("success"), {
+        id: toastId,
+        icon: "🎉",
+        duration: 3000,
+      });
 
-      alert("🎉 Login successful! Redirecting to dashboard...")
-      navigate("/user-dashboard");
+      // Navigate after a short delay to show the success toast
+      setTimeout(() => {
+        navigate("/user-dashboard");
+      }, 1000);
     } catch (err) {
       console.error("Login failed:", err);
-      alert("Invalid credentials, please try again.");
+      toast.error(t("failure"), {
+        id: toastId,
+        icon: "❌",
+        duration: 5000,
+      });
     }
   };
 
@@ -124,8 +143,8 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">{t("passwordLabel")}</Label>
-                    <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                      {t("forgotPassword")}
+                    <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                      {t("forgotPassword.title")}
                     </Link>
                   </div>
                   <div className="relative">

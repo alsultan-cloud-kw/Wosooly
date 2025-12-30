@@ -1,0 +1,49 @@
+{
+  "header": {
+    "title": "👻 Snapchat data",
+    "summary": "{{accounts}} active accounts | {{stories}} stories and {{spotlights}} spotlights collected"
+  },
+  "toasts": {
+    "scrape_profile_loading": "Collecting data for {{brandName}}...",
+    "scrape_profile_success": "Data collected for {{brandName}}",
+    "scrape_profile_failed": "Failed to collect data for {{brandName}}",
+    "clear_offers_confirm": "Are you sure you want to delete all Snapchat offers? This action cannot be undone.",
+    "clear_offers_loading": "Deleting Snapchat offers...",
+    "clear_offers_failed": "Failed to delete offers"
+  },
+  "buttons": {
+    "clear_offers": "🗑️ Delete all offers",
+    "scrape_loading": "⏳ Collecting...",
+    "scrape_updated": "✓ Updated",
+    "scrape": "📥 Collect data"
+  },
+  "accounts": {
+    "active_accounts_title": "Active accounts",
+    "no_accounts": "There are no active Snapchat accounts. Please add accounts from the settings tab."
+  },
+  "tabs": {
+    "stories": "📖 Stories ({{count}})",
+    "spotlights": "⭐ Spotlights ({{count}})"
+  },
+  "stories": {
+    "badge": "Story",
+    "analysis_title": "Offers detected in the image",
+    "discount": "{{value}}% discount",
+    "source": "Source: snapchat",
+    "view_story": "View story →",
+    "empty": "No stories available right now"
+  },
+  "spotlights": {
+    "badge": "Spotlight",
+    "analysis_title": "Offers detected in the image",
+    "discount": "{{value}}% discount",
+    "source": "Source: snapchat spotlight",
+    "view_spotlight": "View Spotlight →",
+    "empty": "No spotlights available right now"
+  },
+  "account_card": {
+    "offers_count": "{{stories}} stories and {{spotlights}} spotlights"
+  }
+}
+
+

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Table from "../../table/Table";
 import api from "../../../../api_config";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-hot-toast";
 
 const CustomerClassificationTablesExcel = ({ fileId = null }) => {
   const [groupedCustomers, setGroupedCustomers] = useState({});
@@ -38,7 +39,7 @@ const CustomerClassificationTablesExcel = ({ fileId = null }) => {
 
           const formattedRows = result.rows.map((row) => ({
             customer_name: row.customer_name,
-            // customer_id: row.customer_id,
+            customer_id: row.customer_id || row.customer_name, // Use customer_name as fallback
             order_count: row.order_count,
             total_spending: row.total_spending,
             // last_order_date: row.last_order_date?.split("T")[0] ?? null,
@@ -132,11 +133,48 @@ const CustomerClassificationTablesExcel = ({ fileId = null }) => {
 
   // const renderHead = (item, index) => <th key={index}>{t(item)}</th>;
 
+  const handleCustomerRowClick = (customerId) => {
+    // Check if user has advanced_analytics feature
+    let availableFeatures = [];
+    try {
+      const featuresStr = localStorage.getItem("available_features");
+      if (featuresStr) {
+        availableFeatures = JSON.parse(featuresStr);
+      }
+    } catch (error) {
+      console.error("Error parsing available_features from localStorage:", error);
+      availableFeatures = [];
+      localStorage.removeItem("available_features");
+    }
+
+    // Check if advanced_analytics is in available features
+    if (!availableFeatures.includes("advanced_analytics")) {
+      toast.error("Upgrade your plan to get advanced analysis! 🚀", {
+        icon: "👑",
+        duration: 4000,
+        style: {
+          borderRadius: "10px",
+          background: "#ef4444",
+          color: "#fff",
+          fontWeight: "500",
+        },
+      });
+      // Navigate to subscription page after a short delay
+      setTimeout(() => {
+        navigate("/subscription");
+      }, 500);
+      return;
+    }
+
+    // User has the feature, proceed with navigation
+    navigate(`/customer-details/${customerId}`);
+  };
+
   const renderBody = (item, index) => (
     <tr
       key={index}
       style={{ cursor: "pointer" }}
-      onClick={() => navigate(`/customer-details/${item.customer_id}`)}
+      onClick={() => handleCustomerRowClick(item.customer_id || item.customer_name)}
     >
       <td>{item.customer_name}</td>
       <td>{item.order_count}</td>

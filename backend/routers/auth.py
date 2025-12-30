@@ -1,20 +1,48 @@
 from fastapi import APIRouter,FastAPI, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi.security import OAuth2PasswordRequestForm
 from database import get_db
-from models import Client, Base, Subscription, SubscriptionPlan
-from utils.subscription import get_available_features
-from utils.auth import get_current_client, hash_password, create_access_token, verify_password
+from models import Client, Base, Subscription, SubscriptionPlan, BusinessType
+from utils.subscription import get_available_features, get_subscription_info
+from utils.auth import get_current_client, hash_password, create_access_token, verify_password, decode_access_token
 from typing import Optional
-from schemas import LoginRequest, RegisterRequest, WooCommerceCredentialsRequest, SelectSubscriptionPlanRequest
+from schemas import LoginRequest, RegisterRequest, WooCommerceCredentialsRequest, SelectSubscriptionPlanRequest, ForgotPasswordRequest, ResetPasswordRequest
 from tasks.fetch_orders import fetch_orders_task
-from datetime import datetime
+from datetime import datetime, timezone
 from celery.result import AsyncResult
 from celery.exceptions import OperationalError
-import time
 from datetime import timedelta
+from routers.send_mail import send_single_email
+import time
+import secrets
+import uuid
+import os
+from pydantic import BaseModel
+from typing import List
+import requests
 
 router = APIRouter()
+
+# Predefined business types
+PREDEFINED_BUSINESS_TYPES = [
+    "Gold",
+    "Watches",
+    "Electronics",
+    "Fashion",
+    "Clothing",
+    "Perfumes",
+    "Cosmetics",
+    "Food & Beverages",
+    "Restaurants",
+    "Cafes",
+    "General",
+    "عام",
+    "Other"
+]
+
+# Get frontend URL from environment
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 @router.post("/register")
 def register_client(
@@ -36,6 +64,7 @@ def register_client(
     phone = request.phone
     password = request.password
     client_name = request.client_name
+    company_details = request.company_details  # This will be the business type
     store_url = request.store_url
     consumer_key = request.consumer_key
     consumer_secret = request.consumer_secret
@@ -58,6 +87,7 @@ def register_client(
         phone=phone,
         hashed_password=hash_password(password),
         client_name=client_name,
+        company_details=company_details,  # Business type
         store_url=store_url,
         is_logged_in=True,
         last_login_time=datetime.utcnow(),
@@ -136,6 +166,79 @@ def register_client(
             task_id = None
             break
 
+    # --- Send welcome email ---
+    try:
+        welcome_subject = "Welcome to Wosooly! 🎉"
+        welcome_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }}
+                .header {{ background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .header h1 {{ margin: 0; font-size: 28px; }}
+                .content {{ padding: 30px 20px; }}
+                .content h2 {{ color: #7c3aed; margin-top: 0; }}
+                .button {{ display: inline-block; padding: 14px 28px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }}
+                .button:hover {{ background-color: #6d28d9; }}
+                .info-box {{ background-color: #f9fafb; border-left: 4px solid #7c3aed; padding: 15px; margin: 20px 0; }}
+                .footer {{ margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }}
+                .footer a {{ color: #7c3aed; text-decoration: none; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎉 Welcome to Wosooly!</h1>
+                </div>
+                <div class="content">
+                    <h2>Hello{f' {client_name}' if client_name else ''}!</h2>
+                    <p>Thank you for joining Wosooly! We're excited to have you on board.</p>
+                    
+                    <p>Your account has been successfully created with the email: <strong>{email}</strong></p>
+                    
+                    <div class="info-box">
+                        <p><strong>What's next?</strong></p>
+                        <ul>
+                            <li>Access your dashboard to start analyzing your business data</li>
+                            <li>Connect your WooCommerce store to sync orders and products</li>
+                            <li>Explore our powerful analytics and insights features</li>
+                            <li>Set up your messaging and communication tools</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{FRONTEND_URL}/user-dashboard" class="button">Go to Dashboard</a>
+                    </div>
+                    
+                    <p>If you have any questions or need assistance, don't hesitate to reach out to our support team. We're here to help!</p>
+                    
+                    <p>Best regards,<br><strong>The Wosooly Team</strong></p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated email. Please do not reply to this message.</p>
+                    <p>
+                        <a href="{FRONTEND_URL}">Visit our website</a> | 
+                        <a href="{FRONTEND_URL}/login">Sign in to your account</a>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        send_single_email(
+            to_email=email,
+            subject=welcome_subject,
+            html_body=welcome_body
+        )
+        print(f"✅ Welcome email sent to {email}")
+    except Exception as e:
+        # Don't fail registration if email sending fails
+        print(f"⚠️ Failed to send welcome email to {email}: {e}")
+    
     return {
         "message": "Client registered successfully",
         "client_id": new_client.id,
@@ -196,12 +299,15 @@ def login_client(
     db.commit()
 
     # --- Fetch subscription info ---
-    subscription = db.query(Subscription).filter(Subscription.client_id == user.id).first()
-    plan_name = subscription.plan.name if subscription and subscription.plan else "Free"
-    trial_end = subscription.trial_end.isoformat() if subscription else None
-
-    # Optional: you can define available features per plan here
-    available_features = get_available_features(user, db)  # implement this based on plan
+    # Use get_subscription_info to ensure plan_name and available_features are consistent
+    # This checks if subscription is active before determining plan and features
+    subscription_info = get_subscription_info(user, db)
+    plan_name = subscription_info["plan_name"]
+    trial_end = subscription_info.get("trial_end")
+    available_features = subscription_info["available_features"]
+    
+    # Debug logging (can be removed in production)
+    print(f"🔍 Login - Client {user.id}: plan_name={plan_name}, available_features={available_features}, is_active={subscription_info.get('is_active')}")
 
 
     # --- Create JWT token ---
@@ -256,6 +362,24 @@ def logout_client(
     return {
         "message": "Logged out successfully",
         "email": current_user.email
+    }
+
+@router.get("/me")
+def get_current_client_info(
+    current_user: Client = Depends(get_current_client),
+):
+    """
+    Get current logged-in client's information including business type.
+    """
+    return {
+        "success": True,
+        "data": {
+            "id": current_user.id,
+            "email": current_user.email,
+            "client_name": current_user.client_name,
+            "company_details": current_user.company_details,  # This is the business type
+            "phone": current_user.phone,
+        }
     }
 
 @router.post("/cancel_subscription")
@@ -491,3 +615,415 @@ def update_woocommerce_credentials(
         "store_url": current_user.store_url,
         "sync_status": current_user.sync_status
     }
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Send password reset email to user.
+    """
+    try:
+        # Find user by email
+        user = db.query(Client).filter(Client.email == request.email).first()
+        
+        # Always return success to prevent email enumeration
+        if not user:
+            return {
+                "success": True,
+                "message": "If an account with that email exists, a password reset link has been sent."
+            }
+        
+        # Generate secure reset token
+        reset_token = secrets.token_urlsafe(32)
+        token_expires = datetime.now(timezone.utc) + timedelta(hours=1)  # Token valid for 1 hour
+        
+        # Store token in database
+        user.password_reset_token = reset_token
+        user.password_reset_token_expires = token_expires
+        db.commit()
+        
+        # Create reset link
+        reset_link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
+        
+        # Send email
+        email_subject = "Password Reset Request"
+        email_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .button {{ display: inline-block; padding: 12px 24px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                .button:hover {{ background-color: #6d28d9; }}
+                .footer {{ margin-top: 30px; font-size: 12px; color: #666; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Password Reset Request</h2>
+                <p>Hello,</p>
+                <p>You have requested to reset your password. Click the button below to reset it:</p>
+                <a href="{reset_link}" class="button">Reset Password</a>
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="word-break: break-all; color: #7c3aed;">{reset_link}</p>
+                <p>This link will expire in 1 hour.</p>
+                <p>If you did not request this password reset, please ignore this email.</p>
+                <div class="footer">
+                    <p>Best regards,<br>Your Team</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        try:
+            send_single_email(
+                to_email=user.email,
+                subject=email_subject,
+                html_body=email_body
+            )
+        except Exception as e:
+            print(f"Error sending password reset email: {e}")
+            # Don't fail the request, just log the error
+        
+        return {
+            "success": True,
+            "message": "If an account with that email exists, a password reset link has been sent."
+        }
+    except Exception as e:
+        print(f"Error in forgot password: {e}")
+        # Always return success to prevent email enumeration
+        return {
+            "success": True,
+            "message": "If an account with that email exists, a password reset link has been sent."
+        }
+
+
+@router.post("/reset-password")
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Reset user password using the reset token.
+    """
+    try:
+        # Find user by reset token
+        user = db.query(Client).filter(
+            Client.password_reset_token == request.token
+        ).first()
+        
+        if not user:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid or expired reset token"
+            )
+        
+        # Check if token is expired
+        if user.password_reset_token_expires and user.password_reset_token_expires < datetime.now(timezone.utc):
+            # Clear expired token
+            user.password_reset_token = None
+            user.password_reset_token_expires = None
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Reset token has expired. Please request a new one."
+            )
+        
+        # Validate new password
+        if len(request.new_password) < 6:
+            raise HTTPException(
+                status_code=400,
+                detail="Password must be at least 6 characters long"
+            )
+        
+        # Update password
+        user.hashed_password = hash_password(request.new_password)
+        user.password_reset_token = None
+        user.password_reset_token_expires = None
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "Password has been reset successfully. You can now login with your new password."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in reset password: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while resetting your password. Please try again."
+        )
+
+
+class ValidateBusinessTypeRequest(BaseModel):
+    business_type: str
+
+
+@router.get("/business-types")
+def get_business_types(db: Session = Depends(get_db)):
+    """
+    Get list of all business types (predefined + custom from database).
+    """
+    # Get all business types from database
+    db_business_types = db.query(BusinessType).order_by(BusinessType.is_predefined.desc(), BusinessType.name.asc()).all()
+    
+    # Extract names
+    business_types_list = [bt.name for bt in db_business_types]
+    
+    # If database is empty, initialize with predefined types
+    if not business_types_list:
+        # Initialize predefined business types
+        for bt_name in PREDEFINED_BUSINESS_TYPES:
+            existing = db.query(BusinessType).filter(BusinessType.name == bt_name).first()
+            if not existing:
+                db_bt = BusinessType(
+                    name=bt_name,
+                    is_predefined=True,
+                    created_by_client_id=None
+                )
+                db.add(db_bt)
+        db.commit()
+        
+        # Query again after initialization
+        db_business_types = db.query(BusinessType).order_by(BusinessType.is_predefined.desc(), BusinessType.name.asc()).all()
+        business_types_list = [bt.name for bt in db_business_types]
+    
+    return {
+        "success": True,
+        "business_types": business_types_list
+    }
+
+
+@router.post("/validate-business-type")
+def validate_business_type(
+    request: ValidateBusinessTypeRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Validate if a new business type is similar to existing ones using AI.
+    Returns recommendation if similar type exists, or allows adding new one.
+    Saves new business type to database if approved.
+    """
+    new_business_type = request.business_type.strip()
+    
+    # Get all existing business types from database
+    existing_types = db.query(BusinessType).all()
+    existing_type_names = [bt.name for bt in existing_types]
+    
+    # Check if exact match exists in database
+    existing_bt = db.query(BusinessType).filter(
+        func.lower(BusinessType.name) == func.lower(new_business_type)
+    ).first()
+    
+    if existing_bt:
+        return {
+            "success": True,
+            "is_valid": True,
+            "is_existing": True,
+            "message": f"'{new_business_type}' is already in the list."
+        }
+    
+    # Also check predefined list (for backward compatibility)
+    if new_business_type in PREDEFINED_BUSINESS_TYPES:
+        # Make sure it exists in database
+        existing_predefined = db.query(BusinessType).filter(
+            func.lower(BusinessType.name) == func.lower(new_business_type)
+        ).first()
+        if not existing_predefined:
+            # Add to database if missing
+            db_bt = BusinessType(
+                name=new_business_type,
+                is_predefined=True,
+                created_by_client_id=None
+            )
+            db.add(db_bt)
+            db.commit()
+        
+        return {
+            "success": True,
+            "is_valid": True,
+            "is_existing": True,
+            "message": f"'{new_business_type}' is already in the list."
+        }
+    
+    # Combine predefined and database types for AI comparison
+    all_existing_types = list(set(PREDEFINED_BUSINESS_TYPES + existing_type_names))
+    
+    # Use Google Gemini API to check similarity
+    try:
+        google_api_key = os.getenv("GOOGLE_API_KEY")
+        if not google_api_key:
+            # Fallback: allow adding if no API key and save to database
+            try:
+                new_bt = BusinessType(
+                    name=new_business_type,
+                    is_predefined=False,
+                    created_by_client_id=None
+                )
+                db.add(new_bt)
+                db.commit()
+                db.refresh(new_bt)
+                
+                return {
+                    "success": True,
+                    "is_valid": True,
+                    "is_existing": False,
+                    "can_add": True,
+                    "message": f"'{new_business_type}' has been added as a new business type.",
+                    "saved": True
+                }
+            except Exception as save_error:
+                db.rollback()
+                print(f"[Business Type Validation] Error saving (no API key): {save_error}")
+                return {
+                    "success": True,
+                    "is_valid": True,
+                    "is_existing": False,
+                    "can_add": True,
+                    "message": "Business type can be added.",
+                    "saved": False
+                }
+        
+        import json
+        import re
+        
+        # Create prompt to check similarity
+        prompt = f"""You are a business classification expert. Compare the new business type "{new_business_type}" with these existing business types: {', '.join(all_existing_types)}.
+
+Determine if "{new_business_type}" is similar to or the same as any existing business type. Consider:
+- Synonyms (e.g., "Jewellery" and "Jewelleries")
+- Different spellings or languages
+- General vs specific categories
+
+Respond ONLY in valid JSON format (no markdown, no code blocks):
+{{
+    "is_similar": true or false,
+    "similar_to": "existing business type name if similar, or null",
+    "reason": "brief explanation",
+    "recommendation": "use_existing or can_add_new"
+}}
+
+If similar, recommend using the existing type. If truly different, allow adding new."""
+        
+        # Use Gemini REST API
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={google_api_key}"
+        
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": prompt
+                }]
+            }],
+            "generationConfig": {
+                "temperature": 0.3,
+                "topK": 1,
+                "topP": 1,
+                "maxOutputTokens": 200,
+            }
+        }
+        
+        response = requests.post(api_url, json=payload, timeout=10)
+        response.raise_for_status()
+        result = response.json()
+        
+        # Extract text from response
+        response_text = ""
+        if result.get("candidates") and len(result["candidates"]) > 0:
+            parts = result["candidates"][0].get("content", {}).get("parts", [])
+            if parts:
+                response_text = parts[0].get("text", "").strip()
+        
+        if not response_text:
+            raise ValueError("Empty response from AI")
+        
+        # Parse JSON from response (handle markdown code blocks)
+        json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
+        if json_match:
+            response_text = json_match.group(0)
+        
+        try:
+            ai_result = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            print(f"[Business Type Validation] JSON parse error: {e}, Response: {response_text}")
+            # If JSON parsing fails, use simple string matching
+            is_similar = any(
+                new_business_type.lower() in bt.lower() or bt.lower() in new_business_type.lower()
+                for bt in all_existing_types
+            )
+            similar_to = next(
+                (bt for bt in all_existing_types 
+                 if new_business_type.lower() in bt.lower() or bt.lower() in new_business_type.lower()),
+                None
+            )
+            ai_result = {
+                "is_similar": is_similar,
+                "similar_to": similar_to,
+                "recommendation": "use_existing" if is_similar else "can_add_new"
+            }
+        
+        is_similar = ai_result.get("is_similar", False)
+        similar_to = ai_result.get("similar_to")
+        recommendation = ai_result.get("recommendation", "can_add_new")
+        
+        if is_similar and similar_to and recommendation == "use_existing":
+            return {
+                "success": True,
+                "is_valid": False,
+                "is_existing": True,
+                "can_add": False,
+                "similar_to": similar_to,
+                "message": f"'{new_business_type}' is similar to '{similar_to}'. Please use '{similar_to}' instead.",
+                "recommendation": similar_to
+            }
+        else:
+            # Save new business type to database
+            try:
+                new_bt = BusinessType(
+                    name=new_business_type,
+                    is_predefined=False,
+                    created_by_client_id=None  # Can be set if we have authenticated user
+                )
+                db.add(new_bt)
+                db.commit()
+                db.refresh(new_bt)
+                
+                return {
+                    "success": True,
+                    "is_valid": True,
+                    "is_existing": False,
+                    "can_add": True,
+                    "message": f"'{new_business_type}' has been added as a new business type.",
+                    "saved": True
+                }
+            except Exception as save_error:
+                db.rollback()
+                print(f"[Business Type Validation] Error saving to database: {save_error}")
+                # Still return success but note it wasn't saved
+                return {
+                    "success": True,
+                    "is_valid": True,
+                    "is_existing": False,
+                    "can_add": True,
+                    "message": f"'{new_business_type}' can be added as a new business type.",
+                    "saved": False
+                }
+            
+    except Exception as e:
+        print(f"[Business Type Validation] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        # On error, allow adding (fail open)
+        return {
+            "success": True,
+            "is_valid": True,
+            "is_existing": False,
+            "can_add": True,
+            "message": f"'{new_business_type}' can be added as a new business type."
+        }

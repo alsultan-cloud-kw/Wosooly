@@ -1,0 +1,35 @@
+{
+  "title": "Add Social Media Account",
+  "form": {
+    "platform_label": "Platform Type",
+    "brand_label": "Brand Name",
+    "brand_placeholder": "Example: Arabash Jewels",
+    "username_label": "Username or Link",
+    "username_placeholder_instagram": "https://www.instagram.com/username/ or @username",
+    "username_placeholder_tiktok": "https://www.tiktok.com/@username or @username",
+    "username_placeholder_snapchat": "https://www.snapchat.com/add/username or username",
+    "username_hint": "You can enter the full link or just the username"
+  },
+  "platforms": {
+    "instagram": "📷 Instagram",
+    "tiktok": "🎵 TikTok",
+    "snapchat": "👻 Snapchat"
+  },
+  "errors": {
+    "missing_fields": "Please enter username and brand name",
+    "invalid_username": "Invalid username. Please enter a valid username"
+  },
+  "buttons": {
+    "submit_loading": "Adding...",
+    "submit": "Add Account"
+  },
+  "toasts": {
+    "success_instagram": "Instagram account added successfully!",
+    "success_tiktok": "TikTok account added successfully!",
+    "success_snapchat": "Snapchat account added successfully!",
+    "success_generic": "Account added successfully!",
+    "failed": "Failed to add account",
+    "error": "An error occurred while adding the account"
+  }
+}
+

@@ -20,25 +20,32 @@
         "icon": "bx bx-clipboard"
     },
     {
-        "key": "Chat",
+        "key": "chatCrm",
         "route": "/chat",
         "icon": "bx bxs-chat",
         "premium": true,
         "featureKey": "nl2sql"
     },
     {
-        "key": "Messaging",
+        "key": "messaging",
         "route": "/whatsapp",
         "icon": "bx bxl-whatsapp",
         "premium": true,
         "featureKey": "whatsapp_messaging"
     },
     {
-        "key": "Email Marketing",
-        "route": "/email-marketing",
+        "key": "emailMarketing",
+        "route": "/emailing",
         "icon": "bx bx-envelope",
         "premium": true,
         "featureKey": "email_marketing"
+    },
+    {
+        "key": "competitorAnalysis",
+        "route": "/dashboard-scraper   ",
+        "icon": "bx bx-search-alt",
+        "premium": true,
+        "featureKey": "competitor_analysis"
     }
     
 ]

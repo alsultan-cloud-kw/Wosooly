@@ -40,6 +40,7 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
             customer_id: customer.customer_id || primaryId, // Ensure customer_id exists
             name: customer.customer_name || customer.name || customer.user || customer.full_name || "Unknown",
             phone: customer.phone || customer.phone_number || customer.mobile || customer.contact || "",
+            email: customer.email ? String(customer.email).toLowerCase().trim() : "", // Normalize email to lowercase
           };
         });
         
@@ -115,6 +116,7 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
     if (filter.trim()) {
       return (
         c.name.toLowerCase().includes(filter.toLowerCase()) ||
+        (c.email && c.email.toLowerCase().includes(filter.toLowerCase())) ||
         (c.phone && c.phone.toString().includes(filter))
       );
     }
@@ -202,7 +204,7 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           type="text"
-          placeholder="Search by name or phone..."
+          placeholder="Search by name or email..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="pl-10 h-10 border-2 focus:border-blue-500 focus:ring-blue-500/20"
@@ -251,7 +253,7 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
               <th className="p-3 border-b border-gray-200 dark:border-gray-600 text-left">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  Phone
+                  Email
                 </div>
               </th>
             </tr>
@@ -276,8 +278,8 @@ const CustomerListExcel = ({ onSelectCustomers }) => {
                   {c.name}
                 </td>
                 <td className="p-3 border-b border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400">
-                  {c.phone || (
-                    <span className="text-gray-400 dark:text-gray-500 italic">No phone</span>
+                  {c.email ? c.email.toLowerCase() : (
+                    <span className="text-gray-400 dark:text-gray-500 italic">No email</span>
                   )}
                 </td>
               </tr>

@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "../../../../api_config";
 // import MessagingCustomerClassificationTables from "../Messaging_customer_classsification";
 
-const CustomerList = ({ onSelectCustomers }) => {
+const CustomerList = ({ onSelectCustomers, displayField = "email" }) => {
+  const { t } = useTranslation("customerList");
+  // displayField can be "email" or "phone" - determines which field to show in the table
   const [customers, setCustomers] = useState([]);
   const [selected, setSelected] = useState(new Set()); // ✅ shared state
   const [filter, setFilter] = useState("");
@@ -60,7 +63,8 @@ const CustomerList = ({ onSelectCustomers }) => {
     if (filter.trim()) {
       return (
         c.user.toLowerCase().includes(filter.toLowerCase()) ||
-        c.phone.includes(filter)
+        (c.email && c.email.toLowerCase().includes(filter.toLowerCase())) ||
+        (c.phone && c.phone.includes(filter))
       );
     }
     
@@ -102,15 +106,15 @@ const CustomerList = ({ onSelectCustomers }) => {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold text-gray-800">
-          {filteredCustomerId !== null ? "Selected Customer" : "Customers List (all customers)"}
+          {filteredCustomerId !== null ? t("title.selected") : t("title.all")}
         </h2>
         {filteredCustomerId !== null && (
           <button
             onClick={clearFilter}
             className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
-            title="Show all customers"
+            title={t("showAllTitle")}
           >
-            Show All Customers
+            {t("showAll")}
           </button>
         )}
       </div>
@@ -118,7 +122,7 @@ const CustomerList = ({ onSelectCustomers }) => {
       {/* Search Bar */}
       <input
         type="text"
-        placeholder="Search by name or phone..."
+        placeholder={displayField === "phone" ? t("search.byNameOrPhone") : t("search.byNameOrEmail")}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         className="mb-4 p-2 border rounded w-full shadow-sm focus:ring-2 focus:ring-blue-400"
@@ -131,16 +135,16 @@ const CustomerList = ({ onSelectCustomers }) => {
           onClick={selectAll}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          Select All
+          {t("buttons.selectAll")}
         </button>
         <button
           onClick={unselectAll}
           className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
         >
-          Unselect All
+          {t("buttons.unselectAll")}
         </button>
         {selected.size > 0 && (
-          <span className="ml-4 text-gray-700">{selected.size} selected</span>
+          <span className="ml-4 text-gray-700">{selected.size} {t("selected")}</span>
         )}
       </div>
 
@@ -150,8 +154,8 @@ const CustomerList = ({ onSelectCustomers }) => {
           <thead className="bg-gray-100 text-gray-700">
             <tr>
               <th className="p-2 border"></th>
-              <th className="p-2 border text-left">Name</th>
-              <th className="p-2 border text-left">Phone</th>
+              <th className="p-2 border text-left">{t("table.name")}</th>
+              <th className="p-2 border text-left">{displayField === "phone" ? t("table.phone") : t("table.email")}</th>
             </tr>
           </thead>
           <tbody>
@@ -170,13 +174,18 @@ const CustomerList = ({ onSelectCustomers }) => {
                   />
                 </td>
                 <td className="p-2 border">{c.user}</td>
-                <td className="p-2 border">{c.phone}</td>
+                <td className="p-2 border">
+                  {displayField === "phone" 
+                    ? (c.phone || <span className="text-gray-400 italic">{t("noData.phone")}</span>)
+                    : (c.email || <span className="text-gray-400 italic">{t("noData.email")}</span>)
+                  }
+                </td>
               </tr>
             ))}
             {currentCustomers.length === 0 && (
               <tr>
                 <td colSpan="3" className="p-4 text-center text-gray-500">
-                  No customers found.
+                  {t("noData.customers")}
                 </td>
               </tr>
             )}
@@ -191,25 +200,25 @@ const CustomerList = ({ onSelectCustomers }) => {
           disabled={currentPage === 1}
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
         >
-          Previous
+          {t("pagination.previous")}
         </button>
         <span className="text-sm">
-          Page {currentPage} of {totalPages}
+          {t("pagination.page")} {currentPage} {t("pagination.of")} {totalPages}
         </span>
         <button
           onClick={goToNextPage}
           disabled={currentPage === totalPages}
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300"
         >
-          Next
+          {t("pagination.next")}
         </button>
       </div>
 
       {/* Classifications */}
       <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+        {/* <h2 className="text-2xl font-semibold mb-6 text-gray-800">
           Customer Classifications
-        </h2>
+        </h2> */}
         {/* <MessagingCustomerClassificationTables
           selected={selected}
           setSelected={setSelected}
