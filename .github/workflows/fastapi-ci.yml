@@ -5,8 +5,9 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  ci:
     runs-on: [self-hosted]
+    
     defaults:
       run:
         working-directory: ./backend
@@ -17,22 +18,19 @@ jobs:
         with:
           ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
       
-      - name: Clean Python artifacts
-        run: find $GITHUB_WORKSPACE/backend -name '*.pyc' -delete
-
       # 2️⃣ Copy environment file
       - name: Copy environment file
         run: cp /home/harif/envs/wosooly.env .env
-
-      # 3️⃣ Stop old containers and remove volumes (optional clean build)
-      - name: Stop old containers
-        run: docker compose down || true
-
-      # 4️⃣ Build and start containers
-      - name: Build and start containers
-        run: docker compose up -d --build
+        
+      # 4️⃣ Build containers
+      - name: Build containers
+        run: docker compose build
+        
+      # 5- Build containers
+      - name: Run containers
+        run: docker compose up -d
 
       # 6️⃣ Stop containers after tests
-      - name: Stop containers
+      - name: Cleanup
         if: always()
-        run: docker compose down
+        run: docker compose down -v
