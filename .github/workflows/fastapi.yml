@@ -14,6 +14,8 @@ jobs:
     steps:
       # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
       
       - name: Clean Python artifacts
         run: find $GITHUB_WORKSPACE/backend -name '*.pyc' -delete
