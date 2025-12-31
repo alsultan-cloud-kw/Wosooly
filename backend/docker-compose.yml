@@ -123,7 +123,9 @@ services:
 
 volumes:
   pgdata:
+    external: true
   redisdata:
+    external: true
 
 networks:
   wc_network:
