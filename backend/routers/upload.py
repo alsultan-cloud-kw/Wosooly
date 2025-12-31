@@ -41,15 +41,22 @@ cloudinary.config(
 )
 
 def clean_json(obj):
-    """Recursively replace NaN/Infinity/-Infinity with None for JSON compliance."""
+    """Recursively replace NaN/Infinity/-Infinity with None and convert datetime objects to strings for JSON compliance."""
     if isinstance(obj, float):
         if math.isnan(obj) or math.isinf(obj):
             return None
         return obj
+    elif isinstance(obj, (datetime, pd.Timestamp)):
+        # Convert datetime objects to ISO format string
+        if isinstance(obj, pd.Timestamp):
+            return obj.strftime('%Y-%m-%dT%H:%M:%S')
+        return obj.isoformat()
     elif isinstance(obj, dict):
         return {k: clean_json(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [clean_json(v) for v in obj]
+    elif hasattr(obj, 'isoformat'):  # Handle other datetime-like objects
+        return obj.isoformat()
     return obj
 
 @router.post("/excel-upload")
@@ -83,10 +90,19 @@ async def upload_file(
         df = df.dropna(how="all")
         df.columns = [c.strip() for c in df.columns]
 
-        # datetime serialization
+        # datetime serialization - handle both datetime64 and object columns with datetime values
         for col in df.columns:
             if pd.api.types.is_datetime64_any_dtype(df[col]):
                 df[col] = df[col].dt.strftime('%Y-%m-%dT%H:%M:%S')
+            elif df[col].dtype == 'object':
+                # Check if any values in the column are datetime-like
+                for idx in df.index:
+                    val = df.at[idx, col]
+                    if isinstance(val, (datetime, pd.Timestamp)):
+                        if isinstance(val, pd.Timestamp):
+                            df.at[idx, col] = val.strftime('%Y-%m-%dT%H:%M:%S')
+                        else:
+                            df.at[idx, col] = val.isoformat()
 
         df = df.where(pd.notnull(df), None)
 
