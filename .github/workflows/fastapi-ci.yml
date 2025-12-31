@@ -13,6 +13,9 @@ jobs:
         working-directory: ./backend
 
     steps:
+      - name: Fix certbot folder permissions
+        run: sudo chown -R harif:harif backend/certbot/conf || true
+
       # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
         with:
