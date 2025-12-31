@@ -19,7 +19,7 @@ jobs:
 
       # 2️⃣ Copy environment file
       - name: Copy environment file
-        run: cp /home/harif/envs/wc-solutions.env .env
+        run: cp /home/harif/envs/wosooly.env .env
 
       # 3️⃣ Stop any old containers (avoid port conflicts)
       - name: Stop old containers
