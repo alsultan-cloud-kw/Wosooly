@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+
+# VCS
+.git
+
+# Environment / secrets
+.env
+
+# Tooling / IDE
+.vscode
+.pytest_cache
+.ruff_cache
+
+# CI / local
+.github
