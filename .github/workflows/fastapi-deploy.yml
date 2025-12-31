@@ -1,4 +1,4 @@
-name: FastAPI CD (Deploy to Server)
+name: FastAPI Deploy(Production)
 
 on:
   workflow_dispatch:  # manual trigger from GitHub
@@ -13,28 +13,19 @@ jobs:
     steps:
       # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
-      
-      - name: Clean Python artifacts
-        run: find $GITHUB_WORKSPACE/backend -name '*.pyc' -delete
 
       # 2️⃣ Copy environment file
       - name: Copy environment file
         run: cp /home/harif/envs/wosooly.env .env
 
-      # 3️⃣ Stop any old containers (avoid port conflicts)
-      - name: Stop old containers
-        run: docker compose down || true
+      # 3️⃣ pull latest images
+      - name: Pull latest images
+        run: docker compose pull || true
 
       # 4️⃣ Build and deploy containers
       - name: Deploy FastAPI containers
         run: docker compose up -d --build
 
-      # 5️⃣ Optional health check
-      - name: Check API health
-        run: |
-          sleep 5
-          curl -f http://localhost:8000/health || echo "⚠️ API not healthy yet"
-
-      # 6️⃣ Show running containers
+      # 5️⃣ Show running containers
       - name: Show running containers
         run: docker ps
