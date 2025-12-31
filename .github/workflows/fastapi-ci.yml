@@ -13,6 +13,10 @@ jobs:
         working-directory: ./backend
 
     steps:
+      # 0️⃣ Pre-clean certbot folder (avoid permission issues)
+      - name: Pre-clean certbot folder
+        run: sudo rm -rf backend/certbot/conf || true
+        
       # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
         with:
