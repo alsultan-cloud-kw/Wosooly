@@ -1,35 +1,37 @@
-name: FastAPI Deploy(Production)
+name: FastAPI Deploy (Production)
 
 on:
-  workflow_dispatch:  # manual trigger from GitHub
-  
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: [self-hosted]
+
     defaults:
       run:
         working-directory: ./backend
 
     steps:
-      # 0️⃣ Fix certbot folder permissions (avoid EACCES)
-      - name: Fix certbot folder permissions
-        run: sudo chown -R harif:harif backend/certbot/conf || true
-        
-      # 1️⃣ Checkout repo
+      # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
       # 2️⃣ Copy environment file
       - name: Copy environment file
         run: cp /home/harif/envs/wosooly.env .env
 
-      # 3️⃣ pull latest images
-      - name: Pull latest images
+      # 3️⃣ Ensure certbot permissions (once, correctly)
+      - name: Fix certbot folder permissions
+        run: sudo chown -R harif:harif certbot || true
+
+      # 4️⃣ Pull latest base images
+      - name: Pull images
         run: docker compose pull || true
 
-      # 4️⃣ Build and deploy containers
-      - name: Deploy FastAPI containers
+      # 5️⃣ Build and deploy
+      - name: Deploy containers
         run: docker compose up -d --build
 
-      # 5️⃣ Show running containers
+      # 6️⃣ Verify running containers
       - name: Show running containers
         run: docker ps
+
