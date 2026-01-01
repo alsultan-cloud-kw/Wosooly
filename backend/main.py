@@ -29,7 +29,7 @@ app = FastAPI()
 
 # CORS configuration
 origins = [
-    "http://46.101.113.169",
+    "https://www.wosooly.com/",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
     "http://localhost:5174",
@@ -45,16 +45,58 @@ app.add_middleware(
     expose_headers=["*"],             # expose all headers
 )
 
-# Redis connection (for example/demo purposes)
-redis_host = os.getenv("REDIS_HOST", "localhost")
-redis_port = int(os.getenv("REDIS_PORT", 6379))
-redis_password = os.getenv("REDIS_PASSWORD", "")
-r = redis.Redis(
-    host=redis_host,
-    port=redis_port,
-    password=redis_password,   # <--- add this
-    decode_responses=True
-)
+# ---------------------------
+# Redis client placeholder
+# ---------------------------
+r: redis.Redis | None = None
+
+# ---------------------------
+# Startup event
+# ---------------------------
+@app.on_event("startup")
+def on_startup():
+    global r
+    # Use REDIS_URL from environment
+    redis_url = os.environ.get("REDIS_URL")
+    if not redis_url:
+        raise RuntimeError("REDIS_URL environment variable is missing!")
+
+    # Initialize Redis connection
+    r = redis.from_url(redis_url, decode_responses=True)
+    
+    # Test Redis connection
+    try:
+        r.ping()
+        print("✅ Connected to Redis successfully.")
+    except Exception as e:
+        print("❌ Failed to connect to Redis:", e)
+        raise
+
+    print("✅ FastAPI app started. Background syncing is managed by Celery + Beat.")
+
+# ---------------------------
+# Health check endpoint
+# ---------------------------
+@app.get("/health")
+def health_check():
+    try:
+        r.ping()
+        redis_status = "ok"
+    except Exception:
+        redis_status = "fail"
+
+    return {
+        "status": "ok",
+        "redis": redis_status
+    }
+
+# ---------------------------
+# Root endpoint
+# ---------------------------
+@app.get("/")
+def read_root():
+    r.set("message", "Hello from Redis!")
+    return {"message": r.get("message")}
 
 # Include your routers
 # app.include_router(sync.router)
@@ -78,26 +120,3 @@ app.include_router(send_mail.router)
 # app.include_router(ai_chat.router)
 # app.include_router(whatsapp_messaging.router)
 # app.include_router(forecast_api.router)
-
-@app.get("/health")
-def health_check():
-    try:
-        # Simple Redis check
-        r.ping()
-        redis_status = "ok"
-    except Exception:
-        redis_status = "fail"
-
-    return {
-        "status": "ok",
-        "redis": redis_status
-    }
-
-@app.get("/")
-def read_root():
-    r.set("message", "Hello from Redis!")
-    return {"message": "Hello, FastAPI!"}
-
-@app.on_event("startup")
-def on_startup():
-    print("✅ FastAPI app started. Background syncing is managed by Celery + Beat.")
