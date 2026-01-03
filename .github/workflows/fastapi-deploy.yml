@@ -12,47 +12,60 @@ jobs:
         working-directory: ./backend
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout
       - uses: actions/checkout@v4
 
-      # 2️⃣ Stop old containers to avoid conflicts
+      # 2️⃣ Stop old containers
       - name: Stop old containers
         run: docker compose down -v --remove-orphans
 
-      # 3️⃣ Copy environment file from server
+      # 3️⃣ Copy environment file
       - name: Copy environment file
         run: cp /home/harif/envs/wosooly.env .env
 
-      # 4️⃣ Fix certbot folder permissions (allow write access)
-      - name: Fix certbot folder permissions
+      # 4️⃣ Ensure certbot folders exist and correct permissions
+      - name: Prepare Certbot folders
         run: |
-          sudo chown -R 1000:1000 certbot/www certbot/conf
-          sudo chmod -R 755 certbot/www certbot/conf
+          sudo mkdir -p /home/harif/certbot/www /home/harif/certbot/conf
+          sudo chown -R 1000:1000 /home/harif/certbot
+          sudo chmod -R 755 /home/harif/certbot
 
-      # 5️⃣ Pull latest base images
-      - name: Pull images
+      # 5️⃣ First-time certificate issuance
+      - name: Issue certificate if missing
+        run: |
+          if [ ! -f /home/harif/certbot/conf/live/api.wosooly.com/fullchain.pem ]; then
+            docker compose run --rm wc_solutions_certbot certonly \
+              --webroot -w /var/www/certbot \
+              -d api.wosooly.com \
+              --email your-email@example.com \
+              --agree-tos \
+              --no-eff-email \
+              --non-interactive
+          fi
+
+      # 6️⃣ Pull base images
+      - name: Pull base images
         run: docker compose pull
 
-      # 6️⃣ Build project images
-      - name: Build images
+      # 7️⃣ Build images
+      - name: Build project images
         run: docker compose build
 
-      # 7️⃣ Start containers
+      # 8️⃣ Start containers
       - name: Start containers
         run: docker compose up -d
 
-      # 8️⃣ Wait a bit to ensure Redis and other dependencies are ready
-      - name: Wait for Redis & FastAPI readiness
-        run: |
-          echo "⏳ Waiting for Redis and FastAPI to initialize..."
-          sleep 15
+      # 9️⃣ Wait for DB & Redis
+      - name: Wait for services to initialize
+        run: sleep 15
 
-      # 9️⃣ Optional: Test Redis connectivity from FastAPI container
-      - name: Test Redis connection
+      # 🔟 Test Redis
+      - name: Test Redis connectivity
         run: docker compose run --rm wc_solutions_fastapi_app sh -c "python -c 'import os, redis; r = redis.from_url(os.environ[\"REDIS_URL\"]); r.ping(); print(\"✅ Redis OK\")'"
 
-      # 🔟 Verify running containers
+      # 11️⃣ Show running containers
       - name: Show running containers
         run: docker ps
+
 
 
