@@ -13,7 +13,13 @@ jobs:
         working-directory: ./backend
 
     steps:
+    
       # 1️⃣ Checkout repository
+      - name: Fix certbot permissions before checkout
+        run: |
+          sudo chown -R harif:harif backend/certbot/www backend/certbot/conf || true
+          sudo chmod -R 755 backend/certbot/www backend/certbot/conf || true
+
       - uses: actions/checkout@v4
         with:
           ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
