@@ -4,7 +4,7 @@ services:
     container_name: wc_solutions_db
     restart: unless-stopped
     env_file:
-      - .env
+      - ~/envs/wosooly.env   # <- add this line
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -36,17 +36,14 @@ services:
     build: .
     container_name: wc_solutions_fastapi_app
     restart: unless-stopped
+    env_file:
+      - ~/envs/wosooly.env   # <- add this line
     command: >
       gunicorn main:app
       -w 4
       -k uvicorn.workers.UvicornWorker
       -b 0.0.0.0:8000
       --forwarded-allow-ips="*"
-    environment:
-      FERNET_KEY: ${FERNET_KEY}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       wc_solutions_postgres_db:
         condition: service_healthy
@@ -59,11 +56,9 @@ services:
     build: .
     container_name: wc_solutions_celery_worker
     restart: unless-stopped
+    env_file:
+      - ~/envs/wosooly.env   # <- add this line
     command: ["sh", "/app/wait_and_start_celery.sh"]
-    environment:
-      FERNET_KEY: ${FERNET_KEY}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
     depends_on:
       wc_solutions_postgres_db:
         condition: service_healthy
@@ -77,10 +72,8 @@ services:
     container_name: wc_solutions_celery_beat
     restart: unless-stopped
     command: celery -A celery_app.celery beat --loglevel=info
-    environment:
-      FERNET_KEY: ${FERNET_KEY}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+    env_file:
+      - ~/envs/wosooly.env   # <- add this line
     depends_on:
       wc_solutions_postgres_db:
         condition: service_healthy
@@ -98,7 +91,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
       
     depends_on:
