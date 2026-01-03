@@ -15,23 +15,44 @@ jobs:
       # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
-      # 2️⃣ Copy environment file
+      # 2️⃣ Stop old containers to avoid conflicts
+      - name: Stop old containers
+        run: docker compose down -v --remove-orphans
+
+      # 3️⃣ Copy environment file from server
       - name: Copy environment file
         run: cp /home/harif/envs/wosooly.env .env
 
-      # 3️⃣ Ensure certbot permissions (once, correctly)
+      # 4️⃣ Fix certbot folder permissions (allow write access)
       - name: Fix certbot folder permissions
-        run: sudo chown -R harif:harif certbot || true
+        run: |
+          sudo chown -R 1000:1000 certbot/www certbot/conf
+          sudo chmod -R 755 certbot/www certbot/conf
 
-      # 4️⃣ Pull latest base images
+      # 5️⃣ Pull latest base images
       - name: Pull images
-        run: docker compose pull || true
+        run: docker compose pull
 
-      # 5️⃣ Build and deploy
-      - name: Deploy containers
-        run: docker compose up -d --build
+      # 6️⃣ Build project images
+      - name: Build images
+        run: docker compose build
 
-      # 6️⃣ Verify running containers
+      # 7️⃣ Start containers
+      - name: Start containers
+        run: docker compose up -d
+
+      # 8️⃣ Wait a bit to ensure Redis and other dependencies are ready
+      - name: Wait for Redis & FastAPI readiness
+        run: |
+          echo "⏳ Waiting for Redis and FastAPI to initialize..."
+          sleep 15
+
+      # 9️⃣ Optional: Test Redis connectivity from FastAPI container
+      - name: Test Redis connection
+        run: docker compose run --rm wc_solutions_fastapi_app sh -c "python -c 'import os, redis; r = redis.from_url(os.environ[\"REDIS_URL\"]); r.ping(); print(\"✅ Redis OK\")'"
+
+      # 🔟 Verify running containers
       - name: Show running containers
         run: docker ps
+
 
