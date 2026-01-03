@@ -13,22 +13,15 @@ jobs:
         working-directory: ./backend
 
     steps:
-    
-      # 1️⃣ Checkout repository
-      - name: Fix certbot permissions before checkout
-        run: |
-          sudo chown -R harif:harif backend/certbot/www backend/certbot/conf || true
-          sudo chmod -R 755 backend/certbot/www backend/certbot/conf || true
-
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-      # 2️⃣ Copy environment file
       - name: Copy environment file
         run: cp /home/harif/envs/wosooly.env .env
 
-      # 3️⃣ Build Docker images (validation step)
-      - name: Build containers
+      - name: Build Docker images
         run: docker compose build
+
 
